@@ -56,6 +56,25 @@ def create_app():
     from app.routes.signatures import bp as signatures_bp
     app.register_blueprint(signatures_bp, url_prefix='/signatures')
     
+    # Tratamento de erro de banco de dados
+    @app.errorhandler(Exception)
+    def handle_db_error(error):
+        """Trata erros de conexão com banco de dados"""
+        if any(err_text in str(error) for err_text in [
+            'SSL connection has been closed',
+            'psycopg2.OperationalError',
+            'connection closed',
+            'server closed the connection'
+        ]):
+            app.logger.error(f"Erro de conexão com banco: {error}")
+            try:
+                db.session.rollback()
+                db.session.close()
+                db.engine.dispose()
+            except:
+                pass
+        return str(error), 500
+    
     # Criar tabelas do banco de dados
     with app.app_context():
         db.create_all()
