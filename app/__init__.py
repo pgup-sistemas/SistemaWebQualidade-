@@ -56,6 +56,12 @@ def create_app():
     from app.routes.signatures import bp as signatures_bp
     app.register_blueprint(signatures_bp, url_prefix='/signatures')
     
+    from app.routes.users import bp as users_bp
+    app.register_blueprint(users_bp, url_prefix='/users')
+    
+    from app.routes.reports import bp as reports_bp
+    app.register_blueprint(reports_bp, url_prefix='/reports')
+    
     # Tratamento de erro de banco de dados
     @app.errorhandler(Exception)
     def handle_db_error(error):

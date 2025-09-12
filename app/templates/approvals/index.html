@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Aprovações Pendentes{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-check-circle"></i> Aprovações Pendentes</h2>
+        <div>
+            <span class="badge bg-primary">{{ approvals.total }} pendente{{ 's' if approvals.total != 1 else '' }}</span>
+        </div>
+    </div>
+
+    {% if approvals.items %}
+        <div class="row">
+            {% for approval in approvals.items %}
+                <div class="col-md-12 mb-3">
+                    <div class="card border-left-warning">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-0">
+                                    <a href="{{ url_for('approvals.view', id=approval.id) }}" class="text-decoration-none">
+                                        {{ approval.documento.titulo }}
+                                    </a>
+                                </h5>
+                                <small class="text-muted">
+                                    <i class="bi bi-folder"></i> {{ approval.documento.categoria }}
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <small class="text-muted d-block">Atribuído em</small>
+                                <span class="badge bg-warning text-dark">
+                                    {{ approval.data_atribuicao.strftime('%d/%m/%Y às %H:%M') }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <p class="text-muted mb-2">
+                                        <strong>Autor:</strong> {{ approval.documento.autor.nome_completo }}<br>
+                                        <strong>Versão:</strong> {{ approval.documento.versao }}<br>
+                                        {% if approval.documento.descricao %}
+                                            <strong>Descrição:</strong> {{ approval.documento.descricao[:100] }}{{ '...' if approval.documento.descricao|length > 100 else '' }}
+                                        {% endif %}
+                                    </p>
+                                    {% if approval.observacoes %}
+                                        <div class="alert alert-info">
+                                            <i class="bi bi-info-circle"></i>
+                                            <strong>Observações:</strong> {{ approval.observacoes }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="d-flex gap-2 justify-content-end">
+                                        <a href="{{ url_for('approvals.view', id=approval.id) }}" 
+                                           class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-eye"></i> Ver Detalhes
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-light">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <small class="text-muted">
+                                        Prioridade: 
+                                        {% if approval.prioridade == 'alta' %}
+                                            <span class="badge bg-danger">Alta</span>
+                                        {% elif approval.prioridade == 'media' %}
+                                            <span class="badge bg-warning text-dark">Média</span>
+                                        {% else %}
+                                            <span class="badge bg-success">Baixa</span>
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    {% set days_pending = (moment().date() - approval.data_atribuicao.date()).days %}
+                                    <small class="text-muted">
+                                        Aguardando há 
+                                        {% if days_pending == 0 %}
+                                            menos de 1 dia
+                                        {% else %}
+                                            {{ days_pending }} dia{{ 's' if days_pending != 1 else '' }}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Paginação -->
+        {% if approvals.pages > 1 %}
+            <nav aria-label="Navegação de páginas">
+                <ul class="pagination justify-content-center">
+                    {% if approvals.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('approvals.index', page=approvals.prev_num) }}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% for page_num in approvals.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != approvals.page %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('approvals.index', page=page_num) }}">{{ page_num }}</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">…</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if approvals.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('approvals.index', page=approvals.next_num) }}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+            <h4 class="mt-3">Nenhuma aprovação pendente</h4>
+            <p class="text-muted">
+                Parabéns! Você não possui documentos aguardando aprovação no momento.
+            </p>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.border-left-warning {
+    border-left: 4px solid #ffc107 !important;
+}
+</style>
+{% endblock %}

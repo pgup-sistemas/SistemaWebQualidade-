@@ -6,6 +6,7 @@ from flask_login import login_required, current_user
 from app.models import NonConformity, CorrectiveAction, User, Document
 from app import db
 from datetime import datetime, timedelta
+from sqlalchemy import func
 import uuid
 
 bp = Blueprint('nonconformities', __name__)

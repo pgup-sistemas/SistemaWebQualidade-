@@ -1,0 +1,303 @@
+{% extends "base.html" %}
+
+{% block title %}Relatórios de Não Conformidades{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-exclamation-triangle"></i> Relatórios de Não Conformidades</h2>
+        <div>
+            <button class="btn btn-outline-primary me-2" onclick="window.print()">
+                <i class="bi bi-printer"></i> Imprimir
+            </button>
+            <a href="{{ url_for('nonconformities.index') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Voltar
+            </a>
+        </div>
+    </div>
+
+    <!-- Cards de Estatísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ total_ncs }}</h4>
+                            <p class="mb-0">Total de NCs</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-exclamation-triangle" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ abertas }}</h4>
+                            <p class="mb-0">Abertas</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-exclamation-circle" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ em_tratamento }}</h4>
+                            <p class="mb-0">Em Tratamento</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-gear" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ fechadas }}</h4>
+                            <p class="mb-0">Fechadas</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-check-circle" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Gráfico de Status -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-pie-chart"></i> Status das Não Conformidades</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="statusChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico de Criticidade -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-speedometer2"></i> NCs por Criticidade</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="criticidadeChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Alerta de NCs Atrasadas -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5><i class="bi bi-clock-history"></i> Não Conformidades Atrasadas</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="text-danger mb-3">{{ atrasadas }}</h2>
+                    <p class="text-muted">
+                        {% if atrasadas > 0 %}
+                            <i class="bi bi-exclamation-triangle text-warning"></i>
+                            Atenção! Existem não conformidades vencidas que precisam ser tratadas urgentemente.
+                        {% else %}
+                            <i class="bi bi-check-circle text-success"></i>
+                            Excelente! Nenhuma não conformidade está atrasada.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Indicadores de Performance -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-graph-up-arrow"></i> Indicadores de Performance</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-8">Taxa de Resolução:</dt>
+                        <dd class="col-sm-4 text-end">
+                            <span class="badge bg-{% if total_ncs > 0 and (fechadas / total_ncs) >= 0.8 %}success{% elif total_ncs > 0 and (fechadas / total_ncs) >= 0.6 %}warning text-dark{% else %}danger{% endif %}">
+                                {% if total_ncs > 0 %}
+                                    {{ "%.1f"|format((fechadas / total_ncs) * 100) }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </span>
+                        </dd>
+                        
+                        <dt class="col-sm-8">NCs Críticas:</dt>
+                        <dd class="col-sm-4 text-end">
+                            <span class="badge {% if criticas > 0 %}bg-danger{% else %}bg-success{% endif %}">{{ criticas }}</span>
+                        </dd>
+                        
+                        <dt class="col-sm-8">NCs de Alta Prioridade:</dt>
+                        <dd class="col-sm-4 text-end">
+                            <span class="badge {% if altas > 0 %}bg-warning text-dark{% else %}bg-success{% endif %}">{{ altas }}</span>
+                        </dd>
+                        
+                        <dt class="col-sm-8">Eficiência (Sem atraso):</dt>
+                        <dd class="col-sm-4 text-end">
+                            <span class="badge bg-{% if atrasadas == 0 %}success{% elif atrasadas < 5 %}warning text-dark{% else %}danger{% endif %}">
+                                {% if total_ncs > 0 %}
+                                    {{ "%.1f"|format(((total_ncs - atrasadas) / total_ncs) * 100) }}%
+                                {% else %}
+                                    100%
+                                {% endif %}
+                            </span>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumo Detalhado por Criticidade -->
+    <div class="card">
+        <div class="card-header">
+            <h5><i class="bi bi-list-task"></i> Distribuição por Criticidade</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3 text-center">
+                    <div class="border rounded p-3 bg-danger text-white">
+                        <i class="bi bi-exclamation-triangle" style="font-size: 2rem;"></i>
+                        <h4 class="mt-2">{{ criticas }}</h4>
+                        <p class="mb-0">Críticas</p>
+                    </div>
+                </div>
+                <div class="col-md-3 text-center">
+                    <div class="border rounded p-3 bg-warning text-dark">
+                        <i class="bi bi-exclamation-circle" style="font-size: 2rem;"></i>
+                        <h4 class="mt-2">{{ altas }}</h4>
+                        <p class="mb-0">Altas</p>
+                    </div>
+                </div>
+                <div class="col-md-3 text-center">
+                    <div class="border rounded p-3 bg-info text-white">
+                        <i class="bi bi-info-circle" style="font-size: 2rem;"></i>
+                        <h4 class="mt-2">{{ medias }}</h4>
+                        <p class="mb-0">Médias</p>
+                    </div>
+                </div>
+                <div class="col-md-3 text-center">
+                    <div class="border rounded p-3 bg-success text-white">
+                        <i class="bi bi-check-circle" style="font-size: 2rem;"></i>
+                        <h4 class="mt-2">{{ baixas }}</h4>
+                        <p class="mb-0">Baixas</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts para gráficos -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Gráfico de Status
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Abertas', 'Em Tratamento', 'Fechadas'],
+            datasets: [{
+                data: [{{ abertas }}, {{ em_tratamento }}, {{ fechadas }}],
+                backgroundColor: [
+                    '#dc3545',
+                    '#ffc107', 
+                    '#28a745'
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Gráfico de Criticidade
+    const criticidadeCtx = document.getElementById('criticidadeChart').getContext('2d');
+    new Chart(criticidadeCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Críticas', 'Altas', 'Médias', 'Baixas'],
+            datasets: [{
+                label: 'Quantidade',
+                data: [{{ criticas }}, {{ altas }}, {{ medias }}, {{ baixas }}],
+                backgroundColor: [
+                    '#dc3545',
+                    '#fd7e14',
+                    '#17a2b8',
+                    '#28a745'
+                ],
+                borderWidth: 1,
+                borderColor: '#333'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+<style>
+@media print {
+    .btn, .navbar, .sidebar {
+        display: none !important;
+    }
+    
+    .card {
+        border: 1px solid #dee2e6 !important;
+        box-shadow: none !important;
+    }
+    
+    .card-header {
+        background-color: #f8f9fa !important;
+        color: #000 !important;
+    }
+}
+</style>
+{% endblock %}

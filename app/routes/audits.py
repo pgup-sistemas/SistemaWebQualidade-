@@ -6,6 +6,7 @@ from flask_login import login_required, current_user
 from app.models import Audit, AuditChecklist, AuditFinding, User
 from app import db
 from datetime import datetime, timedelta
+from sqlalchemy import func, extract
 import uuid
 
 bp = Blueprint('audits', __name__)

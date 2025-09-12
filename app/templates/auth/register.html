@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Registrar Conta{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4 class="mb-0">
+                        <i class="bi bi-person-plus"></i> 
+                        Criar Nova Conta
+                    </h4>
+                    <p class="mb-0 mt-2">Sistema Alpha Gestão Documental</p>
+                </div>
+                <div class="card-body p-4">
+                    {% if error %}
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle"></i> {{ error }}
+                        </div>
+                    {% endif %}
+
+                    <form method="POST">
+                        {{ csrf_token() }}
+                        
+                        <div class="mb-3">
+                            <label for="nome_completo" class="form-label">
+                                <i class="bi bi-person"></i> Nome Completo <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control form-control-lg" 
+                                   id="nome_completo" name="nome_completo" 
+                                   placeholder="Digite seu nome completo" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="username" class="form-label">
+                                <i class="bi bi-at"></i> Nome de Usuário <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control form-control-lg" 
+                                   id="username" name="username" 
+                                   placeholder="Digite um nome de usuário" required>
+                            <div class="form-text">Será usado para fazer login no sistema</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">
+                                <i class="bi bi-envelope"></i> Email <span class="text-danger">*</span>
+                            </label>
+                            <input type="email" class="form-control form-control-lg" 
+                                   id="email" name="email" 
+                                   placeholder="Digite seu email" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">
+                                <i class="bi bi-lock"></i> Senha <span class="text-danger">*</span>
+                            </label>
+                            <input type="password" class="form-control form-control-lg" 
+                                   id="password" name="password" 
+                                   placeholder="Digite uma senha" required>
+                            <div class="form-text">Mínimo de 6 caracteres</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password_confirm" class="form-label">
+                                <i class="bi bi-lock-fill"></i> Confirmar Senha <span class="text-danger">*</span>
+                            </label>
+                            <input type="password" class="form-control form-control-lg" 
+                                   id="password_confirm" name="password_confirm" 
+                                   placeholder="Confirme sua senha" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="terms" name="terms" required>
+                                <label class="form-check-label" for="terms">
+                                    Eu concordo com os <a href="#" class="text-decoration-none">Termos de Uso</a> 
+                                    e <a href="#" class="text-decoration-none">Política de Privacidade</a>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-person-plus"></i> Criar Conta
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-center bg-light">
+                    <p class="mb-0">
+                        Já possui uma conta? 
+                        <a href="{{ url_for('auth.login') }}" class="text-decoration-none fw-bold">
+                            <i class="bi bi-box-arrow-in-right"></i> Fazer Login
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validação de senha
+document.getElementById('password_confirm').addEventListener('input', function() {
+    const password = document.getElementById('password').value;
+    const confirm = this.value;
+    
+    if (password !== confirm) {
+        this.setCustomValidity('As senhas não coincidem');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+
+document.getElementById('password').addEventListener('input', function() {
+    const confirm = document.getElementById('password_confirm');
+    if (confirm.value) {
+        confirm.dispatchEvent(new Event('input'));
+    }
+});
+
+// Validação de username (apenas letras, números e _)
+document.getElementById('username').addEventListener('input', function() {
+    const value = this.value;
+    const valid = /^[a-zA-Z0-9_]+$/.test(value);
+    
+    if (!valid && value.length > 0) {
+        this.setCustomValidity('Nome de usuário deve conter apenas letras, números e sublinhado');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+</script>
+{% endblock %}

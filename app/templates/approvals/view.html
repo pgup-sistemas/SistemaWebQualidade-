@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block title %}Aprovação - {{ document.titulo }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Cabeçalho -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-file-earmark-text"></i> {{ document.titulo }}</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('approvals.index') }}">Aprovações</a></li>
+                    <li class="breadcrumb-item active">{{ document.titulo[:30] }}{{ '...' if document.titulo|length > 30 else '' }}</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            {% if approval.status == 'pendente' %}
+                <button type="button" class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#approveModal">
+                    <i class="bi bi-check-lg"></i> Aprovar
+                </button>
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                    <i class="bi bi-x-lg"></i> Rejeitar
+                </button>
+            {% else %}
+                <span class="badge bg-{% if approval.status == 'aprovado' %}success{% elif approval.status == 'rejeitado' %}danger{% else %}secondary{% endif %} fs-6">
+                    {% if approval.status == 'aprovado' %}
+                        <i class="bi bi-check-circle"></i> Aprovado
+                    {% elif approval.status == 'rejeitado' %}
+                        <i class="bi bi-x-circle"></i> Rejeitado
+                    {% else %}
+                        <i class="bi bi-clock"></i> {{ approval.status|title }}
+                    {% endif %}
+                </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Informações da Aprovação -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="bi bi-info-circle"></i> Informações da Aprovação</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-5">Status:</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge bg-{% if approval.status == 'pendente' %}warning text-dark{% elif approval.status == 'aprovado' %}success{% elif approval.status == 'rejeitado' %}danger{% else %}secondary{% endif %}">
+                                {{ approval.status|title }}
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-5">Responsável:</dt>
+                        <dd class="col-sm-7">{{ approval.responsavel.nome_completo }}</dd>
+
+                        <dt class="col-sm-5">Atribuída em:</dt>
+                        <dd class="col-sm-7">{{ approval.data_atribuicao.strftime('%d/%m/%Y às %H:%M') }}</dd>
+
+                        {% if approval.data_conclusao %}
+                            <dt class="col-sm-5">Concluída em:</dt>
+                            <dd class="col-sm-7">{{ approval.data_conclusao.strftime('%d/%m/%Y às %H:%M') }}</dd>
+                        {% endif %}
+
+                        <dt class="col-sm-5">Prioridade:</dt>
+                        <dd class="col-sm-7">
+                            {% if approval.prioridade == 'alta' %}
+                                <span class="badge bg-danger">Alta</span>
+                            {% elif approval.prioridade == 'media' %}
+                                <span class="badge bg-warning text-dark">Média</span>
+                            {% else %}
+                                <span class="badge bg-success">Baixa</span>
+                            {% endif %}
+                        </dd>
+                    </dl>
+
+                    {% if approval.observacoes %}
+                        <hr>
+                        <h6>Observações:</h6>
+                        <p class="text-muted">{{ approval.observacoes }}</p>
+                    {% endif %}
+
+                    {% if approval.comentarios %}
+                        <hr>
+                        <h6>Comentários:</h6>
+                        <div class="alert alert-info">
+                            {{ approval.comentarios }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Informações do Documento -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-file-earmark"></i> Informações do Documento</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-5">Autor:</dt>
+                        <dd class="col-sm-7">{{ document.autor.nome_completo }}</dd>
+
+                        <dt class="col-sm-5">Categoria:</dt>
+                        <dd class="col-sm-7">{{ document.categoria }}</dd>
+
+                        <dt class="col-sm-5">Versão:</dt>
+                        <dd class="col-sm-7">{{ document.versao }}</dd>
+
+                        <dt class="col-sm-5">Criado em:</dt>
+                        <dd class="col-sm-7">{{ document.data_criacao.strftime('%d/%m/%Y às %H:%M') }}</dd>
+
+                        {% if document.data_ultima_revisao %}
+                            <dt class="col-sm-5">Última revisão:</dt>
+                            <dd class="col-sm-7">{{ document.data_ultima_revisao.strftime('%d/%m/%Y às %H:%M') }}</dd>
+                        {% endif %}
+                    </dl>
+
+                    {% if document.descricao %}
+                        <hr>
+                        <h6>Descrição:</h6>
+                        <p class="text-muted">{{ document.descricao }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Conteúdo do Documento -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-file-text"></i> Conteúdo do Documento</h5>
+                </div>
+                <div class="card-body">
+                    {% if current_version %}
+                        <div class="document-content">
+                            {{ current_version.conteudo|safe }}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            Nenhuma versão encontrada para este documento.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Aprovação -->
+<div class="modal fade" id="approveModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('approvals.approve', id=approval.id) }}">
+                {{ csrf_token() }}
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-check-circle"></i> Aprovar Documento
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Tem certeza de que deseja <strong>aprovar</strong> este documento?</p>
+                    <div class="mb-3">
+                        <label for="comentarios" class="form-label">Comentários (opcional):</label>
+                        <textarea class="form-control" id="comentarios" name="comentarios" rows="3"
+                                  placeholder="Adicione comentários sobre a aprovação..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-lg"></i> Confirmar Aprovação
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Rejeição -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('approvals.reject', id=approval.id) }}">
+                {{ csrf_token() }}
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-x-circle"></i> Rejeitar Documento
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Tem certeza de que deseja <strong>rejeitar</strong> este documento?</p>
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Atenção:</strong> O documento será retornado ao autor como rascunho.
+                    </div>
+                    <div class="mb-3">
+                        <label for="comentarios_rejeicao" class="form-label">Motivo da rejeição <span class="text-danger">*</span>:</label>
+                        <textarea class="form-control" id="comentarios_rejeicao" name="comentarios" rows="4"
+                                  placeholder="Explique o motivo da rejeição..." required></textarea>
+                        <div class="form-text">É obrigatório informar o motivo da rejeição para orientar o autor.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-x-lg"></i> Confirmar Rejeição
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.document-content {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.document-content h1, .document-content h2, .document-content h3,
+.document-content h4, .document-content h5, .document-content h6 {
+    color: #495057;
+}
+
+.document-content p {
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+</style>
+{% endblock %}

@@ -96,7 +96,15 @@ def create():
         db.session.add(version)
         db.session.commit()
         
-        flash('Documento criado com sucesso!', 'success')
+        # Verificar se é para salvar como rascunho ou submeter
+        action = request.form.get('action', 'submit')
+        
+        if action == 'draft':
+            document.status = 'rascunho'
+            flash(f'Rascunho "{titulo}" salvo com sucesso!', 'info')
+        else:
+            flash(f'Documento "{titulo}" criado com sucesso!', 'success')
+        
         return redirect(url_for('documents.view', id=document.id))
     
     return render_template('documents/create.html')
@@ -209,3 +217,91 @@ def versions(id):
     return render_template('documents/versions.html', 
                          document=document, 
                          versions=versions)
+
+@bp.route('/api/save-draft', methods=['POST'])
+@login_required
+def save_draft():
+    """API para salvar rascunho automaticamente"""
+    if not current_user.can_create_documents():
+        return jsonify({'success': False, 'error': 'Sem permissão'})
+    
+    try:
+        document_id = request.form.get('document_id')
+        titulo = request.form.get('titulo')
+        conteudo = request.form.get('conteudo')
+        tipo = request.form.get('tipo', 'outros')
+        departamento = request.form.get('departamento', '')
+        
+        if not titulo or not conteudo:
+            return jsonify({'success': False, 'error': 'Título e conteúdo são obrigatórios'})
+        
+        if document_id:
+            # Atualizar documento existente
+            document = Document.query.get(document_id)
+            if document and document.autor_id == current_user.id and document.status == 'rascunho':
+                document.titulo = titulo
+                document.data_modificacao = datetime.utcnow()
+                
+                # Atualizar versão atual
+                current_version = document.get_current_version()
+                if current_version:
+                    current_version.conteudo = conteudo
+                    current_version.data_modificacao = datetime.utcnow()
+                
+                db.session.commit()
+                return jsonify({'success': True, 'message': 'Rascunho atualizado', 'document_id': document.id})
+        else:
+            # Criar novo rascunho
+            codigo = f"{tipo.upper()}-{datetime.now().strftime('%Y')}-{str(uuid.uuid4())[:8].upper()}"
+            
+            document = Document(
+                codigo=codigo,
+                titulo=titulo,
+                tipo=tipo,
+                departamento=departamento,
+                autor_id=current_user.id,
+                status='rascunho'
+            )
+            
+            db.session.add(document)
+            db.session.flush()  # Para obter o ID
+            
+            # Criar primeira versão
+            version = DocumentVersion(
+                documento_id=document.id,
+                versao='1.0',
+                conteudo=conteudo,
+                criado_por_id=current_user.id,
+                changelog='Rascunho inicial'
+            )
+            
+            db.session.add(version)
+            db.session.commit()
+            
+            return jsonify({'success': True, 'message': 'Novo rascunho criado', 'document_id': document.id})
+        
+        return jsonify({'success': False, 'error': 'Documento não encontrado'})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)})
+
+@bp.route('/drafts')
+@login_required
+def drafts():
+    """Lista de rascunhos do usuário"""
+    if not current_user.can_create_documents():
+        flash('Você não tem permissão para ver rascunhos.', 'error')
+        return redirect(url_for('documents.index'))
+    
+    page = request.args.get('page', 1, type=int)
+    
+    drafts = Document.query.filter_by(
+        autor_id=current_user.id,
+        status='rascunho',
+        ativo=True
+    ).order_by(Document.data_modificacao.desc()).paginate(
+        page=page, per_page=20, error_out=False
+    )
+    
+    return render_template('documents/drafts.html', drafts=drafts)

@@ -1,0 +1,337 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard de Relatórios{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-graph-up"></i> Dashboard de Relatórios</h2>
+        <button class="btn btn-outline-primary" onclick="window.print()">
+            <i class="bi bi-printer"></i> Imprimir Dashboard
+        </button>
+    </div>
+
+    <!-- Cards de Visão Geral -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="mb-0">{{ total_documentos }}</h3>
+                            <p class="mb-0">Total Documentos</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-file-earmark-text" style="font-size: 2.5rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="mb-0">{{ total_usuarios }}</h3>
+                            <p class="mb-0">Usuários Cadastrados</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-people" style="font-size: 2.5rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="mb-0">{{ aprovacoes_pendentes }}</h3>
+                            <p class="mb-0">Aprovações Pendentes</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-clock-history" style="font-size: 2.5rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="mb-0">{{ ncs_abertas }}</h3>
+                            <p class="mb-0">NCs Abertas</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-exclamation-triangle" style="font-size: 2.5rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Status dos Documentos -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-pie-chart"></i> Status dos Documentos</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="documentStatusChart" height="200"></canvas>
+                    <div class="mt-3">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <span class="badge bg-success fs-6">{{ documentos_aprovados }}</span>
+                                <br><small class="text-muted">Aprovados</small>
+                            </div>
+                            <div class="col-4">
+                                <span class="badge bg-warning text-dark fs-6">{{ documentos_rascunho }}</span>
+                                <br><small class="text-muted">Rascunho</small>
+                            </div>
+                            <div class="col-4">
+                                <span class="badge bg-info fs-6">{{ documentos_ativos }}</span>
+                                <br><small class="text-muted">Ativos</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Atividades do Mês -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-calendar3"></i> Atividades dos Últimos 30 Dias</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="activityChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Alertas e Notificações -->
+        <div class="col-md-4 mb-4">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5><i class="bi bi-exclamation-triangle"></i> Alertas Importantes</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% if aprovacoes_atrasadas > 0 %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                            <div>
+                                <i class="bi bi-clock text-danger"></i>
+                                Aprovações Atrasadas
+                            </div>
+                            <span class="badge bg-danger">{{ aprovacoes_atrasadas }}</span>
+                        </li>
+                        {% endif %}
+                        
+                        {% if ncs_criticas > 0 %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                            <div>
+                                <i class="bi bi-exclamation-circle text-danger"></i>
+                                NCs Críticas
+                            </div>
+                            <span class="badge bg-danger">{{ ncs_criticas }}</span>
+                        </li>
+                        {% endif %}
+                        
+                        {% if ncs_atrasadas > 0 %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                            <div>
+                                <i class="bi bi-calendar-x text-warning"></i>
+                                NCs Atrasadas
+                            </div>
+                            <span class="badge bg-warning text-dark">{{ ncs_atrasadas }}</span>
+                        </li>
+                        {% endif %}
+                        
+                        {% if aprovacoes_atrasadas == 0 and ncs_criticas == 0 and ncs_atrasadas == 0 %}
+                        <li class="list-group-item border-0 px-0 text-center">
+                            <div class="text-success">
+                                <i class="bi bi-check-circle" style="font-size: 2rem;"></i>
+                                <p class="mt-2 mb-0">Nenhum alerta no momento!</p>
+                            </div>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Categorias de Documentos -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-tags"></i> Top Categorias</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% for categoria, count in categorias %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                            <div>
+                                <i class="bi bi-folder"></i>
+                                {{ categoria }}
+                            </div>
+                            <span class="badge bg-primary">{{ count }}</span>
+                        </li>
+                        {% endfor %}
+                        
+                        {% if not categorias %}
+                        <li class="list-group-item border-0 px-0 text-center text-muted">
+                            Nenhuma categoria encontrada
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Links Rápidos -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-lightning"></i> Ações Rápidas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('documents.create') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-plus-lg"></i> Criar Documento
+                        </a>
+                        <a href="{{ url_for('nonconformities.create') }}" class="btn btn-outline-warning">
+                            <i class="bi bi-exclamation-triangle"></i> Nova NC
+                        </a>
+                        <a href="{{ url_for('audits.create') }}" class="btn btn-outline-info">
+                            <i class="bi bi-search"></i> Nova Auditoria
+                        </a>
+                        <a href="{{ url_for('users.create') }}" class="btn btn-outline-success">
+                            <i class="bi bi-person-plus"></i> Novo Usuário
+                        </a>
+                        <hr>
+                        <a href="{{ url_for('audits.reports') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-graph-up"></i> Relatórios de Auditorias
+                        </a>
+                        <a href="{{ url_for('nonconformities.reports') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-bar-chart"></i> Relatórios de NCs
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas Detalhadas -->
+    <div class="card">
+        <div class="card-header">
+            <h5><i class="bi bi-list-columns"></i> Estatísticas Detalhadas</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="border rounded p-3 text-center">
+                        <h4 class="text-primary">{{ "%.1f"|format((documentos_aprovados / total_documentos * 100) if total_documentos > 0 else 0) }}%</h4>
+                        <p class="mb-0 text-muted">Taxa de Aprovação</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="border rounded p-3 text-center">
+                        <h4 class="text-success">{{ "%.1f"|format((usuarios_ativos / total_usuarios * 100) if total_usuarios > 0 else 0) }}%</h4>
+                        <p class="mb-0 text-muted">Usuários Ativos</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="border rounded p-3 text-center">
+                        <h4 class="text-info">{{ auditorias_ativas + auditorias_concluidas }}</h4>
+                        <p class="mb-0 text-muted">Total de Auditorias</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="border rounded p-3 text-center">
+                        <h4 class="text-warning">{{ documentos_criados_mes + ncs_abertas_mes + auditorias_mes }}</h4>
+                        <p class="mb-0 text-muted">Atividades no Mês</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts para gráficos -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Gráfico de Status dos Documentos
+    const docCtx = document.getElementById('documentStatusChart').getContext('2d');
+    new Chart(docCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Aprovados', 'Rascunho', 'Outros'],
+            datasets: [{
+                data: [{{ documentos_aprovados }}, {{ documentos_rascunho }}, {{ total_documentos - documentos_aprovados - documentos_rascunho }}],
+                backgroundColor: ['#28a745', '#ffc107', '#6c757d'],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Gráfico de Atividades
+    const actCtx = document.getElementById('activityChart').getContext('2d');
+    new Chart(actCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Documentos', 'NCs', 'Auditorias'],
+            datasets: [{
+                label: 'Criados nos últimos 30 dias',
+                data: [{{ documentos_criados_mes }}, {{ ncs_abertas_mes }}, {{ auditorias_mes }}],
+                backgroundColor: ['#007bff', '#dc3545', '#17a2b8'],
+                borderWidth: 1,
+                borderColor: '#333'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+<style>
+@media print {
+    .btn, .navbar, .sidebar {
+        display: none !important;
+    }
+}
+</style>
+{% endblock %}

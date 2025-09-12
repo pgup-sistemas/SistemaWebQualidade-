@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.nome_completo }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-person-circle"></i> {{ user.nome_completo }}</h2>
+        <div>
+            <a href="{{ url_for('users.edit', id=user.id) }}" class="btn btn-outline-warning">
+                <i class="bi bi-pencil"></i> Editar
+            </a>
+            <a href="{{ url_for('users.index') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Voltar
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Informações Básicas -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-info-circle"></i> Informações Básicas</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">Nome Completo:</dt>
+                        <dd class="col-sm-9">{{ user.nome_completo }}</dd>
+
+                        <dt class="col-sm-3">Nome de Usuário:</dt>
+                        <dd class="col-sm-9"><code>{{ user.username }}</code></dd>
+
+                        <dt class="col-sm-3">Email:</dt>
+                        <dd class="col-sm-9">
+                            <a href="mailto:{{ user.email }}" class="text-decoration-none">
+                                <i class="bi bi-envelope"></i> {{ user.email }}
+                            </a>
+                        </dd>
+
+                        <dt class="col-sm-3">Perfil:</dt>
+                        <dd class="col-sm-9">
+                            <span class="badge bg-{% if user.perfil == 'administrador' %}danger{% elif user.perfil == 'gestor_qualidade' %}warning text-dark{% elif user.perfil == 'aprovador_revisor' %}info{% elif user.perfil == 'auditor' %}success{% else %}secondary{% endif %} fs-6">
+                                {% if user.perfil == 'administrador' %}
+                                    <i class="bi bi-person-gear"></i> Administrador
+                                {% elif user.perfil == 'gestor_qualidade' %}
+                                    <i class="bi bi-award"></i> Gestor de Qualidade
+                                {% elif user.perfil == 'aprovador_revisor' %}
+                                    <i class="bi bi-check-circle"></i> Aprovador/Revisor
+                                {% elif user.perfil == 'auditor' %}
+                                    <i class="bi bi-search"></i> Auditor
+                                {% else %}
+                                    <i class="bi bi-person"></i> Colaborador/Leitor
+                                {% endif %}
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-3">Status:</dt>
+                        <dd class="col-sm-9">
+                            {% if user.ativo %}
+                                <span class="badge bg-success fs-6"><i class="bi bi-check-circle"></i> Ativo</span>
+                            {% else %}
+                                <span class="badge bg-secondary fs-6"><i class="bi bi-x-circle"></i> Inativo</span>
+                            {% endif %}
+                        </dd>
+
+                        <dt class="col-sm-3">Criado em:</dt>
+                        <dd class="col-sm-9">{{ user.data_criacao.strftime('%d/%m/%Y às %H:%M') if user.data_criacao else '—' }}</dd>
+
+                        {% if user.ultimo_login %}
+                        <dt class="col-sm-3">Último login:</dt>
+                        <dd class="col-sm-9">{{ user.ultimo_login.strftime('%d/%m/%Y às %H:%M') }}</dd>
+                        {% endif %}
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Avatar e Ações -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" 
+                             style="width: 120px; height: 120px; font-size: 3rem;">
+                            {{ user.nome_completo.split()[0][0] }}{{ user.nome_completo.split()[-1][0] if user.nome_completo.split()|length > 1 else '' }}
+                        </div>
+                    </div>
+                    
+                    <h5>{{ user.nome_completo }}</h5>
+                    <p class="text-muted mb-4">
+                        {{ user.perfil.replace('_', ' ')|title }}
+                    </p>
+
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('users.edit', id=user.id) }}" class="btn btn-warning">
+                            <i class="bi bi-pencil"></i> Editar Usuário
+                        </a>
+                        
+                        {% if user.id != current_user.id %}
+                            <form method="POST" action="{{ url_for('users.toggle_status', id=user.id) }}" class="d-inline">
+                                {{ csrf_token() }}
+                                <button type="submit" 
+                                        class="btn btn-outline-{% if user.ativo %}secondary{% else %}success{% endif %} w-100"
+                                        onclick="return confirm('Tem certeza que deseja {% if user.ativo %}desativar{% else %}ativar{% endif %} este usuário?')">
+                                    <i class="bi bi-{% if user.ativo %}pause{% else %}play{% endif %}"></i>
+                                    {% if user.ativo %}Desativar{% else %}Ativar{% endif %} Usuário
+                                </button>
+                            </form>
+                        {% else %}
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i>
+                                Você não pode alterar seu próprio status
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estatísticas -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6><i class="bi bi-bar-chart"></i> Estatísticas</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                            <div>
+                                <i class="bi bi-file-earmark-text text-primary"></i>
+                                Documentos criados
+                            </div>
+                            <span class="badge bg-primary">{{ user.documentos_criados|length or 0 }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                            <div>
+                                <i class="bi bi-check-circle text-success"></i>
+                                Aprovações realizadas
+                            </div>
+                            <span class="badge bg-success">{{ user.aprovacoes|length or 0 }}</span>
+                        </li>
+                        {% if user.perfil == 'auditor' %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                            <div>
+                                <i class="bi bi-search text-info"></i>
+                                Auditorias realizadas
+                            </div>
+                            <span class="badge bg-info">{{ user.auditorias_lideradas|length or 0 }}</span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Permissões do Perfil -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5><i class="bi bi-shield-check"></i> Permissões do Perfil</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% if user.perfil == 'administrador' %}
+                <div class="col-md-12">
+                    <div class="alert alert-danger">
+                        <i class="bi bi-shield-fill"></i>
+                        <strong>Administrador:</strong> Acesso total ao sistema. Pode gerenciar usuários, configurações e todos os módulos.
+                    </div>
+                </div>
+                {% elif user.perfil == 'gestor_qualidade' %}
+                <div class="col-md-6">
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-check text-success"></i> Criar documentos</li>
+                        <li><i class="bi bi-check text-success"></i> Gerenciar não conformidades</li>
+                        <li><i class="bi bi-check text-success"></i> Criar auditorias</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-check text-success"></i> Visualizar relatórios</li>
+                        <li><i class="bi bi-check text-success"></i> Assinar digitalmente</li>
+                        <li><i class="bi bi-check text-success"></i> Aprovar documentos</li>
+                    </ul>
+                </div>
+                {% elif user.perfil == 'aprovador_revisor' %}
+                <div class="col-md-6">
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-check text-success"></i> Aprovar documentos</li>
+                        <li><i class="bi bi-check text-success"></i> Revisar conteúdo</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-check text-success"></i> Visualizar documentos</li>
+                        <li><i class="bi bi-check text-success"></i> Confirmar leitura</li>
+                    </ul>
+                </div>
+                {% elif user.perfil == 'auditor' %}
+                <div class="col-md-6">
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-check text-success"></i> Realizar auditorias</li>
+                        <li><i class="bi bi-check text-success"></i> Gerenciar achados</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-check text-success"></i> Visualizar não conformidades</li>
+                        <li><i class="bi bi-check text-success"></i> Gerar relatórios de auditoria</li>
+                    </ul>
+                </div>
+                {% else %}
+                <div class="col-md-12">
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-check text-success"></i> Visualizar documentos aprovados</li>
+                        <li><i class="bi bi-check text-success"></i> Confirmar leitura de documentos</li>
+                        <li><i class="bi bi-check text-success"></i> Acessar dashboard básico</li>
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

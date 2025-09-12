@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+
+{% block title %}Relatórios de Auditorias{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-graph-up"></i> Relatórios de Auditorias</h2>
+        <div>
+            <button class="btn btn-outline-primary me-2" onclick="window.print()">
+                <i class="bi bi-printer"></i> Imprimir
+            </button>
+            <a href="{{ url_for('audits.index') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Voltar
+            </a>
+        </div>
+    </div>
+
+    <!-- Cards de Estatísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ total_auditorias }}</h4>
+                            <p class="mb-0">Total de Auditorias</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-clipboard-check" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ planejadas }}</h4>
+                            <p class="mb-0">Planejadas</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-calendar-event" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ em_andamento }}</h4>
+                            <p class="mb-0">Em Andamento</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-clock-history" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ concluidas }}</h4>
+                            <p class="mb-0">Concluídas</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-check-circle" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Gráfico de Status -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-pie-chart"></i> Status das Auditorias</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="statusChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico de Tipos -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-bar-chart"></i> Auditorias por Tipo</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="tipoChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Conformidade Média -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-clipboard-data"></i> Conformidade Média</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="progress mb-3" style="height: 30px;">
+                        <div class="progress-bar {% if conformidade_media >= 80 %}bg-success{% elif conformidade_media >= 60 %}bg-warning{% else %}bg-danger{% endif %}" 
+                             role="progressbar" 
+                             style="width: {{ conformidade_media }}%;">
+                            {{ conformidade_media }}%
+                        </div>
+                    </div>
+                    <h4 class="{% if conformidade_media >= 80 %}text-success{% elif conformidade_media >= 60 %}text-warning{% else %}text-danger{% endif %}">
+                        {{ conformidade_media }}%
+                    </h4>
+                    <p class="text-muted">Índice médio de conformidade das auditorias concluídas</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resumo Detalhado -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-list-ul"></i> Resumo Detalhado</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-8">Auditorias Internas:</dt>
+                        <dd class="col-sm-4 text-end"><span class="badge bg-primary">{{ internas }}</span></dd>
+                        
+                        <dt class="col-sm-8">Auditorias Externas:</dt>
+                        <dd class="col-sm-4 text-end"><span class="badge bg-info">{{ externas }}</span></dd>
+                        
+                        <dt class="col-sm-8">Certificação:</dt>
+                        <dd class="col-sm-4 text-end"><span class="badge bg-success">{{ certificacao }}</span></dd>
+                        
+                        <hr>
+                        
+                        <dt class="col-sm-8">Taxa de Conclusão:</dt>
+                        <dd class="col-sm-4 text-end">
+                            <span class="badge bg-secondary">
+                                {% if total_auditorias > 0 %}
+                                    {{ "%.1f"|format((concluidas / total_auditorias) * 100) }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </span>
+                        </dd>
+                        
+                        <dt class="col-sm-8">Em Execução:</dt>
+                        <dd class="col-sm-4 text-end">
+                            <span class="badge bg-warning text-dark">
+                                {% if total_auditorias > 0 %}
+                                    {{ "%.1f"|format(((em_andamento + planejadas) / total_auditorias) * 100) }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </span>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela de Auditorias Recentes -->
+    <div class="card">
+        <div class="card-header">
+            <h5><i class="bi bi-table"></i> Auditorias Recentes</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Código</th>
+                            <th>Título</th>
+                            <th>Tipo</th>
+                            <th>Status</th>
+                            <th>Área</th>
+                            <th>Data Início</th>
+                            <th>Conformidade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for auditoria in recent_auditorias %}
+                        <tr>
+                            <td><code>{{ auditoria.codigo }}</code></td>
+                            <td>{{ auditoria.titulo }}</td>
+                            <td>
+                                <span class="badge bg-{% if auditoria.tipo == 'interna' %}primary{% elif auditoria.tipo == 'externa' %}info{% else %}success{% endif %}">
+                                    {{ auditoria.tipo|title }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-{% if auditoria.status == 'concluida' %}success{% elif auditoria.status == 'em_andamento' %}warning text-dark{% else %}secondary{% endif %}">
+                                    {{ auditoria.status|title }}
+                                </span>
+                            </td>
+                            <td>{{ auditoria.area_auditada }}</td>
+                            <td>
+                                {% if auditoria.data_inicio %}
+                                    {{ auditoria.data_inicio.strftime('%d/%m/%Y') }}
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if auditoria.status == 'concluida' %}
+                                    <span class="badge bg-{% if auditoria.get_conformidade_percentage() >= 80 %}success{% elif auditoria.get_conformidade_percentage() >= 60 %}warning text-dark{% else %}danger{% endif %}">
+                                        {{ auditoria.get_conformidade_percentage() }}%
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts para gráficos -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Gráfico de Status
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Planejadas', 'Em Andamento', 'Concluídas'],
+            datasets: [{
+                data: [{{ planejadas }}, {{ em_andamento }}, {{ concluidas }}],
+                backgroundColor: [
+                    '#ffc107',
+                    '#17a2b8',
+                    '#28a745'
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Gráfico de Tipos
+    const tipoCtx = document.getElementById('tipoChart').getContext('2d');
+    new Chart(tipoCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Internas', 'Externas', 'Certificação'],
+            datasets: [{
+                label: 'Quantidade',
+                data: [{{ internas }}, {{ externas }}, {{ certificacao }}],
+                backgroundColor: [
+                    '#007bff',
+                    '#17a2b8',
+                    '#28a745'
+                ],
+                borderWidth: 1,
+                borderColor: '#333'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+<style>
+@media print {
+    .btn, .navbar, .sidebar {
+        display: none !important;
+    }
+    
+    .card {
+        border: 1px solid #dee2e6 !important;
+        box-shadow: none !important;
+    }
+    
+    .card-header {
+        background-color: #f8f9fa !important;
+        color: #000 !important;
+    }
+}
+</style>
+{% endblock %}

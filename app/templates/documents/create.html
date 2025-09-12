@@ -3,8 +3,9 @@
 {% block title %}Criar Documento - Alpha Gestão Documental{% endblock %}
 
 {% block extra_head %}
-<!-- TinyMCE -->
-<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+<!-- Quill.js Editor -->
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -99,8 +100,9 @@
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <label for="conteudo" class="form-label">Conteúdo *</label>
-                            <textarea id="conteudo" name="conteudo" class="form-control" rows="20" required></textarea>
+                            <label class="form-label">Conteúdo *</label>
+                            <div id="editor-container" style="height: 400px;"></div>
+                            <textarea id="conteudo" name="conteudo" style="display: none;" required></textarea>
                             <div class="invalid-feedback">
                                 O conteúdo é obrigatório.
                             </div>
@@ -110,15 +112,15 @@
                             <div>
                                 <small class="text-muted">
                                     <i class="bi bi-info-circle"></i>
-                                    Use o editor para formatar o documento. O código será gerado automaticamente.
+                                    Use o editor para formatar o documento. Salvamento automático a cada 30 segundos.
                                 </small>
                             </div>
                             <div>
-                                <button type="submit" class="btn btn-primary me-2">
+                                <button type="submit" name="action" value="submit" class="btn btn-primary me-2">
                                     <i class="bi bi-check-circle"></i> Criar Documento
                                 </button>
-                                <button type="button" class="btn btn-outline-secondary" onclick="salvarRascunho()">
-                                    <i class="bi bi-floppy"></i> Salvar Rascunho
+                                <button type="submit" name="action" value="draft" class="btn btn-outline-warning">
+                                    <i class="bi bi-file-earmark"></i> Salvar Rascunho
                                 </button>
                             </div>
                         </div>
@@ -132,52 +134,165 @@
 
 {% block extra_scripts %}
 <script>
-// Inicializar TinyMCE
-tinymce.init({
-    selector: '#conteudo',
-    language: 'pt_BR',
-    height: 500,
-    menubar: true,
-    plugins: [
-        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-        'insertdatetime', 'media', 'table', 'help', 'wordcount', 'save'
-    ],
-    toolbar: 'undo redo | blocks | bold italic underline | alignleft aligncenter ' +
-             'alignright alignjustify | bullist numlist outdent indent | ' +
-             'removeformat | table | link image | code preview fullscreen | save',
-    content_style: 'body { font-family: Arial, sans-serif; font-size: 14px; line-height: 1.6; }',
-    branding: false,
-    setup: function (editor) {
-        editor.on('change', function () {
-            editor.save();
-        });
+// Inicializar Quill.js Editor
+var quill = new Quill('#editor-container', {
+    theme: 'snow',
+    modules: {
+        toolbar: [
+            [{ 'header': [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'color': [] }, { 'background': [] }],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'align': [] }],
+            ['link', 'image', 'blockquote', 'code-block'],
+            ['clean']
+        ]
     },
-    save_onsavecallback: function () {
-        salvarRascunho();
+    placeholder: 'Digite o conteúdo do documento aqui...'
+});
+
+// Configurar campo oculto para o formulário
+var hiddenInput = document.getElementById('conteudo');
+
+// Atualizar campo oculto quando o conteúdo mudar
+quill.on('text-change', function() {
+    hiddenInput.value = quill.root.innerHTML;
+});
+
+// Auto-save a cada 30 segundos
+setInterval(function() {
+    if (quill.getText().trim().length > 0) {
+        salvarRascunhoAutomatico();
+    }
+}, 30000);
+
+// Variável para armazenar o ID do documento (rascunho)
+let currentDocumentId = null;
+
+// Função para salvar rascunho automaticamente
+function salvarRascunhoAutomatico() {
+    const titulo = document.getElementById('titulo').value;
+    const conteudo = quill.root.innerHTML;
+    const tipo = document.getElementById('tipo').value;
+    const departamento = document.getElementById('departamento').value;
+    
+    if (titulo.trim() && conteudo && conteudo !== '<p><br></p>') {
+        // Criar FormData para envio
+        const formData = new FormData();
+        formData.append('titulo', titulo);
+        formData.append('conteudo', conteudo);
+        formData.append('tipo', tipo || 'outros');
+        formData.append('departamento', departamento || '');
+        formData.append('csrf_token', document.querySelector('input[name="csrf_token"]').value);
+        
+        if (currentDocumentId) {
+            formData.append('document_id', currentDocumentId);
+        }
+        
+        // Implementar salvamento automático via AJAX
+        fetch('/documents/api/save-draft', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Armazenar o ID do documento para próximos saves
+                if (data.document_id) {
+                    currentDocumentId = data.document_id;
+                }
+                showAutoSaveIndicator(true, data.message);
+            } else {
+                console.error('Erro ao salvar rascunho:', data.error);
+                showAutoSaveIndicator(false, data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Erro na requisição:', error);
+            showAutoSaveIndicator(false, 'Erro de conexão');
+        });
+    }
+}
+
+// Mostrar indicador de salvamento automático
+function showAutoSaveIndicator(success = true, customMessage = null) {
+    const indicator = document.createElement('div');
+    const alertClass = success ? 'alert-success' : 'alert-danger';
+    const icon = success ? 'bi-check-circle' : 'bi-exclamation-triangle';
+    const message = customMessage || (success ? 'Rascunho salvo automaticamente' : 'Erro ao salvar rascunho');
+    
+    indicator.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
+    indicator.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    indicator.innerHTML = `
+        <i class="bi ${icon}"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(indicator);
+    
+    // Remover após 3 segundos
+    setTimeout(() => {
+        if (indicator.parentNode) {
+            indicator.remove();
+        }
+    }, 3000);
+}
+
+// Validação do formulário antes do envio
+document.querySelector('form').addEventListener('submit', function(e) {
+    // Atualizar campo oculto com conteúdo atual
+    hiddenInput.value = quill.root.innerHTML;
+    
+    // Verificar se há conteúdo
+    const content = quill.getText().trim();
+    if (!content || content.length < 10) {
+        e.preventDefault();
+        alert('O conteúdo do documento deve ter pelo menos 10 caracteres');
+        quill.focus();
+        return false;
+    }
+    
+    // Verificar título
+    const titulo = document.getElementById('titulo').value;
+    if (!titulo.trim()) {
+        e.preventDefault();
+        alert('O título do documento é obrigatório');
+        document.getElementById('titulo').focus();
+        return false;
     }
 });
 
-// Função para salvar rascunho
-function salvarRascunho() {
-    // Salvar conteúdo do editor
-    tinymce.triggerSave();
+// Habilitar botões baseados no conteúdo
+quill.on('text-change', function() {
+    const hasContent = quill.getText().trim().length > 0;
+    const titulo = document.getElementById('titulo').value.trim();
     
-    // Aqui você pode implementar AJAX para salvar o rascunho
-    alert('Funcionalidade de rascunho será implementada na próxima versão');
-}
+    // Habilitar/desabilitar botões baseado no conteúdo
+    const submitBtn = document.querySelector('button[value="submit"]');
+    const draftBtn = document.querySelector('button[value="draft"]');
+    
+    if (submitBtn) {
+        submitBtn.disabled = !hasContent || !titulo;
+    }
+    if (draftBtn) {
+        draftBtn.disabled = !hasContent && !titulo;
+    }
+});
 
-// Validação personalizada do formulário
-document.querySelector('form').addEventListener('submit', function(e) {
-    // Salvar conteúdo do TinyMCE antes do envio
-    tinymce.triggerSave();
+// Verificar título para habilitar botões
+document.getElementById('titulo').addEventListener('input', function() {
+    const hasContent = quill.getText().trim().length > 0;
+    const titulo = this.value.trim();
     
-    // Verificar se há conteúdo
-    const conteudo = document.getElementById('conteudo').value;
-    if (!conteudo.trim()) {
-        e.preventDefault();
-        alert('O conteúdo do documento é obrigatório');
-        return false;
+    const submitBtn = document.querySelector('button[value="submit"]');
+    const draftBtn = document.querySelector('button[value="draft"]');
+    
+    if (submitBtn) {
+        submitBtn.disabled = !hasContent || !titulo;
+    }
+    if (draftBtn) {
+        draftBtn.disabled = !hasContent && !titulo;
     }
 });
 </script>
