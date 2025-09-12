@@ -1,0 +1,166 @@
+
+{% extends "base.html" %}
+
+{% block title %}Novo Equipamento{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-plus-circle text-primary"></i> Novo Equipamento</h2>
+                <a href="{{ url_for('equipments.index') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Voltar
+                </a>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="codigo" class="form-label">Código *</label>
+                                    <input type="text" class="form-control" id="codigo" name="codigo" required 
+                                           placeholder="Ex: EQ001">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="nome" class="form-label">Nome *</label>
+                                    <input type="text" class="form-control" id="nome" name="nome" required 
+                                           placeholder="Nome do equipamento">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="tipo" class="form-label">Tipo *</label>
+                                    <select class="form-select" id="tipo" name="tipo" required>
+                                        <option value="">Selecione...</option>
+                                        <option value="medicao">Medição</option>
+                                        <option value="teste">Teste</option>
+                                        <option value="producao">Produção</option>
+                                        <option value="seguranca">Segurança</option>
+                                        <option value="laboratorio">Laboratório</option>
+                                        <option value="escritorio">Escritório</option>
+                                        <option value="outros">Outros</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="fabricante" class="form-label">Fabricante</label>
+                                    <input type="text" class="form-control" id="fabricante" name="fabricante" 
+                                           placeholder="Fabricante do equipamento">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="modelo" class="form-label">Modelo</label>
+                                    <input type="text" class="form-control" id="modelo" name="modelo" 
+                                           placeholder="Modelo do equipamento">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="numero_serie" class="form-label">Número de Série</label>
+                                    <input type="text" class="form-control" id="numero_serie" name="numero_serie" 
+                                           placeholder="Número de série">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="localizacao" class="form-label">Localização</label>
+                                    <input type="text" class="form-control" id="localizacao" name="localizacao" 
+                                           placeholder="Local onde está o equipamento">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="status" class="form-label">Status</label>
+                                    <select class="form-select" id="status" name="status">
+                                        <option value="ativo">Ativo</option>
+                                        <option value="inativo">Inativo</option>
+                                        <option value="manutencao">Manutenção</option>
+                                        <option value="calibracao">Calibração</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="responsavel_id" class="form-label">Responsável</label>
+                                    <select class="form-select" id="responsavel_id" name="responsavel_id">
+                                        <option value="">Selecione um responsável...</option>
+                                        {% for usuario in usuarios %}
+                                        <option value="{{ usuario.id }}">{{ usuario.nome_completo }} ({{ usuario.perfil.replace('_', ' ').title() }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="data_aquisicao" class="form-label">Data de Aquisição</label>
+                                    <input type="date" class="form-control" id="data_aquisicao" name="data_aquisicao">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="data_proxima_calibracao" class="form-label">Próxima Calibração</label>
+                                    <input type="date" class="form-control" id="data_proxima_calibracao" name="data_proxima_calibracao">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="frequencia_calibracao" class="form-label">Frequência Calibração (meses)</label>
+                                    <input type="number" class="form-control" id="frequencia_calibracao" name="frequencia_calibracao" 
+                                           min="1" max="120" placeholder="Ex: 12">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="data_proxima_manutencao" class="form-label">Próxima Manutenção</label>
+                                    <input type="date" class="form-control" id="data_proxima_manutencao" name="data_proxima_manutencao">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="frequencia_manutencao" class="form-label">Frequência Manutenção (meses)</label>
+                                    <input type="number" class="form-control" id="frequencia_manutencao" name="frequencia_manutencao" 
+                                           min="1" max="120" placeholder="Ex: 6">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="observacoes" class="form-label">Observações</label>
+                            <textarea class="form-control" id="observacoes" name="observacoes" rows="3" 
+                                      placeholder="Observações adicionais sobre o equipamento"></textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <a href="{{ url_for('equipments.index') }}" class="btn btn-secondary me-2">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Salvar Equipamento
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

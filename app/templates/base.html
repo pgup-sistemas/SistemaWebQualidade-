@@ -59,6 +59,9 @@
                             <i class="bi bi-shield-check"></i> Qualidade
                         </a>
                         <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('equipments.index') }}">
+                                <i class="bi bi-gear"></i> Equipamentos
+                            </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('nonconformities.index') }}">
                                 <i class="bi bi-exclamation-triangle"></i> Não Conformidades
                             </a></li>
@@ -67,6 +70,9 @@
                             </a></li>
                             {% if current_user.can_admin() %}
                             <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('equipments.reports') }}">
+                                <i class="bi bi-graph-up"></i> Relatórios Equipamentos
+                            </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('nonconformities.reports') }}">
                                 <i class="bi bi-graph-up"></i> Relatórios NC
                             </a></li>

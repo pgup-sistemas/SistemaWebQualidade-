@@ -1,0 +1,126 @@
+
+{% extends "base.html" %}
+
+{% block title %}Novo Serviço - {{ equipment.codigo }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-plus-circle text-success"></i> Novo Serviço para {{ equipment.codigo }}</h2>
+                <a href="{{ url_for('equipments.view', id=equipment.id) }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Voltar
+                </a>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tipo_servico" class="form-label">Tipo de Serviço *</label>
+                                    <select class="form-select" id="tipo_servico" name="tipo_servico" required>
+                                        <option value="">Selecione...</option>
+                                        <option value="manutencao">Manutenção</option>
+                                        <option value="calibracao">Calibração</option>
+                                        <option value="reparo">Reparo</option>
+                                        <option value="inspecao">Inspeção</option>
+                                        <option value="limpeza">Limpeza</option>
+                                        <option value="verificacao">Verificação</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="data_servico" class="form-label">Data do Serviço *</label>
+                                    <input type="date" class="form-control" id="data_servico" name="data_servico" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="prestador_servico" class="form-label">Prestador do Serviço</label>
+                                    <input type="text" class="form-control" id="prestador_servico" name="prestador_servico" 
+                                           placeholder="Empresa ou pessoa responsável pelo serviço">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="status" class="form-label">Status</label>
+                                    <select class="form-select" id="status" name="status">
+                                        <option value="concluido">Concluído</option>
+                                        <option value="agendado">Agendado</option>
+                                        <option value="em_andamento">Em Andamento</option>
+                                        <option value="cancelado">Cancelado</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="custo" class="form-label">Custo (R$)</label>
+                                    <input type="number" class="form-control" id="custo" name="custo" 
+                                           step="0.01" min="0" placeholder="0,00">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="responsavel_id" class="form-label">Responsável</label>
+                                    <select class="form-select" id="responsavel_id" name="responsavel_id">
+                                        <option value="">Selecione um responsável...</option>
+                                        {% for usuario in usuarios %}
+                                        <option value="{{ usuario.id }}">{{ usuario.nome_completo }} ({{ usuario.perfil.replace('_', ' ').title() }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="proximo_servico" class="form-label">Próximo Serviço</label>
+                                    <input type="date" class="form-control" id="proximo_servico" name="proximo_servico">
+                                    <small class="form-text text-muted">Data prevista para o próximo serviço deste tipo</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="descricao" class="form-label">Descrição do Serviço *</label>
+                            <textarea class="form-control" id="descricao" name="descricao" rows="3" required
+                                      placeholder="Descreva o serviço realizado ou a ser realizado"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="observacoes" class="form-label">Observações</label>
+                            <textarea class="form-control" id="observacoes" name="observacoes" rows="2"
+                                      placeholder="Observações adicionais sobre o serviço"></textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <a href="{{ url_for('equipments.view', id=equipment.id) }}" class="btn btn-secondary me-2">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Salvar Serviço
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-preencher data de hoje no campo data do serviço
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('data_servico').value = today;
+});
+</script>
+{% endblock %}

@@ -351,6 +351,96 @@ class DocumentSignature(db.Model):
     def __repr__(self):
         return f'<DocumentSignature {self.tipo_assinatura} by user {self.usuario_id}>'
 
+class Equipment(db.Model):
+    """Modelo de equipamentos"""
+    __tablename__ = 'equipments'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    codigo = db.Column(db.String(50), unique=True, nullable=False)
+    nome = db.Column(db.String(200), nullable=False)
+    tipo = db.Column(db.String(50), nullable=False)  # medicao, teste, producao, seguranca, etc
+    fabricante = db.Column(db.String(100))
+    modelo = db.Column(db.String(100))
+    numero_serie = db.Column(db.String(100))
+    localizacao = db.Column(db.String(100))
+    responsavel_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    status = db.Column(db.String(30), default='ativo')  # ativo, inativo, manutencao, calibracao
+    data_aquisicao = db.Column(db.DateTime)
+    data_proxima_calibracao = db.Column(db.DateTime)
+    data_proxima_manutencao = db.Column(db.DateTime)
+    frequencia_calibracao = db.Column(db.Integer)  # em meses
+    frequencia_manutencao = db.Column(db.Integer)  # em meses
+    observacoes = db.Column(db.Text)
+    ativo = db.Column(db.Boolean, default=True)
+    data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
+    criado_por_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # Relacionamentos
+    responsavel = db.relationship('User', foreign_keys=[responsavel_id], backref='equipamentos_responsavel')
+    criado_por = db.relationship('User', foreign_keys=[criado_por_id], backref='equipamentos_criados')
+    registros_servico = db.relationship('ServiceRecord', backref='equipamento', lazy='dynamic', cascade='all, delete-orphan')
+    
+    def is_calibration_due(self):
+        """Verifica se calibração está vencida"""
+        if self.data_proxima_calibracao:
+            return datetime.utcnow() > self.data_proxima_calibracao
+        return False
+    
+    def is_maintenance_due(self):
+        """Verifica se manutenção está vencida"""
+        if self.data_proxima_manutencao:
+            return datetime.utcnow() > self.data_proxima_manutencao
+        return False
+    
+    def days_to_calibration(self):
+        """Dias para próxima calibração"""
+        if self.data_proxima_calibracao:
+            delta = self.data_proxima_calibracao - datetime.utcnow()
+            return delta.days
+        return None
+    
+    def days_to_maintenance(self):
+        """Dias para próxima manutenção"""
+        if self.data_proxima_manutencao:
+            delta = self.data_proxima_manutencao - datetime.utcnow()
+            return delta.days
+        return None
+    
+    def __repr__(self):
+        return f'<Equipment {self.codigo}: {self.nome}>'
+
+class ServiceRecord(db.Model):
+    """Modelo de registro de serviços (manutenção, calibração, etc)"""
+    __tablename__ = 'service_records'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    equipamento_id = db.Column(db.Integer, db.ForeignKey('equipments.id'), nullable=False)
+    tipo_servico = db.Column(db.String(50), nullable=False)  # manutencao, calibracao, reparo, inspecao
+    data_servico = db.Column(db.DateTime, nullable=False)
+    prestador_servico = db.Column(db.String(200))  # empresa ou pessoa responsável
+    descricao = db.Column(db.Text, nullable=False)
+    observacoes = db.Column(db.Text)
+    status = db.Column(db.String(30), default='concluido')  # agendado, em_andamento, concluido, cancelado
+    custo = db.Column(db.Numeric(10, 2))
+    proximo_servico = db.Column(db.DateTime)  # quando deve ser o próximo serviço
+    certificado_path = db.Column(db.String(255))  # caminho para certificado de calibração
+    data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
+    criado_por_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    responsavel_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    
+    # Relacionamentos
+    criado_por = db.relationship('User', foreign_keys=[criado_por_id], backref='servicos_criados')
+    responsavel = db.relationship('User', foreign_keys=[responsavel_id], backref='servicos_responsavel')
+    
+    def is_overdue(self):
+        """Verifica se o próximo serviço está atrasado"""
+        if self.proximo_servico and self.status == 'concluido':
+            return datetime.utcnow() > self.proximo_servico
+        return False
+    
+    def __repr__(self):
+        return f'<ServiceRecord {self.tipo_servico} for equipment {self.equipamento_id}>'
+
 class EmailNotification(db.Model):
     """Modelo de notificações por email"""
     __tablename__ = 'email_notifications'
