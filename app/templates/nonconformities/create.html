@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Nova Não Conformidade{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="bi bi-plus-circle"></i> Nova Não Conformidade</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="titulo" class="form-label">Título *</label>
+                                    <input type="text" class="form-control" id="titulo" name="titulo" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="tipo" class="form-label">Tipo *</label>
+                                    <select class="form-select" id="tipo" name="tipo" required>
+                                        <option value="">Selecione...</option>
+                                        <option value="interna">Interna</option>
+                                        <option value="externa">Externa</option>
+                                        <option value="auditoria">Auditoria</option>
+                                        <option value="cliente">Cliente</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="criticidade" class="form-label">Criticidade *</label>
+                                    <select class="form-select" id="criticidade" name="criticidade" required>
+                                        <option value="">Selecione...</option>
+                                        <option value="baixa">Baixa</option>
+                                        <option value="media">Média</option>
+                                        <option value="alta">Alta</option>
+                                        <option value="critica">Crítica</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="origem" class="form-label">Origem</label>
+                                    <input type="text" class="form-control" id="origem" name="origem" 
+                                           placeholder="Ex: Auditoria interna, Reclamação cliente">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="descricao" class="form-label">Descrição *</label>
+                            <textarea class="form-control" id="descricao" name="descricao" rows="4" required></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="area_responsavel" class="form-label">Área Responsável</label>
+                                    <input type="text" class="form-control" id="area_responsavel" name="area_responsavel"
+                                           placeholder="Ex: Produção, Qualidade, Vendas">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="responsavel_id" class="form-label">Responsável</label>
+                                    <select class="form-select" id="responsavel_id" name="responsavel_id">
+                                        <option value="">Selecione um responsável...</option>
+                                        {% for usuario in usuarios %}
+                                        <option value="{{ usuario.id }}">{{ usuario.nome_completo }} ({{ usuario.perfil.replace('_', ' ').title() }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="documento_id" class="form-label">Documento Relacionado</label>
+                                    <select class="form-select" id="documento_id" name="documento_id">
+                                        <option value="">Nenhum documento relacionado</option>
+                                        {% for doc in documentos %}
+                                        <option value="{{ doc.id }}">{{ doc.codigo }} - {{ doc.titulo }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="data_prazo" class="form-label">Prazo para Tratamento</label>
+                                    <input type="date" class="form-control" id="data_prazo" name="data_prazo">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('nonconformities.index') }}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Voltar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Criar Não Conformidade
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

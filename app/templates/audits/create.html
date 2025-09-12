@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Nova Auditoria{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="bi bi-plus-circle"></i> Nova Auditoria</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="titulo" class="form-label">Título *</label>
+                                    <input type="text" class="form-control" id="titulo" name="titulo" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="tipo" class="form-label">Tipo *</label>
+                                    <select class="form-select" id="tipo" name="tipo" required>
+                                        <option value="">Selecione...</option>
+                                        <option value="interna">Interna</option>
+                                        <option value="externa">Externa</option>
+                                        <option value="certificacao">Certificação</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="escopo" class="form-label">Escopo *</label>
+                            <textarea class="form-control" id="escopo" name="escopo" rows="3" required
+                                      placeholder="Descreva o escopo da auditoria..."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="objetivos" class="form-label">Objetivos</label>
+                            <textarea class="form-control" id="objetivos" name="objetivos" rows="2"
+                                      placeholder="Descreva os objetivos da auditoria..."></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="area_auditada" class="form-label">Área Auditada</label>
+                                    <input type="text" class="form-control" id="area_auditada" name="area_auditada"
+                                           placeholder="Ex: Produção, Qualidade, Vendas">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="auditor_lider_id" class="form-label">Auditor Líder *</label>
+                                    <select class="form-select" id="auditor_lider_id" name="auditor_lider_id" required>
+                                        <option value="">Selecione...</option>
+                                        {% for auditor in auditores %}
+                                        <option value="{{ auditor.id }}">{{ auditor.nome_completo }} ({{ auditor.perfil.replace('_', ' ').title() }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="data_inicio" class="form-label">Data de Início</label>
+                                    <input type="date" class="form-control" id="data_inicio" name="data_inicio">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="data_fim" class="form-label">Data de Fim</label>
+                                    <input type="date" class="form-control" id="data_fim" name="data_fim">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('audits.index') }}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Voltar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Criar Auditoria
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

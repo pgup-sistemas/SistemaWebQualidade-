@@ -54,6 +54,28 @@
                         </a>
                     </li>
                     {% endif %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-shield-check"></i> Qualidade
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('nonconformities.index') }}">
+                                <i class="bi bi-exclamation-triangle"></i> Não Conformidades
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('audits.index') }}">
+                                <i class="bi bi-clipboard-check"></i> Auditorias
+                            </a></li>
+                            {% if current_user.can_admin() %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('nonconformities.reports') }}">
+                                <i class="bi bi-graph-up"></i> Relatórios NC
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('audits.reports') }}">
+                                <i class="bi bi-bar-chart"></i> Relatórios Auditoria
+                            </a></li>
+                            {% endif %}
+                        </ul>
+                    </li>
                     {% if current_user.can_admin() %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">

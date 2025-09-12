@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Assinaturas - {{ document.titulo }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-pen text-info"></i> Assinaturas do Documento</h2>
+                <a href="{{ url_for('documents.view', id=document.id) }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Voltar ao Documento
+                </a>
+            </div>
+
+            <!-- Informações do Documento -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5>{{ document.codigo }} - {{ document.titulo }}</h5>
+                    <p class="text-muted">Versão: {{ document.versao_atual }}</p>
+                </div>
+            </div>
+
+            <!-- Lista de Assinaturas -->
+            <div class="card">
+                <div class="card-header">
+                    <h5>Assinaturas Registradas</h5>
+                </div>
+                <div class="card-body">
+                    {% if signatures %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Assinante</th>
+                                    <th>Tipo</th>
+                                    <th>Data/Hora</th>
+                                    <th>Versão</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for signature in signatures %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ signature.user_name }}</strong><br>
+                                        <small class="text-muted">{{ signature.user_email }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if signature.signature_type == 'digital' %}bg-success
+                                            {% elif signature.signature_type == 'eletronica' %}bg-info
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ signature.signature_type.title() }}
+                                        </span>
+                                    </td>
+                                    <td>{{ signature.date.strftime('%d/%m/%Y %H:%M') }}</td>
+                                    <td>{{ signature.version }}</td>
+                                    <td>
+                                        {% if signature.valid %}
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle"></i> Válida
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-x-circle"></i> Inválida
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('signatures.verify_signature', signature_id=signature.id) }}" 
+                                           class="btn btn-sm btn-outline-primary" target="_blank">
+                                            <i class="bi bi-shield-check"></i> Verificar
+                                        </a>
+                                        {% if current_user.can_admin() %}
+                                        <a href="{{ url_for('signatures.export_certificate', signature_id=signature.id) }}" 
+                                           class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-download"></i> Certificado
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-pen display-4 text-muted"></i>
+                        <p class="text-muted mt-2">Este documento ainda não possui assinaturas.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Assinatura Digital -->
+            {% if current_user.can_approve_documents() %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5>Assinar Documento</h5>
+                </div>
+                <div class="card-body">
+                    <form id="signatureForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="signature_type" class="form-label">Tipo de Assinatura</label>
+                                    <select class="form-select" id="signature_type" name="signature_type">
+                                        <option value="eletronica">Eletrônica</option>
+                                        <option value="digital">Digital</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6 d-flex align-items-end">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-pen"></i> Assinar Documento
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('signatureForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch(`/signatures/document/{{ document.id }}/sign`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Documento assinado com sucesso!');
+            location.reload();
+        } else {
+            alert('Erro: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Erro ao assinar documento: ' + error);
+    });
+});
+</script>
+{% endblock %}

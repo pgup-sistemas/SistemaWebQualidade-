@@ -168,3 +168,209 @@ class AuditLog(db.Model):
     
     def __repr__(self):
         return f'<AuditLog {self.acao} by user {self.usuario_id}>'
+
+class NonConformity(db.Model):
+    """Modelo de não conformidade (CAPA)"""
+    __tablename__ = 'non_conformities'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    codigo = db.Column(db.String(50), unique=True, nullable=False)
+    titulo = db.Column(db.String(200), nullable=False)
+    descricao = db.Column(db.Text, nullable=False)
+    tipo = db.Column(db.String(50), nullable=False)  # interna, externa, auditoria, cliente
+    criticidade = db.Column(db.String(20), nullable=False)  # baixa, media, alta, critica
+    status = db.Column(db.String(50), default='aberta')  # aberta, em_analise, em_tratamento, fechada
+    origem = db.Column(db.String(100))  # auditoria, cliente, processo, etc
+    area_responsavel = db.Column(db.String(100))
+    data_abertura = db.Column(db.DateTime, default=datetime.utcnow)
+    data_prazo = db.Column(db.DateTime)
+    data_fechamento = db.Column(db.DateTime)
+    
+    # Relacionamentos
+    aberto_por_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    responsavel_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    documento_id = db.Column(db.Integer, db.ForeignKey('documents.id'))
+    
+    aberto_por = db.relationship('User', foreign_keys=[aberto_por_id], backref='ncs_abertas')
+    responsavel = db.relationship('User', foreign_keys=[responsavel_id], backref='ncs_responsavel')
+    documento = db.relationship('Document', backref='nao_conformidades')
+    
+    # Relacionamentos com ações CAPA
+    acoes_corretivas = db.relationship('CorrectiveAction', backref='nao_conformidade', lazy='dynamic', cascade='all, delete-orphan')
+    
+    def is_overdue(self):
+        """Verifica se está atrasada"""
+        if self.data_prazo and self.status != 'fechada':
+            return datetime.utcnow() > self.data_prazo
+        return False
+    
+    def days_to_deadline(self):
+        """Dias para o prazo"""
+        if self.data_prazo and self.status != 'fechada':
+            delta = self.data_prazo - datetime.utcnow()
+            return delta.days
+        return None
+    
+    def __repr__(self):
+        return f'<NonConformity {self.codigo}: {self.titulo}>'
+
+class CorrectiveAction(db.Model):
+    """Modelo de ação corretiva/preventiva (CAPA)"""
+    __tablename__ = 'corrective_actions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    nao_conformidade_id = db.Column(db.Integer, db.ForeignKey('non_conformities.id'), nullable=False)
+    tipo = db.Column(db.String(20), nullable=False)  # corretiva, preventiva
+    descricao = db.Column(db.Text, nullable=False)
+    justificativa = db.Column(db.Text)
+    status = db.Column(db.String(50), default='pendente')  # pendente, em_andamento, concluida, cancelada
+    data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
+    data_prazo = db.Column(db.DateTime)
+    data_conclusao = db.Column(db.DateTime)
+    
+    # Relacionamentos
+    responsavel_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    criado_por_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    responsavel = db.relationship('User', foreign_keys=[responsavel_id], backref='acoes_responsavel')
+    criado_por = db.relationship('User', foreign_keys=[criado_por_id], backref='acoes_criadas')
+    
+    def is_overdue(self):
+        """Verifica se está atrasada"""
+        if self.data_prazo and self.status not in ['concluida', 'cancelada']:
+            return datetime.utcnow() > self.data_prazo
+        return False
+    
+    def __repr__(self):
+        return f'<CorrectiveAction {self.tipo} for NC {self.nao_conformidade_id}>'
+
+class Audit(db.Model):
+    """Modelo de auditoria interna"""
+    __tablename__ = 'audits'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    codigo = db.Column(db.String(50), unique=True, nullable=False)
+    titulo = db.Column(db.String(200), nullable=False)
+    tipo = db.Column(db.String(50), nullable=False)  # interna, externa, certificacao
+    escopo = db.Column(db.Text, nullable=False)
+    objetivos = db.Column(db.Text)
+    area_auditada = db.Column(db.String(100))
+    status = db.Column(db.String(50), default='planejada')  # planejada, em_andamento, concluida, cancelada
+    data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
+    data_inicio = db.Column(db.DateTime)
+    data_fim = db.Column(db.DateTime)
+    data_relatorio = db.Column(db.DateTime)
+    
+    # Relacionamentos
+    auditor_lider_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    criado_por_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    auditor_lider = db.relationship('User', foreign_keys=[auditor_lider_id], backref='auditorias_lideradas')
+    criado_por = db.relationship('User', foreign_keys=[criado_por_id], backref='auditorias_criadas')
+    
+    # Relacionamentos com checklists e achados
+    checklists = db.relationship('AuditChecklist', backref='auditoria', lazy='dynamic', cascade='all, delete-orphan')
+    achados = db.relationship('AuditFinding', backref='auditoria', lazy='dynamic', cascade='all, delete-orphan')
+    
+    def get_conformidade_percentage(self):
+        """Calcula percentual de conformidade"""
+        total_items = self.checklists.count()
+        if total_items == 0:
+            return 0
+        
+        conforme_items = self.checklists.filter_by(status='conforme').count()
+        return round((conforme_items / total_items) * 100, 1)
+    
+    def __repr__(self):
+        return f'<Audit {self.codigo}: {self.titulo}>'
+
+class AuditChecklist(db.Model):
+    """Modelo de checklist de auditoria"""
+    __tablename__ = 'audit_checklists'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    auditoria_id = db.Column(db.Integer, db.ForeignKey('audits.id'), nullable=False)
+    item = db.Column(db.String(200), nullable=False)
+    descricao = db.Column(db.Text)
+    requisito = db.Column(db.String(100))  # ISO 9001, etc
+    status = db.Column(db.String(20), default='pendente')  # pendente, conforme, nao_conforme, nao_aplicavel
+    observacoes = db.Column(db.Text)
+    evidencias = db.Column(db.Text)
+    data_verificacao = db.Column(db.DateTime)
+    
+    # Relacionamento
+    verificado_por_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    verificado_por = db.relationship('User', backref='verificacoes_auditoria')
+    
+    def __repr__(self):
+        return f'<AuditChecklist {self.item} - {self.status}>'
+
+class AuditFinding(db.Model):
+    """Modelo de achado de auditoria"""
+    __tablename__ = 'audit_findings'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    auditoria_id = db.Column(db.Integer, db.ForeignKey('audits.id'), nullable=False)
+    tipo = db.Column(db.String(50), nullable=False)  # nao_conformidade, observacao, oportunidade_melhoria
+    descricao = db.Column(db.Text, nullable=False)
+    criterio = db.Column(db.Text)  # critério de auditoria
+    evidencia = db.Column(db.Text)
+    criticidade = db.Column(db.String(20), default='media')  # baixa, media, alta
+    status = db.Column(db.String(50), default='aberto')  # aberto, em_tratamento, fechado
+    data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relacionamentos
+    identificado_por_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    responsavel_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    
+    identificado_por = db.relationship('User', foreign_keys=[identificado_por_id], backref='achados_identificados')
+    responsavel = db.relationship('User', foreign_keys=[responsavel_id], backref='achados_responsavel')
+    
+    def __repr__(self):
+        return f'<AuditFinding {self.tipo} in audit {self.auditoria_id}>'
+
+class DocumentSignature(db.Model):
+    """Modelo de assinatura digital de documentos"""
+    __tablename__ = 'document_signatures'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    documento_id = db.Column(db.Integer, db.ForeignKey('documents.id'), nullable=False)
+    versao_documento = db.Column(db.String(10), nullable=False)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    tipo_assinatura = db.Column(db.String(20), nullable=False)  # digital, eletronica, manuscrita
+    hash_documento = db.Column(db.String(256))  # Hash do documento assinado
+    certificado_info = db.Column(db.Text)  # Informações do certificado digital
+    ip_address = db.Column(db.String(45))
+    data_assinatura = db.Column(db.DateTime, default=datetime.utcnow)
+    valida = db.Column(db.Boolean, default=True)
+    
+    # Relacionamentos
+    documento = db.relationship('Document', backref='assinaturas')
+    usuario = db.relationship('User', backref='assinaturas_realizadas')
+    
+    def __repr__(self):
+        return f'<DocumentSignature {self.tipo_assinatura} by user {self.usuario_id}>'
+
+class EmailNotification(db.Model):
+    """Modelo de notificações por email"""
+    __tablename__ = 'email_notifications'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    destinatario_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    tipo = db.Column(db.String(50), nullable=False)  # documento_vencendo, aprovacao_pendente, nc_aberta, etc
+    assunto = db.Column(db.String(200), nullable=False)
+    conteudo = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(20), default='pendente')  # pendente, enviado, erro
+    data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
+    data_envio = db.Column(db.DateTime)
+    tentativas = db.Column(db.Integer, default=0)
+    erro_mensagem = db.Column(db.Text)
+    
+    # Relacionamentos
+    entidade_tipo = db.Column(db.String(50))  # document, non_conformity, audit, etc
+    entidade_id = db.Column(db.Integer)
+    
+    destinatario = db.relationship('User', backref='notificacoes_email')
+    
+    def __repr__(self):
+        return f'<EmailNotification {self.tipo} to user {self.destinatario_id}>'

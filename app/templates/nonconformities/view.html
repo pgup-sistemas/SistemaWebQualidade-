@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}NC {{ nc.codigo }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-exclamation-triangle text-warning"></i> {{ nc.codigo }}: {{ nc.titulo }}</h2>
+                <div>
+                    {% if current_user.can_admin() or nc.aberto_por_id == current_user.id %}
+                    <a href="{{ url_for('nonconformities.edit', id=nc.id) }}" class="btn btn-outline-primary">
+                        <i class="bi bi-pencil"></i> Editar
+                    </a>
+                    {% endif %}
+                    <a href="{{ url_for('nonconformities.index') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Voltar
+                    </a>
+                </div>
+            </div>
+
+            <!-- Informações da NC -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Informações da Não Conformidade</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Código:</strong> {{ nc.codigo }}</p>
+                            <p><strong>Tipo:</strong> {{ nc.tipo.title() }}</p>
+                            <p><strong>Criticidade:</strong> 
+                                <span class="badge 
+                                    {% if nc.criticidade == 'critica' %}bg-danger
+                                    {% elif nc.criticidade == 'alta' %}bg-warning
+                                    {% elif nc.criticidade == 'media' %}bg-info
+                                    {% else %}bg-secondary{% endif %}">
+                                    {{ nc.criticidade.title() }}
+                                </span>
+                            </p>
+                            <p><strong>Status:</strong> 
+                                <span class="badge
+                                    {% if nc.status == 'aberta' %}bg-warning
+                                    {% elif nc.status == 'fechada' %}bg-success
+                                    {% else %}bg-info{% endif %}">
+                                    {{ nc.status.replace('_', ' ').title() }}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Aberto por:</strong> {{ nc.aberto_por.nome_completo }}</p>
+                            <p><strong>Data de Abertura:</strong> {{ nc.data_abertura.strftime('%d/%m/%Y %H:%M') }}</p>
+                            {% if nc.responsavel %}
+                            <p><strong>Responsável:</strong> {{ nc.responsavel.nome_completo }}</p>
+                            {% endif %}
+                            {% if nc.data_prazo %}
+                            <p><strong>Prazo:</strong> {{ nc.data_prazo.strftime('%d/%m/%Y') }}
+                                {% if nc.is_overdue() %}
+                                    <i class="bi bi-exclamation-triangle text-danger" title="Atrasado"></i>
+                                {% endif %}
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if nc.origem %}
+                    <p><strong>Origem:</strong> {{ nc.origem }}</p>
+                    {% endif %}
+                    {% if nc.area_responsavel %}
+                    <p><strong>Área Responsável:</strong> {{ nc.area_responsavel }}</p>
+                    {% endif %}
+                    <p><strong>Descrição:</strong></p>
+                    <div class="border p-3 bg-light">{{ nc.descricao }}</div>
+                </div>
+            </div>
+
+            <!-- Ações Corretivas/Preventivas -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>Ações Corretivas e Preventivas (CAPA)</h5>
+                    {% if current_user.can_create_documents() %}
+                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addActionModal">
+                        <i class="bi bi-plus-circle"></i> Nova Ação
+                    </button>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if acoes %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Tipo</th>
+                                    <th>Descrição</th>
+                                    <th>Responsável</th>
+                                    <th>Prazo</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for acao in acoes %}
+                                <tr>
+                                    <td>{{ acao.tipo.title() }}</td>
+                                    <td>{{ acao.descricao }}</td>
+                                    <td>{{ acao.responsavel.nome_completo }}</td>
+                                    <td>
+                                        {% if acao.data_prazo %}
+                                            {{ acao.data_prazo.strftime('%d/%m/%Y') }}
+                                            {% if acao.is_overdue() %}
+                                                <i class="bi bi-exclamation-triangle text-danger" title="Atrasado"></i>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-muted">Sem prazo</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge
+                                            {% if acao.status == 'pendente' %}bg-warning
+                                            {% elif acao.status == 'concluida' %}bg-success
+                                            {% elif acao.status == 'cancelada' %}bg-danger
+                                            {% else %}bg-info{% endif %}">
+                                            {{ acao.status.replace('_', ' ').title() }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if current_user.can_admin() or acao.responsavel_id == current_user.id %}
+                                        <form method="POST" action="{{ url_for('nonconformities.update_action', action_id=acao.id) }}" class="d-inline">
+                                            <select name="status" class="form-select form-select-sm d-inline-block w-auto" onchange="this.form.submit()">
+                                                <option value="pendente" {% if acao.status == 'pendente' %}selected{% endif %}>Pendente</option>
+                                                <option value="em_andamento" {% if acao.status == 'em_andamento' %}selected{% endif %}>Em Andamento</option>
+                                                <option value="concluida" {% if acao.status == 'concluida' %}selected{% endif %}>Concluída</option>
+                                                <option value="cancelada" {% if acao.status == 'cancelada' %}selected{% endif %}>Cancelada</option>
+                                            </select>
+                                        </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-clipboard display-4 text-muted"></i>
+                        <p class="text-muted mt-2">Nenhuma ação cadastrada.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Nova Ação -->
+{% if current_user.can_create_documents() %}
+<div class="modal fade" id="addActionModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nova Ação Corretiva/Preventiva</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ url_for('nonconformities.create_action', id=nc.id) }}">
+                    <div class="mb-3">
+                        <label for="tipo" class="form-label">Tipo *</label>
+                        <select class="form-select" id="tipo" name="tipo" required>
+                            <option value="">Selecione...</option>
+                            <option value="corretiva">Ação Corretiva</option>
+                            <option value="preventiva">Ação Preventiva</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="descricao" class="form-label">Descrição *</label>
+                        <textarea class="form-control" id="descricao" name="descricao" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="justificativa" class="form-label">Justificativa</label>
+                        <textarea class="form-control" id="justificativa" name="justificativa" rows="2"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="responsavel_id" class="form-label">Responsável *</label>
+                                <select class="form-select" id="responsavel_id" name="responsavel_id" required>
+                                    <option value="">Selecione...</option>
+                                    {% for usuario in current_user.query.filter_by(ativo=True).all() %}
+                                    <option value="{{ usuario.id }}">{{ usuario.nome_completo }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="data_prazo" class="form-label">Prazo</label>
+                                <input type="date" class="form-control" id="data_prazo" name="data_prazo">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Criar Ação</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

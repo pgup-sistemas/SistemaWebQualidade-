@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Não Conformidades{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-exclamation-triangle text-warning"></i> Gestão de Não Conformidades</h2>
+                {% if current_user.can_create_documents() %}
+                <a href="{{ url_for('nonconformities.create') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Nova Não Conformidade
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Estatísticas -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-white bg-warning">
+                        <div class="card-body">
+                            <h5 class="card-title">Abertas</h5>
+                            <h3>{{ total_abertas }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-danger">
+                        <div class="card-body">
+                            <h5 class="card-title">Atrasadas</h5>
+                            <h3>{{ total_atrasadas }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" name="search" 
+                                   value="{{ search }}" placeholder="Buscar...">
+                        </div>
+                        <div class="col-md-2">
+                            <select name="status" class="form-select">
+                                <option value="">Todos os Status</option>
+                                <option value="aberta" {% if current_status == 'aberta' %}selected{% endif %}>Aberta</option>
+                                <option value="em_analise" {% if current_status == 'em_analise' %}selected{% endif %}>Em Análise</option>
+                                <option value="em_tratamento" {% if current_status == 'em_tratamento' %}selected{% endif %}>Em Tratamento</option>
+                                <option value="fechada" {% if current_status == 'fechada' %}selected{% endif %}>Fechada</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select name="criticidade" class="form-select">
+                                <option value="">Todas Criticidades</option>
+                                <option value="baixa" {% if current_criticidade == 'baixa' %}selected{% endif %}>Baixa</option>
+                                <option value="media" {% if current_criticidade == 'media' %}selected{% endif %}>Média</option>
+                                <option value="alta" {% if current_criticidade == 'alta' %}selected{% endif %}>Alta</option>
+                                <option value="critica" {% if current_criticidade == 'critica' %}selected{% endif %}>Crítica</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i class="bi bi-search"></i> Filtrar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Lista de Não Conformidades -->
+            <div class="card">
+                <div class="card-body">
+                    {% if ncs.items %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Título</th>
+                                    <th>Tipo</th>
+                                    <th>Criticidade</th>
+                                    <th>Status</th>
+                                    <th>Responsável</th>
+                                    <th>Prazo</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for nc in ncs.items %}
+                                <tr>
+                                    <td><strong>{{ nc.codigo }}</strong></td>
+                                    <td>{{ nc.titulo }}</td>
+                                    <td>{{ nc.tipo.title() }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if nc.criticidade == 'critica' %}bg-danger
+                                            {% elif nc.criticidade == 'alta' %}bg-warning
+                                            {% elif nc.criticidade == 'media' %}bg-info
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ nc.criticidade.title() }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge
+                                            {% if nc.status == 'aberta' %}bg-warning
+                                            {% elif nc.status == 'fechada' %}bg-success
+                                            {% else %}bg-info{% endif %}">
+                                            {{ nc.status.replace('_', ' ').title() }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if nc.responsavel %}
+                                            {{ nc.responsavel.nome_completo }}
+                                        {% else %}
+                                            <span class="text-muted">Não atribuído</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if nc.data_prazo %}
+                                            {{ nc.data_prazo.strftime('%d/%m/%Y') }}
+                                            {% if nc.is_overdue() %}
+                                                <i class="bi bi-exclamation-triangle text-danger" title="Atrasado"></i>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-muted">Sem prazo</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('nonconformities.view', id=nc.id) }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        {% if current_user.can_admin() or nc.aberto_por_id == current_user.id %}
+                                        <a href="{{ url_for('nonconformities.edit', id=nc.id) }}" 
+                                           class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginação -->
+                    {% if ncs.pages > 1 %}
+                    <nav>
+                        <ul class="pagination justify-content-center">
+                            {% for page_num in ncs.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num != ncs.page %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('nonconformities.index', page=page_num, search=search, status=current_status, criticidade=current_criticidade) }}">{{ page_num }}</a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ page_num }}</span>
+                                        </li>
+                                    {% endif %}
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">…</span>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-inbox display-4 text-muted"></i>
+                        <p class="text-muted mt-2">Nenhuma não conformidade encontrada.</p>
+                        {% if current_user.can_create_documents() %}
+                        <a href="{{ url_for('nonconformities.create') }}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Criar Primeira Não Conformidade
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

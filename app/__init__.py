@@ -47,6 +47,15 @@ def create_app():
     from app.routes.approvals import bp as approvals_bp
     app.register_blueprint(approvals_bp, url_prefix='/approvals')
     
+    from app.routes.nonconformities import bp as nonconformities_bp
+    app.register_blueprint(nonconformities_bp, url_prefix='/nonconformities')
+    
+    from app.routes.audits import bp as audits_bp
+    app.register_blueprint(audits_bp, url_prefix='/audits')
+    
+    from app.routes.signatures import bp as signatures_bp
+    app.register_blueprint(signatures_bp, url_prefix='/signatures')
+    
     # Criar tabelas do banco de dados
     with app.app_context():
         db.create_all()

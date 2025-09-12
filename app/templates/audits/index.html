@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Auditorias{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-clipboard-check text-info"></i> Auditorias Internas</h2>
+                {% if current_user.can_admin() %}
+                <a href="{{ url_for('audits.create') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Nova Auditoria
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Estatísticas -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-white bg-info">
+                        <div class="card-body">
+                            <h5 class="card-title">Planejadas</h5>
+                            <h3>{{ total_planejadas }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-warning">
+                        <div class="card-body">
+                            <h5 class="card-title">Em Andamento</h5>
+                            <h3>{{ total_andamento }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-success">
+                        <div class="card-body">
+                            <h5 class="card-title">Concluídas</h5>
+                            <h3>{{ total_concluidas }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" name="search" 
+                                   value="{{ search }}" placeholder="Buscar...">
+                        </div>
+                        <div class="col-md-2">
+                            <select name="status" class="form-select">
+                                <option value="">Todos os Status</option>
+                                <option value="planejada" {% if current_status == 'planejada' %}selected{% endif %}>Planejada</option>
+                                <option value="em_andamento" {% if current_status == 'em_andamento' %}selected{% endif %}>Em Andamento</option>
+                                <option value="concluida" {% if current_status == 'concluida' %}selected{% endif %}>Concluída</option>
+                                <option value="cancelada" {% if current_status == 'cancelada' %}selected{% endif %}>Cancelada</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select name="tipo" class="form-select">
+                                <option value="">Todos os Tipos</option>
+                                <option value="interna" {% if current_tipo == 'interna' %}selected{% endif %}>Interna</option>
+                                <option value="externa" {% if current_tipo == 'externa' %}selected{% endif %}>Externa</option>
+                                <option value="certificacao" {% if current_tipo == 'certificacao' %}selected{% endif %}>Certificação</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i class="bi bi-search"></i> Filtrar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Lista de Auditorias -->
+            <div class="card">
+                <div class="card-body">
+                    {% if auditorias.items %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Título</th>
+                                    <th>Tipo</th>
+                                    <th>Status</th>
+                                    <th>Auditor Líder</th>
+                                    <th>Período</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for auditoria in auditorias.items %}
+                                <tr>
+                                    <td><strong>{{ auditoria.codigo }}</strong></td>
+                                    <td>{{ auditoria.titulo }}</td>
+                                    <td>{{ auditoria.tipo.title() }}</td>
+                                    <td>
+                                        <span class="badge
+                                            {% if auditoria.status == 'planejada' %}bg-info
+                                            {% elif auditoria.status == 'em_andamento' %}bg-warning
+                                            {% elif auditoria.status == 'concluida' %}bg-success
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ auditoria.status.replace('_', ' ').title() }}
+                                        </span>
+                                    </td>
+                                    <td>{{ auditoria.auditor_lider.nome_completo }}</td>
+                                    <td>
+                                        {% if auditoria.data_inicio and auditoria.data_fim %}
+                                            {{ auditoria.data_inicio.strftime('%d/%m/%Y') }} - {{ auditoria.data_fim.strftime('%d/%m/%Y') }}
+                                        {% else %}
+                                            <span class="text-muted">A definir</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('audits.view', id=auditoria.id) }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        {% if current_user.can_admin() or auditoria.criado_por_id == current_user.id %}
+                                        <a href="{{ url_for('audits.edit', id=auditoria.id) }}" 
+                                           class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginação -->
+                    {% if auditorias.pages > 1 %}
+                    <nav>
+                        <ul class="pagination justify-content-center">
+                            {% for page_num in auditorias.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num != auditorias.page %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('audits.index', page=page_num, search=search, status=current_status, tipo=current_tipo) }}">{{ page_num }}</a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ page_num }}</span>
+                                        </li>
+                                    {% endif %}
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">…</span>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-inbox display-4 text-muted"></i>
+                        <p class="text-muted mt-2">Nenhuma auditoria encontrada.</p>
+                        {% if current_user.can_admin() %}
+                        <a href="{{ url_for('audits.create') }}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Criar Primeira Auditoria
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
