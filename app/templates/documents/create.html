@@ -24,7 +24,7 @@
     </div>
 
     <form method="POST" class="needs-validation" novalidate>
-        {{ csrf_token() }}
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <div class="row">
             <!-- Informações do Documento -->
             <div class="col-md-4">
