@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 {% block title %}Dashboard - Alpha Gestão Documental{% endblock %}
@@ -8,7 +9,7 @@
         <div class="col-12">
             <h1 class="h3 mb-4">
                 <i class="bi bi-speedometer2"></i> Dashboard
-                <small class="text-muted">Visão geral do sistema</small>
+                <small class="text-muted">Bem-vindo, {{ current_user.nome_completo }}</small>
             </h1>
         </div>
     </div>
@@ -38,79 +39,106 @@
         <div class="col-md-3">
             <div class="card border-warning">
                 <div class="card-body text-center">
-                    <i class="bi bi-clock display-4 text-warning"></i>
-                    <h4 class="card-title">{{ documentos_vencendo }}</h4>
-                    <p class="card-text">Vencendo em 30 dias</p>
+                    <i class="bi bi-clock-history display-4 text-warning"></i>
+                    <h4 class="card-title">{{ minhas_aprovacoes|length }}</h4>
+                    <p class="card-text">Aprovações Pendentes</p>
                 </div>
             </div>
         </div>
         
         <div class="col-md-3">
-            <div class="card border-info">
+            <div class="card border-success">
                 <div class="card-body text-center">
-                    <i class="bi bi-check-circle display-4 text-info"></i>
-                    <h4 class="card-title">{{ aprovacoes_pendentes }}</h4>
-                    <p class="card-text">Aprovações Pendentes</p>
+                    <i class="bi bi-file-earmark-check display-4 text-success"></i>
+                    <h4 class="card-title">{{ meus_documentos|length }}</h4>
+                    <p class="card-text">Meus Documentos</p>
                 </div>
             </div>
         </div>
     </div>
 
     <div class="row">
-        <!-- Documentos Recentes -->
-        <div class="col-md-6">
+        <!-- Meus Documentos Recentes -->
+        <div class="col-md-6 mb-4">
             <div class="card">
-                <div class="card-header">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">
-                        <i class="bi bi-clock-history"></i> Documentos Recentes
+                        <i class="bi bi-file-earmark-text"></i> Meus Documentos Recentes
                     </h5>
+                    <a href="{{ url_for('documents.index') }}" class="btn btn-sm btn-outline-primary">Ver todos</a>
                 </div>
                 <div class="card-body">
-                    {% if documentos_recentes %}
-                    <div class="list-group list-group-flush">
-                        {% for doc in documentos_recentes %}
-                        <div class="list-group-item d-flex justify-content-between align-items-start">
-                            <div class="ms-2 me-auto">
+                    {% if meus_documentos %}
+                        {% for doc in meus_documentos %}
+                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                            <div>
                                 <div class="fw-bold">
                                     <a href="{{ url_for('documents.view', id=doc.id) }}" class="text-decoration-none">
                                         {{ doc.titulo }}
                                     </a>
                                 </div>
-                                <small class="text-muted">{{ doc.codigo }} - {{ doc.tipo.title() }}</small>
+                                <small class="text-muted">{{ doc.codigo }} - {{ doc.data_criacao.strftime('%d/%m/%Y') }}</small>
                             </div>
-                            <span class="badge bg-{{ 'success' if doc.status == 'aprovado' else 'warning' if doc.status == 'em_revisao' else 'secondary' }} rounded-pill">
-                                {{ doc.status.replace('_', ' ').title() }}
+                            <span class="badge bg-{% if doc.status == 'aprovado' %}success{% elif doc.status == 'rascunho' %}warning text-dark{% else %}secondary{% endif %}">
+                                {{ doc.status.title() }}
                             </span>
                         </div>
                         {% endfor %}
-                    </div>
                     {% else %}
-                    <p class="text-muted text-center py-3">Nenhum documento encontrado</p>
+                        <p class="text-muted text-center py-3">Nenhum documento criado ainda</p>
                     {% endif %}
-                    
-                    <div class="text-center mt-3">
-                        <a href="{{ url_for('documents.index') }}" class="btn btn-outline-primary btn-sm">
-                            Ver Todos os Documentos
-                        </a>
-                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Documentos Mais Lidos -->
-        <div class="col-md-6">
+        <!-- Aprovações Pendentes -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-check-circle"></i> Minhas Aprovações Pendentes
+                    </h5>
+                    {% if current_user.can_approve_documents() %}
+                        <a href="{{ url_for('approvals.index') }}" class="btn btn-sm btn-outline-warning">Ver todas</a>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if minhas_aprovacoes %}
+                        {% for approval in minhas_aprovacoes %}
+                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                            <div>
+                                <div class="fw-bold">
+                                    <a href="{{ url_for('approvals.view', id=approval.id) }}" class="text-decoration-none">
+                                        {{ approval.documento.titulo }}
+                                    </a>
+                                </div>
+                                <small class="text-muted">{{ approval.documento.codigo }} - {{ approval.data_atribuicao.strftime('%d/%m/%Y') }}</small>
+                            </div>
+                            <span class="badge bg-warning text-dark">Pendente</span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-3">Nenhuma aprovação pendente</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Documentos Mais Lidos -->
+    <div class="row">
+        <div class="col-md-12 mb-4">
             <div class="card">
                 <div class="card-header">
                     <h5 class="card-title mb-0">
-                        <i class="bi bi-graph-up"></i> Documentos Mais Acessados
+                        <i class="bi bi-eye"></i> Documentos Mais Lidos
                     </h5>
                 </div>
                 <div class="card-body">
-                    {% if documentos_populares %}
-                    <div class="list-group list-group-flush">
-                        {% for doc, leituras in documentos_populares %}
-                        <div class="list-group-item d-flex justify-content-between align-items-start">
-                            <div class="ms-2 me-auto">
+                    {% if docs_mais_lidos %}
+                        {% for doc, leituras in docs_mais_lidos %}
+                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                            <div>
                                 <div class="fw-bold">
                                     <a href="{{ url_for('documents.view', id=doc.id) }}" class="text-decoration-none">
                                         {{ doc.titulo }}
@@ -123,7 +151,6 @@
                             </span>
                         </div>
                         {% endfor %}
-                    </div>
                     {% else %}
                     <p class="text-muted text-center py-3">Nenhum documento lido ainda</p>
                     {% endif %}
@@ -170,9 +197,9 @@
                         
                         {% if current_user.can_admin() %}
                         <div class="col-md-3 mb-3">
-                            <a href="{{ url_for('dashboard.reports') }}" class="btn btn-outline-success w-100">
-                                <i class="bi bi-graph-up"></i><br>
-                                Relatórios
+                            <a href="{{ url_for('users.index') }}" class="btn btn-outline-success w-100">
+                                <i class="bi bi-people"></i><br>
+                                Gerenciar Usuários
                             </a>
                         </div>
                         {% endif %}

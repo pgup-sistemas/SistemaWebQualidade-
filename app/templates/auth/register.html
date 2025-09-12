@@ -1,74 +1,96 @@
+
 {% extends "base.html" %}
 
 {% block title %}Registrar Conta{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-person-plus"></i> Criar Nova Conta</h2>
+        <a href="{{ url_for('users.index') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+    </div>
+
     <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white text-center">
-                    <h4 class="mb-0">
-                        <i class="bi bi-person-plus"></i> 
-                        Criar Nova Conta
-                    </h4>
-                    <p class="mb-0 mt-2">Sistema Alpha Gestão Documental</p>
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Informações da Conta</h5>
                 </div>
-                <div class="card-body p-4">
-                    {% if error %}
-                        <div class="alert alert-danger">
-                            <i class="bi bi-exclamation-triangle"></i> {{ error }}
-                        </div>
-                    {% endif %}
-
+                <div class="card-body">
                     <form method="POST">
-                        {{ csrf_token() }}
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         
-                        <div class="mb-3">
-                            <label for="nome_completo" class="form-label">
-                                <i class="bi bi-person"></i> Nome Completo <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" class="form-control form-control-lg" 
-                                   id="nome_completo" name="nome_completo" 
-                                   placeholder="Digite seu nome completo" required>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="nome_completo" class="form-label">
+                                        <i class="bi bi-person"></i> Nome Completo <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="nome_completo" name="nome_completo" 
+                                           placeholder="Digite o nome completo" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">
+                                        <i class="bi bi-at"></i> Nome de Usuário <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="username" name="username" 
+                                           placeholder="Digite o nome de usuário" required>
+                                    <div class="form-text">Usado para login no sistema</div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="username" class="form-label">
-                                <i class="bi bi-at"></i> Nome de Usuário <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" class="form-control form-control-lg" 
-                                   id="username" name="username" 
-                                   placeholder="Digite um nome de usuário" required>
-                            <div class="form-text">Será usado para fazer login no sistema</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">
+                                        <i class="bi bi-envelope"></i> Email <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="email" class="form-control" id="email" name="email" 
+                                           placeholder="Digite o email" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="perfil" class="form-label">
+                                        <i class="bi bi-shield-check"></i> Perfil <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-select" id="perfil" name="perfil" required>
+                                        <option value="">Selecione um perfil</option>
+                                        <option value="administrador">Administrador</option>
+                                        <option value="gestor_qualidade">Gestor de Qualidade</option>
+                                        <option value="aprovador_revisor">Aprovador/Revisor</option>
+                                        <option value="colaborador_leitor">Colaborador/Leitor</option>
+                                        <option value="auditor">Auditor</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="email" class="form-label">
-                                <i class="bi bi-envelope"></i> Email <span class="text-danger">*</span>
-                            </label>
-                            <input type="email" class="form-control form-control-lg" 
-                                   id="email" name="email" 
-                                   placeholder="Digite seu email" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="password" class="form-label">
-                                <i class="bi bi-lock"></i> Senha <span class="text-danger">*</span>
-                            </label>
-                            <input type="password" class="form-control form-control-lg" 
-                                   id="password" name="password" 
-                                   placeholder="Digite uma senha" required>
-                            <div class="form-text">Mínimo de 6 caracteres</div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="password_confirm" class="form-label">
-                                <i class="bi bi-lock-fill"></i> Confirmar Senha <span class="text-danger">*</span>
-                            </label>
-                            <input type="password" class="form-control form-control-lg" 
-                                   id="password_confirm" name="password_confirm" 
-                                   placeholder="Confirme sua senha" required>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">
+                                        <i class="bi bi-lock"></i> Senha <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="password" class="form-control" id="password" name="password" 
+                                           placeholder="Digite a senha" required minlength="6">
+                                    <div class="form-text">Mínimo de 6 caracteres</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="password_confirm" class="form-label">
+                                        <i class="bi bi-lock-fill"></i> Confirmar Senha <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="password" class="form-control" id="password_confirm" name="password_confirm" 
+                                           placeholder="Confirme a senha" required>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="mb-4">
@@ -81,20 +103,15 @@
                             </div>
                         </div>
 
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg">
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('users.index') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
                                 <i class="bi bi-person-plus"></i> Criar Conta
                             </button>
                         </div>
                     </form>
-                </div>
-                <div class="card-footer text-center bg-light">
-                    <p class="mb-0">
-                        Já possui uma conta? 
-                        <a href="{{ url_for('auth.login') }}" class="text-decoration-none fw-bold">
-                            <i class="bi bi-box-arrow-in-right"></i> Fazer Login
-                        </a>
-                    </p>
                 </div>
             </div>
         </div>
