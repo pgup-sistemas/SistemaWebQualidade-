@@ -35,17 +35,16 @@ def create_app():
     os.makedirs(upload_folder, exist_ok=True)
 
     # Registrar blueprints
-    from app.routes import auth, dashboard, documents, users, approvals, nonconformities, audits, signatures, reports, equipments
-    app.register_blueprint(auth.bp)
-    app.register_blueprint(dashboard.bp)
-    app.register_blueprint(documents.bp)
-    app.register_blueprint(users.bp)
-    app.register_blueprint(approvals.bp)
-    app.register_blueprint(nonconformities.bp)
-    app.register_blueprint(audits.bp)
-    app.register_blueprint(signatures.bp)
-    app.register_blueprint(reports.bp)
-    app.register_blueprint(equipments.bp)
+    from app.routes import auth, dashboard, documents, users, approvals, audits, nonconformities, reports, equipments
+    app.register_blueprint(auth.bp, url_prefix='/auth')
+    app.register_blueprint(dashboard.bp, url_prefix='/')
+    app.register_blueprint(documents.bp, url_prefix='/documents')
+    app.register_blueprint(users.bp, url_prefix='/users')
+    app.register_blueprint(approvals.bp, url_prefix='/approvals')
+    app.register_blueprint(audits.bp, url_prefix='/audits')
+    app.register_blueprint(nonconformities.bp, url_prefix='/nonconformities')
+    app.register_blueprint(reports.bp, url_prefix='/reports')
+    app.register_blueprint(equipments.bp, url_prefix='/equipments')
 
     # Tratamento de erro de banco de dados
     @app.errorhandler(Exception)

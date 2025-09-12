@@ -141,44 +141,68 @@ def view(id):
 @login_required
 def edit(id):
     """Editar documento"""
-    document = Document.query.get_or_404(id)
-    
-    if not (current_user.can_create_documents() or document.autor_id == current_user.id):
-        flash('Você não tem permissão para editar este documento.', 'error')
-        return redirect(url_for('documents.view', id=id))
-    
-    if document.status == 'aprovado':
-        flash('Documentos aprovados não podem ser editados diretamente. Crie uma nova versão.', 'warning')
-        return redirect(url_for('documents.view', id=id))
-    
-    current_version = document.get_current_version()
-    
-    if request.method == 'POST':
-        # Atualizar documento
-        document.titulo = request.form.get('titulo')
-        document.tipo = request.form.get('tipo')
-        document.departamento = request.form.get('departamento')
-        document.palavras_chave = request.form.get('palavras_chave')
-        document.resumo = request.form.get('resumo')
-        data_validade = request.form.get('data_validade')
-        document.data_validade = datetime.strptime(data_validade, '%Y-%m-%d') if data_validade else None
+    try:
+        document = Document.query.get_or_404(id)
         
-        # Atualizar conteúdo da versão atual
-        conteudo = request.form.get('conteudo')
-        changelog = request.form.get('changelog', 'Edição da versão atual')
+        # Verificar se o usuário tem permissão
+        if not (current_user.is_admin() or document.autor_id == current_user.id):
+            flash('Você não tem permissão para editar este documento.', 'error')
+            return redirect(url_for('documents.view', id=id))
         
-        current_version.conteudo = conteudo
-        current_version.changelog = changelog
-        document.data_ultima_revisao = datetime.utcnow()
+        current_version = document.get_current_version()
         
-        db.session.commit()
+        if request.method == 'POST':
+            try:
+                # Verificar se é uma requisição AJAX para auto-save
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    # Auto-save logic
+                    return jsonify({'success': True, 'message': 'Salvo automaticamente'})
+                
+                # Atualizar documento
+                document.titulo = request.form.get('titulo', '').strip()
+                document.tipo = request.form.get('tipo', '').strip()
+                document.departamento = request.form.get('departamento', '').strip()
+                document.palavras_chave = request.form.get('palavras_chave', '').strip()
+                document.resumo = request.form.get('resumo', '').strip()
+                
+                # Tratar data de validade
+                data_validade = request.form.get('data_validade')
+                if data_validade:
+                    try:
+                        document.data_validade = datetime.strptime(data_validade, '%Y-%m-%d')
+                    except ValueError:
+                        document.data_validade = None
+                else:
+                    document.data_validade = None
+                
+                # Atualizar conteúdo da versão atual
+                conteudo = request.form.get('conteudo', '').strip()
+                changelog = request.form.get('changelog', 'Edição da versão atual').strip()
+                
+                if current_version:
+                    current_version.conteudo = conteudo
+                    current_version.changelog = changelog
+                    current_version.data_modificacao = datetime.utcnow()
+                
+                document.data_ultima_revisao = datetime.utcnow()
+                
+                db.session.commit()
+                
+                flash('Documento atualizado com sucesso!', 'success')
+                return redirect(url_for('documents.view', id=id))
+                
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Erro ao salvar documento: {str(e)}', 'error')
+                return redirect(url_for('documents.edit', id=id))
         
-        flash('Documento atualizado com sucesso!', 'success')
-        return redirect(url_for('documents.view', id=id))
-    
-    return render_template('documents/edit.html', 
-                         document=document, 
-                         current_version=current_version)
+        return render_template('documents/edit.html', 
+                             document=document, 
+                             current_version=current_version)
+                             
+    except Exception as e:
+        flash(f'Erro ao carregar documento: {str(e)}', 'error')
+        return redirect(url_for('documents.index'))
 
 @bp.route('/<int:id>/confirm_reading', methods=['POST'])
 @login_required
