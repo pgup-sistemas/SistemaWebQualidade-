@@ -57,11 +57,11 @@ def index():
         Audit.data_criacao >= data_limite
     ).count()
     
-    # Documentos por categoria (top 5)
+    # Documentos por tipo (top 5)
     categorias = db.session.query(
-        Document.categoria,
+        Document.tipo,
         func.count(Document.id).label('count')
-    ).filter_by(ativo=True).group_by(Document.categoria).order_by(
+    ).filter_by(ativo=True).group_by(Document.tipo).order_by(
         func.count(Document.id).desc()
     ).limit(5).all()
     
