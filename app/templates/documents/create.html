@@ -24,6 +24,7 @@
     </div>
 
     <form method="POST" class="needs-validation" novalidate>
+        {{ csrf_token() }}
         <div class="row">
             <!-- Informações do Documento -->
             <div class="col-md-4">
@@ -145,11 +146,15 @@ tinymce.init({
     toolbar: 'undo redo | blocks | bold italic underline | alignleft aligncenter ' +
              'alignright alignjustify | bullist numlist outdent indent | ' +
              'removeformat | table | link image | code preview fullscreen | save',
-    content_style: 'body { font-family: Arial, sans-serif; font-size: 14px; }',
+    content_style: 'body { font-family: Arial, sans-serif; font-size: 14px; line-height: 1.6; }',
+    branding: false,
     setup: function (editor) {
         editor.on('change', function () {
             editor.save();
         });
+    },
+    save_onsavecallback: function () {
+        salvarRascunho();
     }
 });
 

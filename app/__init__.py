@@ -5,6 +5,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_mail import Mail
+from flask_wtf.csrf import CSRFProtect
 from config import Config
 import os
 
@@ -12,6 +13,7 @@ import os
 db = SQLAlchemy()
 login_manager = LoginManager()
 mail = Mail()
+csrf = CSRFProtect()
 
 def create_app():
     app = Flask(__name__)
@@ -21,6 +23,7 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
     mail.init_app(app)
+    csrf.init_app(app)
     
     # Configurar Flask-Login
     login_manager.login_view = 'auth.login'
@@ -48,20 +51,21 @@ def create_app():
     with app.app_context():
         db.create_all()
         
-        # Criar usuário administrador padrão se não existir
+        # Criar usuário administrador padrão se não existir (apenas em desenvolvimento)
         from app.models import User
-        admin = User.query.filter_by(email='admin@alphagestao.com').first()
-        if not admin:
-            admin = User(
-                username='admin',
-                email='admin@alphagestao.com',
-                nome_completo='Administrador do Sistema',
-                perfil='administrador',
-                ativo=True
-            )
-            admin.set_password('admin123')
-            db.session.add(admin)
-            db.session.commit()
+        if app.config.get('ENV') != 'production':
+            admin = User.query.filter_by(email='admin@alphagestao.com').first()
+            if not admin:
+                admin = User(
+                    username='admin',
+                    email='admin@alphagestao.com',
+                    nome_completo='Administrador do Sistema',
+                    perfil='administrador',
+                    ativo=True
+                )
+                admin.set_password('admin123')
+                db.session.add(admin)
+                db.session.commit()
     
     return app
 

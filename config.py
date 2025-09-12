@@ -6,7 +6,7 @@ class Config:
     SECRET_KEY = os.environ.get('SESSION_SECRET') or 'dev-secret-key-change-in-production'
     
     # Configuração do banco de dados
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///app.db'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///alpha_gestao.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Configurações de upload
