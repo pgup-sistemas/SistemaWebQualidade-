@@ -19,8 +19,7 @@
                 </div>
                 <div class="card-body">
                     <form method="POST">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                        
+                        {{ csrf_token() }}
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
@@ -125,7 +124,7 @@
 document.getElementById('password_confirm').addEventListener('input', function() {
     const password = document.getElementById('password').value;
     const confirm = this.value;
-    
+
     if (password !== confirm) {
         this.setCustomValidity('As senhas não coincidem');
     } else {
@@ -144,7 +143,7 @@ document.getElementById('password').addEventListener('input', function() {
 document.getElementById('username').addEventListener('input', function() {
     const value = this.value;
     const valid = /^[a-zA-Z0-9_]+$/.test(value);
-    
+
     if (!valid && value.length > 0) {
         this.setCustomValidity('Nome de usuário deve conter apenas letras, números e sublinhado');
     } else {

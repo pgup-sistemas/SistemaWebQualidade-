@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block title %}Editar - {{ document.titulo }}{% endblock %}
@@ -44,6 +43,7 @@
 
     <!-- Formulário de Edição -->
     <form method="POST" id="editForm" class="needs-validation" novalidate>
+        {{ csrf_token() }}
         <div class="row">
             <!-- Informações Básicas -->
             <div class="col-md-8">
@@ -79,7 +79,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="departamento" class="form-label">Departamento</label>
@@ -92,7 +92,7 @@
                                        value="{{ document.data_validade.strftime('%Y-%m-%d') if document.data_validade else '' }}">
                             </div>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label for="palavras_chave" class="form-label">Palavras-chave</label>
                             <input type="text" class="form-control" id="palavras_chave" name="palavras_chave" 
@@ -100,7 +100,7 @@
                                    placeholder="Separe as palavras-chave por vírgula">
                             <div class="form-text">Utilize palavras-chave para facilitar a busca do documento.</div>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label for="resumo" class="form-label">Resumo</label>
                             <textarea class="form-control" id="resumo" name="resumo" rows="3" 
@@ -126,7 +126,7 @@
                                 Por favor, informe o conteúdo do documento.
                             </div>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label for="changelog" class="form-label">Changelog (Registro de Alterações)</label>
                             <textarea class="form-control" id="changelog" name="changelog" rows="3" 
@@ -155,22 +155,22 @@
                                 </span>
                             </div>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label class="form-label">Código</label>
                             <div class="text-muted">{{ document.codigo }}</div>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label class="form-label">Versão Atual</label>
                             <div class="text-muted">{{ document.versao_atual }}</div>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label class="form-label">Autor</label>
                             <div class="text-muted">{{ document.autor.nome_completo }}</div>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label class="form-label">Data de Criação</label>
                             <div class="text-muted">{{ document.data_criacao.strftime('%d/%m/%Y') }}</div>
@@ -231,9 +231,9 @@ let autoSaveTimer;
 function autoSave() {
     const formData = new FormData(document.getElementById('editForm'));
     formData.append('auto_save', 'true');
-    
+
     document.getElementById('autoSaveStatus').textContent = 'Salvando...';
-    
+
     fetch('{{ url_for("documents.edit", id=document.id) }}', {
         method: 'POST',
         body: formData,
@@ -259,13 +259,13 @@ function autoSave() {
 document.addEventListener('DOMContentLoaded', function() {
     const inputs = document.querySelectorAll('input, textarea, select');
     let hasChanges = false;
-    
+
     inputs.forEach(input => {
         input.addEventListener('input', function() {
             hasChanges = true;
         });
     });
-    
+
     setInterval(function() {
         if (hasChanges) {
             autoSave();

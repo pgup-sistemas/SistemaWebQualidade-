@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block title %}Novo Serviço - {{ equipment.codigo }}{% endblock %}
@@ -17,6 +16,7 @@
             <div class="card">
                 <div class="card-body">
                     <form method="POST">
+                        {{ csrf_token() }}
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
@@ -44,7 +44,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="prestador_servico" class="form-label">Prestador do Serviço</label>
-                                    <input type="text" class="form-control" id="prestador_servico" name="prestador_servico" 
+                                    <input type="text" class="form-control" id="prestador_servico" name="prestador_servico"
                                            placeholder="Empresa ou pessoa responsável pelo serviço">
                                 </div>
                             </div>
@@ -62,7 +62,7 @@
                             <div class="col-md-3">
                                 <div class="mb-3">
                                     <label for="custo" class="form-label">Custo (R$)</label>
-                                    <input type="number" class="form-control" id="custo" name="custo" 
+                                    <input type="number" class="form-control" id="custo" name="custo"
                                            step="0.01" min="0" placeholder="0,00">
                                 </div>
                             </div>

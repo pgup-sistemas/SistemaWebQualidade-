@@ -7,217 +7,6 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2><i class="bi bi-pencil"></i> Editar Usuário</h2>
         <div>
-            <a href="{{ url_for('users.view', id=user.id) }}" class="btn btn-outline-primary">
-                <i class="bi bi-eye"></i> Visualizar
-            </a>
-            <a href="{{ url_for('users.index') }}" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Voltar
-            </a>
-        </div>
-    </div>
-
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h5><i class="bi bi-person-gear"></i> Editar Dados do Usuário</h5>
-                </div>
-                <div class="card-body">
-                    <form method="POST">
-                        {{ csrf_token() }}
-                        
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="nome_completo" class="form-label">Nome Completo <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="nome_completo" name="nome_completo" 
-                                       value="{{ user.nome_completo }}" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="username" class="form-label">Nome de Usuário <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="username" name="username" 
-                                       value="{{ user.username }}" required>
-                                <div class="form-text">Usado para login no sistema</div>
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
-                                <input type="email" class="form-control" id="email" name="email" 
-                                       value="{{ user.email }}" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="perfil" class="form-label">Perfil <span class="text-danger">*</span></label>
-                                <select class="form-select" id="perfil" name="perfil" required>
-                                    <option value="">Selecione um perfil</option>
-                                    <option value="administrador" {{ 'selected' if user.perfil == 'administrador' }}>🔧 Administrador</option>
-                                    <option value="gestor_qualidade" {{ 'selected' if user.perfil == 'gestor_qualidade' }}>🏆 Gestor de Qualidade</option>
-                                    <option value="aprovador_revisor" {{ 'selected' if user.perfil == 'aprovador_revisor' }}>✅ Aprovador/Revisor</option>
-                                    <option value="colaborador_leitor" {{ 'selected' if user.perfil == 'colaborador_leitor' }}>👤 Colaborador/Leitor</option>
-                                    <option value="auditor" {{ 'selected' if user.perfil == 'auditor' }}>🔍 Auditor</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="password" class="form-label">Nova Senha</label>
-                                <input type="password" class="form-control" id="password" name="password">
-                                <div class="form-text">Deixe em branco para manter a senha atual</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="password_confirm" class="form-label">Confirmar Nova Senha</label>
-                                <input type="password" class="form-control" id="password_confirm" name="password_confirm">
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="ativo" name="ativo" 
-                                       {{ 'checked' if user.ativo }}>
-                                <label class="form-check-label" for="ativo">
-                                    <i class="bi bi-person-check"></i> Usuário ativo (pode fazer login no sistema)
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Informações Adicionais -->
-                        <div class="card bg-light mb-4">
-                            <div class="card-header">
-                                <h6><i class="bi bi-info-circle"></i> Informações Adicionais</h6>
-                            </div>
-                            <div class="card-body">
-                                <dl class="row mb-0">
-                                    <dt class="col-sm-4">Criado em:</dt>
-                                    <dd class="col-sm-8">{{ user.data_criacao.strftime('%d/%m/%Y às %H:%M') if user.data_criacao else '—' }}</dd>
-                                    
-                                    {% if user.ultimo_login %}
-                                    <dt class="col-sm-4">Último login:</dt>
-                                    <dd class="col-sm-8">{{ user.ultimo_login.strftime('%d/%m/%Y às %H:%M') }}</dd>
-                                    {% endif %}
-                                    
-                                    <dt class="col-sm-4">Documentos criados:</dt>
-                                    <dd class="col-sm-8">{{ user.documentos_criados|length or 0 }}</dd>
-                                    
-                                    <dt class="col-sm-4">Aprovações realizadas:</dt>
-                                    <dd class="col-sm-8">{{ user.aprovacoes|length or 0 }}</dd>
-                                </dl>
-                            </div>
-                        </div>
-
-                        <!-- Descrição dos Perfis -->
-                        <div class="card bg-light mb-4">
-                            <div class="card-header">
-                                <h6><i class="bi bi-info-circle"></i> Descrição dos Perfis</h6>
-                            </div>
-                            <div class="card-body">
-                                <ul class="list-unstyled mb-0">
-                                    <li class="mb-2">
-                                        <strong>🔧 Administrador:</strong> Acesso total ao sistema, pode gerenciar usuários e configurações
-                                    </li>
-                                    <li class="mb-2">
-                                        <strong>🏆 Gestor de Qualidade:</strong> Pode criar documentos, não conformidades e auditorias
-                                    </li>
-                                    <li class="mb-2">
-                                        <strong>✅ Aprovador/Revisor:</strong> Pode aprovar documentos e participar de fluxos de aprovação
-                                    </li>
-                                    <li class="mb-2">
-                                        <strong>👤 Colaborador/Leitor:</strong> Pode visualizar documentos aprovados e confirmar leitura
-                                    </li>
-                                    <li>
-                                        <strong>🔍 Auditor:</strong> Acesso específico para módulos de auditoria e não conformidades
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <a href="{{ url_for('users.view', id=user.id) }}" class="btn btn-secondary">
-                                    <i class="bi bi-x-lg"></i> Cancelar
-                                </a>
-                            </div>
-                            <div>
-                                {% if user.id != current_user.id and user.documentos_criados|length == 0 and user.aprovacoes|length == 0 %}
-                                    <button type="button" class="btn btn-outline-danger me-2" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                                        <i class="bi bi-trash"></i> Excluir Usuário
-                                    </button>
-                                {% endif %}
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-save"></i> Salvar Alterações
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal de Confirmação de Exclusão -->
-{% if user.id != current_user.id and user.documentos_criados|length == 0 and user.aprovacoes|length == 0 %}
-<div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form method="POST" action="{{ url_for('users.delete', id=user.id) }}">
-                {{ csrf_token() }}
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title">
-                        <i class="bi bi-exclamation-triangle"></i> Excluir Usuário
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="alert alert-warning">
-                        <i class="bi bi-exclamation-triangle"></i>
-                        <strong>Atenção!</strong> Esta ação não pode ser desfeita.
-                    </div>
-                    <p>Tem certeza de que deseja excluir permanentemente o usuário <strong>{{ user.nome_completo }}</strong>?</p>
-                    <p class="text-muted">O usuário será removido completamente do sistema.</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-danger">
-                        <i class="bi bi-trash"></i> Confirmar Exclusão
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-{% endif %}
-
-<script>
-// Validação de senha
-document.getElementById('password_confirm').addEventListener('input', function() {
-    const password = document.getElementById('password').value;
-    const confirm = this.value;
-    
-    if (password && confirm && password !== confirm) {
-        this.setCustomValidity('As senhas não coincidem');
-    } else {
-        this.setCustomValidity('');
-    }
-});
-
-document.getElementById('password').addEventListener('input', function() {
-    const confirm = document.getElementById('password_confirm');
-    if (confirm.value) {
-        confirm.dispatchEvent(new Event('input'));
-    }
-});
-</script>
-{% endblock %}
-{% extends "base.html" %}
-
-{% block title %}Editar {{ user.nome_completo }}{% endblock %}
-
-{% block content %}
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-pencil"></i> Editar Usuário</h2>
-        <div>
             <a href="{{ url_for('users.view', id=user.id) }}" class="btn btn-outline-info">
                 <i class="bi bi-eye"></i> Visualizar
             </a>
@@ -235,8 +24,8 @@ document.getElementById('password').addEventListener('input', function() {
                 </div>
                 <div class="card-body">
                     <form method="POST">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                        
+                        {{ csrf_token() }}
+
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
@@ -275,6 +64,7 @@ document.getElementById('password').addEventListener('input', function() {
                                         <i class="bi bi-shield-check"></i> Perfil <span class="text-danger">*</span>
                                     </label>
                                     <select class="form-select" id="perfil" name="perfil" required>
+                                        <option value="">Selecione um perfil</option>
                                         <option value="administrador" {{ 'selected' if user.perfil == 'administrador' }}>Administrador</option>
                                         <option value="gestor_qualidade" {{ 'selected' if user.perfil == 'gestor_qualidade' }}>Gestor de Qualidade</option>
                                         <option value="aprovador_revisor" {{ 'selected' if user.perfil == 'aprovador_revisor' }}>Aprovador/Revisor</option>
@@ -336,12 +126,45 @@ document.getElementById('password').addEventListener('input', function() {
     </div>
 </div>
 
+<!-- Modal de Confirmação de Exclusão -->
+{% if user.id != current_user.id and user.documentos_criados|length == 0 and user.aprovacoes|length == 0 %}
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('users.delete', id=user.id) }}">
+                {{ csrf_token() }}
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-exclamation-triangle"></i> Excluir Usuário
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Atenção!</strong> Esta ação não pode ser desfeita.
+                    </div>
+                    <p>Tem certeza de que deseja excluir permanentemente o usuário <strong>{{ user.nome_completo }}</strong>?</p>
+                    <p class="text-muted">O usuário será removido completamente do sistema.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Confirmar Exclusão
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <script>
 // Validação de senha
 document.getElementById('password_confirm').addEventListener('input', function() {
     const password = document.getElementById('password').value;
     const confirm = this.value;
-    
+
     if (password !== confirm) {
         this.setCustomValidity('As senhas não coincidem');
     } else {
@@ -360,7 +183,7 @@ document.getElementById('password').addEventListener('input', function() {
 document.getElementById('username').addEventListener('input', function() {
     const value = this.value;
     const valid = /^[a-zA-Z0-9_]+$/.test(value);
-    
+
     if (!valid && value.length > 0) {
         this.setCustomValidity('Nome de usuário deve conter apenas letras, números e sublinhado');
     } else {

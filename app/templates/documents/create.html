@@ -64,7 +64,7 @@
 
                         <div class="mb-3">
                             <label for="departamento" class="form-label">Departamento</label>
-                            <input type="text" class="form-control" id="departamento" name="departamento" 
+                            <input type="text" class="form-control" id="departamento" name="departamento"
                                    placeholder="Ex: Qualidade, RH, Produção">
                         </div>
 
@@ -76,14 +76,14 @@
 
                         <div class="mb-3">
                             <label for="palavras_chave" class="form-label">Palavras-chave</label>
-                            <input type="text" class="form-control" id="palavras_chave" name="palavras_chave" 
+                            <input type="text" class="form-control" id="palavras_chave" name="palavras_chave"
                                    placeholder="Ex: qualidade, auditoria, ISO">
                             <div class="form-text">Separadas por vírgula para facilitar a busca</div>
                         </div>
 
                         <div class="mb-3">
                             <label for="resumo" class="form-label">Resumo</label>
-                            <textarea class="form-control" id="resumo" name="resumo" rows="3" 
+                            <textarea class="form-control" id="resumo" name="resumo" rows="3"
                                       placeholder="Breve descrição do documento"></textarea>
                         </div>
                     </div>
@@ -175,7 +175,7 @@ function salvarRascunhoAutomatico() {
     const conteudo = quill.root.innerHTML;
     const tipo = document.getElementById('tipo').value;
     const departamento = document.getElementById('departamento').value;
-    
+
     if (titulo.trim() && conteudo && conteudo !== '<p><br></p>') {
         // Criar FormData para envio
         const formData = new FormData();
@@ -184,11 +184,11 @@ function salvarRascunhoAutomatico() {
         formData.append('tipo', tipo || 'outros');
         formData.append('departamento', departamento || '');
         formData.append('csrf_token', document.querySelector('input[name="csrf_token"]').value);
-        
+
         if (currentDocumentId) {
             formData.append('document_id', currentDocumentId);
         }
-        
+
         // Implementar salvamento automático via AJAX
         fetch('/documents/api/save-draft', {
             method: 'POST',
@@ -220,7 +220,7 @@ function showAutoSaveIndicator(success = true, customMessage = null) {
     const alertClass = success ? 'alert-success' : 'alert-danger';
     const icon = success ? 'bi-check-circle' : 'bi-exclamation-triangle';
     const message = customMessage || (success ? 'Rascunho salvo automaticamente' : 'Erro ao salvar rascunho');
-    
+
     indicator.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
     indicator.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
     indicator.innerHTML = `
@@ -228,9 +228,9 @@ function showAutoSaveIndicator(success = true, customMessage = null) {
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
-    
+
     document.body.appendChild(indicator);
-    
+
     // Remover após 3 segundos
     setTimeout(() => {
         if (indicator.parentNode) {
@@ -243,7 +243,7 @@ function showAutoSaveIndicator(success = true, customMessage = null) {
 document.querySelector('form').addEventListener('submit', function(e) {
     // Atualizar campo oculto com conteúdo atual
     hiddenInput.value = quill.root.innerHTML;
-    
+
     // Verificar se há conteúdo
     const content = quill.getText().trim();
     if (!content || content.length < 10) {
@@ -252,7 +252,7 @@ document.querySelector('form').addEventListener('submit', function(e) {
         quill.focus();
         return false;
     }
-    
+
     // Verificar título
     const titulo = document.getElementById('titulo').value;
     if (!titulo.trim()) {
@@ -267,11 +267,11 @@ document.querySelector('form').addEventListener('submit', function(e) {
 quill.on('text-change', function() {
     const hasContent = quill.getText().trim().length > 0;
     const titulo = document.getElementById('titulo').value.trim();
-    
+
     // Habilitar/desabilitar botões baseado no conteúdo
     const submitBtn = document.querySelector('button[value="submit"]');
     const draftBtn = document.querySelector('button[value="draft"]');
-    
+
     if (submitBtn) {
         submitBtn.disabled = !hasContent || !titulo;
     }
@@ -284,10 +284,10 @@ quill.on('text-change', function() {
 document.getElementById('titulo').addEventListener('input', function() {
     const hasContent = quill.getText().trim().length > 0;
     const titulo = this.value.trim();
-    
+
     const submitBtn = document.querySelector('button[value="submit"]');
     const draftBtn = document.querySelector('button[value="draft"]');
-    
+
     if (submitBtn) {
         submitBtn.disabled = !hasContent || !titulo;
     }
