@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() if csrf_token else '' }}">
     <title>{% block title %}Alpha Gestão Documental{% endblock %}</title>
-    
+
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link href="{{ url_for('static', filename='css/custom.css') }}" rel="stylesheet">
-    
+
     {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -23,11 +23,11 @@
             <a class="navbar-brand" href="{{ url_for('dashboard.index') }}">
                 <i class="bi bi-file-earmark-text"></i> Alpha Gestão Documental
             </a>
-            
+
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            
+
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
@@ -78,18 +78,19 @@
                     </li>
                     {% if current_user.can_admin() %}
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-gear"></i> Administração
+                        <a class="nav-link dropdown-toggle" href="#" id="reportsDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-graph-up"></i> Relatórios
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('dashboard.users') }}">Usuários</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('auth.register') }}">Novo Usuário</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('dashboard.reports') }}">Relatórios</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('reports.index') }}">Dashboard de Relatórios</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('documents.index') }}">Relatório de Documentos</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('audits.reports') if 'audits' in blueprints else '#' }}">Relatório de Auditorias</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('nonconformities.reports') if 'nonconformities' in blueprints else '#' }}">Relatório de NCs</a></li>
                         </ul>
                     </li>
                     {% endif %}
                 </ul>
-                
+
                 <ul class="navbar-nav">
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
@@ -151,7 +152,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/custom.js') }}"></script>
-    
+
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>
