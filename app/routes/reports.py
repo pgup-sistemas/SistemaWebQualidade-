@@ -82,4 +82,5 @@ def index():
                          documentos_criados_mes=documentos_criados_mes,
                          ncs_abertas_mes=ncs_abertas_mes,
                          auditorias_mes=auditorias_mes,
-                         categorias=categorias)
+                         categorias=categorias,
+                         data_atual=datetime.utcnow())
