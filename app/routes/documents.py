@@ -300,8 +300,49 @@ def drafts():
         autor_id=current_user.id,
         status='rascunho',
         ativo=True
-    ).order_by(Document.data_modificacao.desc()).paginate(
+    ).order_by(Document.data_ultima_revisao.desc()).paginate(
         page=page, per_page=20, error_out=False
     )
     
     return render_template('documents/drafts.html', drafts=drafts)
+
+@bp.route('/<int:id>/restore-version/<int:version_id>', methods=['POST'])
+@login_required
+def restore_version(id, version_id):
+    """Restaurar uma versão específica do documento"""
+    document = Document.query.get_or_404(id)
+    version = DocumentVersion.query.get_or_404(version_id)
+    
+    if not (current_user.can_create_documents() or document.autor_id == current_user.id):
+        return jsonify({'success': False, 'error': 'Sem permissão para restaurar versão'})
+    
+    if version.documento_id != document.id:
+        return jsonify({'success': False, 'error': 'Versão não pertence ao documento'})
+    
+    try:
+        # Calcular próxima versão
+        next_version = f"{float(document.versao_atual) + 0.1:.1f}"
+        
+        # Criar nova versão baseada na versão restaurada
+        new_version = DocumentVersion(
+            documento_id=document.id,
+            versao=next_version,
+            conteudo=version.conteudo,
+            criado_por_id=current_user.id,
+            changelog=f'Restaurada versão {version.versao}'
+        )
+        
+        # Atualizar documento
+        document.versao_atual = next_version
+        document.data_ultima_revisao = datetime.utcnow()
+        if document.status == 'aprovado':
+            document.status = 'rascunho'  # Volta para rascunho quando restaura
+        
+        db.session.add(new_version)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': f'Versão {version.versao} restaurada como v{next_version}'})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)})

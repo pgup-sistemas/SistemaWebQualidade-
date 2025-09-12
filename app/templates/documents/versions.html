@@ -1,0 +1,224 @@
+
+{% extends "base.html" %}
+
+{% block title %}Versões - {{ document.titulo }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Início</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('documents.index') }}">Documentos</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('documents.view', id=document.id) }}">{{ document.titulo }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Versões</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h2><i class="bi bi-clock-history"></i> Histórico de Versões</h2>
+                    <p class="text-muted mb-0">{{ document.codigo }} - {{ document.titulo }}</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('documents.view', id=document.id) }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Voltar ao Documento
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informações do Documento -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <strong>Código:</strong><br>
+                            <span class="text-muted">{{ document.codigo }}</span>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Tipo:</strong><br>
+                            <span class="text-muted">{{ document.tipo.title() }}</span>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Status Atual:</strong><br>
+                            <span class="badge bg-{% if document.status == 'aprovado' %}success{% elif document.status == 'rascunho' %}warning text-dark{% elif document.status == 'em_revisao' %}info{% else %}secondary{% endif %}">
+                                {{ document.status.replace('_', ' ').title() }}
+                            </span>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Versão Atual:</strong><br>
+                            <span class="text-muted">{{ document.versao_atual }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Versões -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-list-ul"></i> Histórico de Versões ({{ versions|length }} versão{{ 's' if versions|length != 1 else '' }})
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if versions %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Versão</th>
+                                        <th>Data de Criação</th>
+                                        <th>Criado Por</th>
+                                        <th>Changelog</th>
+                                        <th class="text-center">Status</th>
+                                        <th class="text-center">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for version in versions %}
+                                    <tr{% if version.versao == document.versao_atual %} class="table-warning"{% endif %}>
+                                        <td>
+                                            <strong>v{{ version.versao }}</strong>
+                                            {% if version.versao == document.versao_atual %}
+                                                <span class="badge bg-primary ms-2">Atual</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span data-bs-toggle="tooltip" title="{{ version.data_criacao.strftime('%d/%m/%Y às %H:%M:%S') }}">
+                                                {{ version.data_criacao.strftime('%d/%m/%Y') }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-person-circle me-2"></i>
+                                                {{ version.criado_por.nome_completo }}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if version.changelog %}
+                                                <span class="text-muted">{{ version.changelog[:100] }}{% if version.changelog|length > 100 %}...{% endif %}</span>
+                                            {% else %}
+                                                <span class="text-muted fst-italic">Sem changelog</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center">
+                                            {% if version.versao == document.versao_atual %}
+                                                <span class="badge bg-success">Ativa</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Histórico</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <button type="button" class="btn btn-outline-info" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#versionModal" 
+                                                        onclick="showVersionContent('{{ version.id }}', '{{ version.versao }}', `{{ version.conteudo|replace('`', '\\`')|replace('\n', '\\n') }}`, '{{ version.changelog or '' }}')">
+                                                    <i class="bi bi-eye"></i> Ver
+                                                </button>
+                                                {% if current_user.can_create_documents() and version.versao != document.versao_atual %}
+                                                <button type="button" class="btn btn-outline-warning" 
+                                                        onclick="restoreVersion('{{ version.id }}', '{{ version.versao }}')" 
+                                                        title="Restaurar esta versão">
+                                                    <i class="bi bi-arrow-clockwise"></i>
+                                                </button>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-clock-history display-4 text-muted"></i>
+                            <p class="text-muted mt-2">Nenhuma versão encontrada</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Visualização de Versão -->
+<div class="modal fade" id="versionModal" tabindex="-1" aria-labelledby="versionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="versionModalLabel">
+                    <i class="bi bi-file-earmark-text"></i> Versão <span id="modalVersionNumber"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label"><strong>Changelog:</strong></label>
+                    <div id="modalChangelog" class="alert alert-info"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label"><strong>Conteúdo:</strong></label>
+                    <div id="modalContent" class="border rounded p-3 bg-light" style="min-height: 300px; max-height: 400px; overflow-y: auto;"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showVersionContent(versionId, versionNumber, content, changelog) {
+    document.getElementById('modalVersionNumber').textContent = versionNumber;
+    document.getElementById('modalChangelog').textContent = changelog || 'Sem changelog informado';
+    document.getElementById('modalContent').innerHTML = content.replace(/\n/g, '<br>');
+}
+
+function restoreVersion(versionId, versionNumber) {
+    if (confirm(`Tem certeza que deseja restaurar a versão ${versionNumber} como versão atual?`)) {
+        // Implementar restauração via AJAX
+        fetch(`/documents/{{ document.id }}/restore-version/${versionId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Versão restaurada com sucesso!');
+                location.reload();
+            } else {
+                alert('Erro ao restaurar versão: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao restaurar versão');
+        });
+    }
+}
+
+// Inicializar tooltips
+document.addEventListener('DOMContentLoaded', function () {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+});
+</script>
+{% endblock %}

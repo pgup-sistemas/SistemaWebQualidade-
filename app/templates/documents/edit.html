@@ -1,0 +1,294 @@
+
+{% extends "base.html" %}
+
+{% block title %}Editar - {{ document.titulo }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Início</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('documents.index') }}">Documentos</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('documents.view', id=document.id) }}">{{ document.titulo }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Editar</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h2><i class="bi bi-pencil-square"></i> Editar Documento</h2>
+                    <p class="text-muted mb-0">{{ document.codigo }} - Versão {{ document.versao_atual }}</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('documents.view', id=document.id) }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Cancelar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alertas de Status -->
+    {% if document.status == 'aprovado' %}
+    <div class="alert alert-warning d-flex align-items-center" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        <div>
+            <strong>Atenção:</strong> Este documento está aprovado. As alterações criarão uma nova versão em rascunho que precisará passar pelo processo de aprovação novamente.
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Formulário de Edição -->
+    <form method="POST" id="editForm" class="needs-validation" novalidate>
+        <div class="row">
+            <!-- Informações Básicas -->
+            <div class="col-md-8">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-info-circle"></i> Informações Básicas
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label for="titulo" class="form-label">Título *</label>
+                                <input type="text" class="form-control" id="titulo" name="titulo" 
+                                       value="{{ document.titulo }}" required maxlength="200">
+                                <div class="invalid-feedback">
+                                    Por favor, informe o título do documento.
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="tipo" class="form-label">Tipo *</label>
+                                <select class="form-select" id="tipo" name="tipo" required>
+                                    <option value="">Selecione o tipo</option>
+                                    <option value="procedimento" {{ 'selected' if document.tipo == 'procedimento' else '' }}>Procedimento</option>
+                                    <option value="instrucao" {{ 'selected' if document.tipo == 'instrucao' else '' }}>Instrução de Trabalho</option>
+                                    <option value="politica" {{ 'selected' if document.tipo == 'politica' else '' }}>Política</option>
+                                    <option value="manual" {{ 'selected' if document.tipo == 'manual' else '' }}>Manual</option>
+                                    <option value="formulario" {{ 'selected' if document.tipo == 'formulario' else '' }}>Formulário</option>
+                                    <option value="outros" {{ 'selected' if document.tipo == 'outros' else '' }}>Outros</option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Por favor, selecione o tipo do documento.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="departamento" class="form-label">Departamento</label>
+                                <input type="text" class="form-control" id="departamento" name="departamento" 
+                                       value="{{ document.departamento or '' }}" maxlength="100">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="data_validade" class="form-label">Data de Validade</label>
+                                <input type="date" class="form-control" id="data_validade" name="data_validade" 
+                                       value="{{ document.data_validade.strftime('%Y-%m-%d') if document.data_validade else '' }}">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="palavras_chave" class="form-label">Palavras-chave</label>
+                            <input type="text" class="form-control" id="palavras_chave" name="palavras_chave" 
+                                   value="{{ document.palavras_chave or '' }}" 
+                                   placeholder="Separe as palavras-chave por vírgula">
+                            <div class="form-text">Utilize palavras-chave para facilitar a busca do documento.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="resumo" class="form-label">Resumo</label>
+                            <textarea class="form-control" id="resumo" name="resumo" rows="3" 
+                                      maxlength="500">{{ document.resumo or '' }}</textarea>
+                            <div class="form-text">Breve descrição do conteúdo e objetivo do documento.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Conteúdo -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-file-text"></i> Conteúdo do Documento
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="conteudo" class="form-label">Conteúdo *</label>
+                            <textarea class="form-control" id="conteudo" name="conteudo" rows="15" 
+                                      required>{{ current_version.conteudo if current_version else '' }}</textarea>
+                            <div class="invalid-feedback">
+                                Por favor, informe o conteúdo do documento.
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="changelog" class="form-label">Changelog (Registro de Alterações)</label>
+                            <textarea class="form-control" id="changelog" name="changelog" rows="3" 
+                                      placeholder="Descreva as principais alterações feitas nesta versão...">{{ current_version.changelog if current_version else '' }}</textarea>
+                            <div class="form-text">Informe as alterações realizadas para controle de versão.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Painel Lateral -->
+            <div class="col-md-4">
+                <!-- Status e Ações -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">
+                            <i class="bi bi-gear"></i> Status e Ações
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Status Atual</label>
+                            <div>
+                                <span class="badge bg-{% if document.status == 'aprovado' %}success{% elif document.status == 'rascunho' %}warning text-dark{% elif document.status == 'em_revisao' %}info{% else %}secondary{% endif %} fs-6">
+                                    {{ document.status.replace('_', ' ').title() }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Código</label>
+                            <div class="text-muted">{{ document.codigo }}</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Versão Atual</label>
+                            <div class="text-muted">{{ document.versao_atual }}</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Autor</label>
+                            <div class="text-muted">{{ document.autor.nome_completo }}</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Data de Criação</label>
+                            <div class="text-muted">{{ document.data_criacao.strftime('%d/%m/%Y') }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Histórico -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">
+                            <i class="bi bi-clock-history"></i> Histórico
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="small">
+                            <a href="{{ url_for('documents.versions', id=document.id) }}" class="text-decoration-none">
+                                <i class="bi bi-eye"></i> Ver todas as versões
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <button type="button" class="btn btn-outline-info me-2" onclick="autoSave()">
+                                    <i class="bi bi-floppy"></i> Salvar Rascunho
+                                </button>
+                                <span id="autoSaveStatus" class="text-muted small"></span>
+                            </div>
+                            <div>
+                                <a href="{{ url_for('documents.view', id=document.id) }}" class="btn btn-outline-secondary me-2">
+                                    <i class="bi bi-x-circle"></i> Cancelar
+                                </a>
+                                <button type="submit" class="btn btn-primary" name="action" value="save">
+                                    <i class="bi bi-check-circle"></i> Salvar Alterações
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+// Auto-save functionality
+let autoSaveTimer;
+
+function autoSave() {
+    const formData = new FormData(document.getElementById('editForm'));
+    formData.append('auto_save', 'true');
+    
+    document.getElementById('autoSaveStatus').textContent = 'Salvando...';
+    
+    fetch('{{ url_for("documents.edit", id=document.id) }}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('autoSaveStatus').textContent = 'Salvo automaticamente às ' + new Date().toLocaleTimeString();
+        } else {
+            document.getElementById('autoSaveStatus').textContent = 'Erro ao salvar: ' + data.error;
+        }
+    })
+    .catch(error => {
+        console.error('Erro no auto-save:', error);
+        document.getElementById('autoSaveStatus').textContent = 'Erro na conexão';
+    });
+}
+
+// Auto-save a cada 2 minutos se houver alterações
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('input, textarea, select');
+    let hasChanges = false;
+    
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            hasChanges = true;
+        });
+    });
+    
+    setInterval(function() {
+        if (hasChanges) {
+            autoSave();
+            hasChanges = false;
+        }
+    }, 120000); // 2 minutos
+});
+
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+</script>
+{% endblock %}
