@@ -1,10 +1,20 @@
 # Overview
 
-Alpha Gestão Documental is a comprehensive document management system built with Flask. It provides document creation, version control, approval workflows, and user role-based access control. The system enables organizations to manage their document lifecycle from creation through approval, publishing, and archival, with features like document reading confirmations, expiration tracking, and audit trails.
+Alpha Gestão Documental is a comprehensive document management system built with Flask. It provides document creation, version control, approval workflows, and user role-based access control. The system enables organizations to manage their document lifecycle from creation through approval, publishing, and archival, with features like document reading confirmations, expiration tracking, audit trails, non-conformity management (CAPA), internal audits, digital signatures, and advanced email notifications.
 
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
+
+# Recent Changes
+
+**September 12, 2025**
+- **Non-Conformity Management (CAPA)**: Complete module for managing non-conformities with corrective and preventive actions
+- **Internal Audits Module**: Audit planning, execution with checklists, findings management, and compliance tracking
+- **Digital Signature System**: Electronic and digital document signing with verification and certificate management
+- **Advanced Email Notifications**: Automated notification system with templates for various events
+- **Quality Management Menu**: New navigation section for quality-related modules
+- **Enhanced Models**: Added NonConformity, CorrectiveAction, Audit, AuditChecklist, AuditFinding, DocumentSignature, EmailNotification
 
 # System Architecture
 
@@ -17,8 +27,9 @@ Preferred communication style: Simple, everyday language.
 
 ## Data Model Design
 - **User Management**: Role-based system with 5 distinct user types (administrador, gestor_qualidade, aprovador_revisor, colaborador_leitor, auditor)
-- **Document Lifecycle**: Version control system with DocumentVersion tracking, approval workflows, and reading confirmations
-- **Audit Trail**: Comprehensive tracking of document creation, modifications, approvals, and user interactions
+- **Document Lifecycle**: Version control system with DocumentVersion tracking, approval workflows, reading confirmations, and digital signatures
+- **Quality Management**: Non-conformity tracking, CAPA actions, internal audit workflows, and compliance monitoring
+- **Audit Trail**: Comprehensive tracking of document creation, modifications, approvals, user interactions, and quality activities
 
 ## Frontend Architecture
 - **Template Engine**: Jinja2 with Bootstrap 5 for responsive UI
@@ -42,6 +53,7 @@ Preferred communication style: Simple, everyday language.
 - **Flask**: Web framework with SQLAlchemy, Login, Mail, and WTF extensions
 - **Bootstrap 5**: Frontend CSS framework with responsive grid system
 - **Bootstrap Icons**: Icon library for consistent UI elements
+- **Cryptography**: Library for digital signature and encryption capabilities
 
 ## Rich Text Editor
 - **TinyMCE**: Cloud-based rich text editor for document content creation
