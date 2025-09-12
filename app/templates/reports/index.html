@@ -1,0 +1,329 @@
+
+{% extends "base.html" %}
+
+{% block title %}Dashboard de Relatórios{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-graph-up text-primary"></i> Dashboard de Relatórios</h2>
+                <div class="text-muted">
+                    <i class="bi bi-calendar"></i> Atualizado em {{ moment().format('DD/MM/YYYY HH:mm') }}
+                </div>
+            </div>
+
+            <!-- Cards de Estatísticas Principais -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-white bg-primary">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="mb-0">{{ total_documentos }}</h4>
+                                    <p class="mb-0">Total de Documentos</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="bi bi-file-earmark-text" style="font-size: 2rem;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-success">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="mb-0">{{ documentos_ativos }}</h4>
+                                    <p class="mb-0">Documentos Ativos</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="bi bi-check-circle" style="font-size: 2rem;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-warning">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="mb-0">{{ aprovacoes_pendentes }}</h4>
+                                    <p class="mb-0">Aprovações Pendentes</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="bi bi-clock" style="font-size: 2rem;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-danger">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="mb-0">{{ ncs_abertas }}</h4>
+                                    <p class="mb-0">NCs Abertas</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="bi bi-exclamation-triangle" style="font-size: 2rem;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Segunda linha de estatísticas -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="text-info">{{ total_usuarios }}</h5>
+                            <p class="mb-0 text-muted">Total de Usuários</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="text-success">{{ usuarios_ativos }}</h5>
+                            <p class="mb-0 text-muted">Usuários Ativos</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="text-warning">{{ auditorias_ativas }}</h5>
+                            <p class="mb-0 text-muted">Auditorias Ativas</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="text-danger">{{ ncs_criticas }}</h5>
+                            <p class="mb-0 text-muted">NCs Críticas</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status dos Documentos -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-pie-chart"></i> Status dos Documentos
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Aprovados:</span>
+                                        <span class="badge bg-success">{{ documentos_aprovados }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Rascunho:</span>
+                                        <span class="badge bg-secondary">{{ documentos_rascunho }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-exclamation-circle"></i> Situação das NCs
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Abertas:</span>
+                                        <span class="badge bg-warning">{{ ncs_abertas }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Atrasadas:</span>
+                                        <span class="badge bg-danger">{{ ncs_atrasadas }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documentos por Categoria -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-bar-chart"></i> Documentos por Tipo (Top 5)
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if categorias %}
+                                {% for categoria in categorias %}
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span>{{ categoria.tipo or 'Sem tipo' }}</span>
+                                    <span class="badge bg-primary">{{ categoria.count }}</span>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                            <p class="text-muted text-center">Nenhum documento cadastrado</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-calendar-check"></i> Atividades do Mês
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between">
+                                    <span><i class="bi bi-file-plus text-primary"></i> Documentos criados:</span>
+                                    <span class="badge bg-primary">{{ documentos_criados_mes }}</span>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between">
+                                    <span><i class="bi bi-exclamation-triangle text-warning"></i> NCs abertas:</span>
+                                    <span class="badge bg-warning">{{ ncs_abertas_mes }}</span>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between">
+                                    <span><i class="bi bi-search text-info"></i> Auditorias:</span>
+                                    <span class="badge bg-info">{{ auditorias_mes }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Indicadores de Conformidade -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-speedometer2"></i> Indicadores de Qualidade
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="text-center p-3 border rounded">
+                                        <h4 class="text-success">{{ auditorias_concluidas }}</h4>
+                                        <p class="mb-0 text-muted">Auditorias Concluídas</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center p-3 border rounded">
+                                        <h4 class="text-warning">{{ aprovacoes_atrasadas }}</h4>
+                                        <p class="mb-0 text-muted">Aprovações Atrasadas</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center p-3 border rounded">
+                                        {% set percentual_conformidade = ((documentos_aprovados / total_documentos * 100) if total_documentos > 0 else 0) | round(1) %}
+                                        <h4 class="text-info">{{ percentual_conformidade }}%</h4>
+                                        <p class="mb-0 text-muted">Documentos Aprovados</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center p-3 border rounded">
+                                        {% set eficiencia_resolucao = ((100 - (ncs_atrasadas / ncs_abertas * 100)) if ncs_abertas > 0 else 100) | round(1) %}
+                                        <h4 class="text-success">{{ eficiencia_resolucao }}%</h4>
+                                        <p class="mb-0 text-muted">Eficiência NCs</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ações Rápidas -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-lightning"></i> Ações Rápidas
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <a href="{{ url_for('documents.index') }}" class="btn btn-outline-primary btn-block mb-2">
+                                        <i class="bi bi-file-earmark-text"></i> Ver Documentos
+                                    </a>
+                                </div>
+                                <div class="col-md-3">
+                                    <a href="{{ url_for('users.index') }}" class="btn btn-outline-info btn-block mb-2">
+                                        <i class="bi bi-people"></i> Gerenciar Usuários
+                                    </a>
+                                </div>
+                                <div class="col-md-3">
+                                    <a href="{{ url_for('nonconformities.index') if 'nonconformities' in blueprints else '#' }}" class="btn btn-outline-warning btn-block mb-2">
+                                        <i class="bi bi-exclamation-triangle"></i> Ver NCs
+                                    </a>
+                                </div>
+                                <div class="col-md-3">
+                                    <a href="{{ url_for('audits.index') if 'audits' in blueprints else '#' }}" class="btn btn-outline-secondary btn-block mb-2">
+                                        <i class="bi bi-search"></i> Ver Auditorias
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    margin-bottom: 1rem;
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.btn-block {
+    display: block;
+    width: 100%;
+}
+
+.border {
+    border: 1px solid #dee2e6 !important;
+}
+</style>
+{% endblock %}
