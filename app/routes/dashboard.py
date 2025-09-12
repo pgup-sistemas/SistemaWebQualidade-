@@ -22,12 +22,12 @@ def index():
 
     # Documentos recentes do usuário
     meus_documentos = Document.query.filter_by(
-        criado_por_id=current_user.id
+        autor_id=current_user.id
     ).order_by(Document.data_criacao.desc()).limit(5).all()
 
     # Aprovações pendentes para o usuário
     minhas_aprovacoes = ApprovalFlow.query.filter_by(
-        aprovador_id=current_user.id,
+        responsavel_id=current_user.id,
         status='pendente'
     ).order_by(ApprovalFlow.data_atribuicao.desc()).limit(5).all()
 
@@ -36,7 +36,7 @@ def index():
     docs_mais_lidos = db.session.query(
         Document,
         db.func.count(Document.id).label('leituras')
-    ).join(Document.leituras_confirmacao).filter(
+    ).join(Document.leituras).filter(
         Document.ativo == True
     ).group_by(Document.id).order_by(
         db.func.count(Document.id).desc()
