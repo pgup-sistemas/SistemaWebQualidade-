@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Criar Documento - Alpha Gestão Documental{% endblock %}
+
+{% block extra_head %}
+<!-- TinyMCE -->
+<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">
+                    <i class="bi bi-file-earmark-plus"></i> Criar Novo Documento
+                    <small class="text-muted">Editor integrado de documentos</small>
+                </h1>
+                <a href="{{ url_for('documents.index') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <form method="POST" class="needs-validation" novalidate>
+        <div class="row">
+            <!-- Informações do Documento -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">
+                            <i class="bi bi-info-circle"></i> Informações do Documento
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="titulo" class="form-label">Título *</label>
+                            <input type="text" class="form-control" id="titulo" name="titulo" required>
+                            <div class="invalid-feedback">
+                                O título é obrigatório.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="tipo" class="form-label">Tipo *</label>
+                            <select class="form-select" id="tipo" name="tipo" required>
+                                <option value="">Selecione o tipo</option>
+                                <option value="procedimento">Procedimento</option>
+                                <option value="instrucao">Instrução de Trabalho</option>
+                                <option value="politica">Política</option>
+                                <option value="manual">Manual</option>
+                                <option value="formulario">Formulário</option>
+                                <option value="plano">Plano</option>
+                                <option value="registro">Registro</option>
+                                <option value="outros">Outros</option>
+                            </select>
+                            <div class="invalid-feedback">
+                                Selecione o tipo do documento.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="departamento" class="form-label">Departamento</label>
+                            <input type="text" class="form-control" id="departamento" name="departamento" 
+                                   placeholder="Ex: Qualidade, RH, Produção">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="data_validade" class="form-label">Data de Validade</label>
+                            <input type="date" class="form-control" id="data_validade" name="data_validade">
+                            <div class="form-text">Deixe em branco se não há validade definida</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="palavras_chave" class="form-label">Palavras-chave</label>
+                            <input type="text" class="form-control" id="palavras_chave" name="palavras_chave" 
+                                   placeholder="Ex: qualidade, auditoria, ISO">
+                            <div class="form-text">Separadas por vírgula para facilitar a busca</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="resumo" class="form-label">Resumo</label>
+                            <textarea class="form-control" id="resumo" name="resumo" rows="3" 
+                                      placeholder="Breve descrição do documento"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Editor de Conteúdo -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">
+                            <i class="bi bi-file-text"></i> Conteúdo do Documento
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="conteudo" class="form-label">Conteúdo *</label>
+                            <textarea id="conteudo" name="conteudo" class="form-control" rows="20" required></textarea>
+                            <div class="invalid-feedback">
+                                O conteúdo é obrigatório.
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle"></i>
+                                    Use o editor para formatar o documento. O código será gerado automaticamente.
+                                </small>
+                            </div>
+                            <div>
+                                <button type="submit" class="btn btn-primary me-2">
+                                    <i class="bi bi-check-circle"></i> Criar Documento
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="salvarRascunho()">
+                                    <i class="bi bi-floppy"></i> Salvar Rascunho
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Inicializar TinyMCE
+tinymce.init({
+    selector: '#conteudo',
+    language: 'pt_BR',
+    height: 500,
+    menubar: true,
+    plugins: [
+        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+        'insertdatetime', 'media', 'table', 'help', 'wordcount', 'save'
+    ],
+    toolbar: 'undo redo | blocks | bold italic underline | alignleft aligncenter ' +
+             'alignright alignjustify | bullist numlist outdent indent | ' +
+             'removeformat | table | link image | code preview fullscreen | save',
+    content_style: 'body { font-family: Arial, sans-serif; font-size: 14px; }',
+    setup: function (editor) {
+        editor.on('change', function () {
+            editor.save();
+        });
+    }
+});
+
+// Função para salvar rascunho
+function salvarRascunho() {
+    // Salvar conteúdo do editor
+    tinymce.triggerSave();
+    
+    // Aqui você pode implementar AJAX para salvar o rascunho
+    alert('Funcionalidade de rascunho será implementada na próxima versão');
+}
+
+// Validação personalizada do formulário
+document.querySelector('form').addEventListener('submit', function(e) {
+    // Salvar conteúdo do TinyMCE antes do envio
+    tinymce.triggerSave();
+    
+    // Verificar se há conteúdo
+    const conteudo = document.getElementById('conteudo').value;
+    if (!conteudo.trim()) {
+        e.preventDefault();
+        alert('O conteúdo do documento é obrigatório');
+        return false;
+    }
+});
+</script>
+{% endblock %}

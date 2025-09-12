@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Documentos - Alpha Gestão Documental{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">
+                    <i class="bi bi-folder"></i> Documentos
+                    <small class="text-muted">Gestão de documentos do sistema</small>
+                </h1>
+                {% if current_user.can_create_documents() %}
+                <a href="{{ url_for('documents.create') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Novo Documento
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros de Busca -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="search" class="form-label">Buscar</label>
+                            <input type="text" class="form-control" id="search" name="search" 
+                                   value="{{ search }}" placeholder="Título, código ou palavras-chave">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="tipo" class="form-label">Tipo</label>
+                            <select class="form-select" id="tipo" name="tipo">
+                                <option value="">Todos os tipos</option>
+                                {% for tipo in tipos %}
+                                <option value="{{ tipo }}" {{ 'selected' if current_tipo == tipo else '' }}>
+                                    {{ tipo.title() }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="">Todos os status</option>
+                                <option value="rascunho" {{ 'selected' if current_status == 'rascunho' else '' }}>Rascunho</option>
+                                <option value="em_revisao" {{ 'selected' if current_status == 'em_revisao' else '' }}>Em Revisão</option>
+                                <option value="aprovado" {{ 'selected' if current_status == 'aprovado' else '' }}>Aprovado</option>
+                                <option value="obsoleto" {{ 'selected' if current_status == 'obsoleto' else '' }}>Obsoleto</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-search"></i> Buscar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Documentos -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    {% if documents.items %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Título</th>
+                                    <th>Tipo</th>
+                                    <th>Status</th>
+                                    <th>Versão</th>
+                                    <th>Autor</th>
+                                    <th>Data Criação</th>
+                                    <th>Validade</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for doc in documents.items %}
+                                <tr>
+                                    <td>
+                                        <code>{{ doc.codigo }}</code>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('documents.view', id=doc.id) }}" class="text-decoration-none">
+                                            {{ doc.titulo }}
+                                        </a>
+                                    </td>
+                                    <td>{{ doc.tipo.title() }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if doc.status == 'aprovado' else 'warning' if doc.status == 'em_revisao' else 'secondary' if doc.status == 'rascunho' else 'danger' }}">
+                                            {{ doc.status.replace('_', ' ').title() }}
+                                        </span>
+                                    </td>
+                                    <td>{{ doc.versao_atual }}</td>
+                                    <td>{{ doc.autor.nome_completo }}</td>
+                                    <td>{{ doc.data_criacao.strftime('%d/%m/%Y') }}</td>
+                                    <td>
+                                        {% if doc.data_validade %}
+                                            {% if doc.is_expired() %}
+                                                <span class="text-danger">
+                                                    <i class="bi bi-exclamation-triangle"></i>
+                                                    {{ doc.data_validade.strftime('%d/%m/%Y') }}
+                                                </span>
+                                            {% elif doc.days_to_expire() and doc.days_to_expire() <= 30 %}
+                                                <span class="text-warning">
+                                                    <i class="bi bi-clock"></i>
+                                                    {{ doc.data_validade.strftime('%d/%m/%Y') }}
+                                                </span>
+                                            {% else %}
+                                                {{ doc.data_validade.strftime('%d/%m/%Y') }}
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-muted">Sem validade</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('documents.view', id=doc.id) }}" 
+                                               class="btn btn-outline-primary" title="Visualizar">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            {% if current_user.can_create_documents() or doc.autor_id == current_user.id %}
+                                            <a href="{{ url_for('documents.edit', id=doc.id) }}" 
+                                               class="btn btn-outline-secondary" title="Editar">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            {% endif %}
+                                            <a href="{{ url_for('documents.versions', id=doc.id) }}" 
+                                               class="btn btn-outline-info" title="Versões">
+                                                <i class="bi bi-clock-history"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginação -->
+                    {% if documents.pages > 1 %}
+                    <nav aria-label="Navegação de páginas">
+                        <ul class="pagination justify-content-center">
+                            {% if documents.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('documents.index', page=documents.prev_num, search=search, tipo=current_tipo, status=current_status) }}">
+                                    Anterior
+                                </a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for page_num in documents.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num != documents.page %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('documents.index', page=page_num, search=search, tipo=current_tipo, status=current_status) }}">
+                                            {{ page_num }}
+                                        </a>
+                                    </li>
+                                    {% else %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ page_num }}</span>
+                                    </li>
+                                    {% endif %}
+                                {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">…</span>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if documents.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('documents.index', page=documents.next_num, search=search, tipo=current_tipo, status=current_status) }}">
+                                    Próxima
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-folder2-open display-1 text-muted"></i>
+                        <h4 class="mt-3">Nenhum documento encontrado</h4>
+                        <p class="text-muted">
+                            {% if search or current_tipo or current_status %}
+                            Tente ajustar os filtros de busca ou 
+                            <a href="{{ url_for('documents.index') }}">remover todos os filtros</a>.
+                            {% else %}
+                            Não há documentos cadastrados no sistema.
+                            {% endif %}
+                        </p>
+                        {% if current_user.can_create_documents() %}
+                        <a href="{{ url_for('documents.create') }}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Criar Primeiro Documento
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
