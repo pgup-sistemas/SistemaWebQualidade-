@@ -31,15 +31,17 @@ def index():
         status='pendente'
     ).order_by(ApprovalFlow.data_atribuicao.desc()).limit(5).all()
 
-    # Documentos mais lidos (últimos 30 dias)
+    # Documentos mais lidos (últimos 30 dias)  
     data_limite = datetime.utcnow() - timedelta(days=30)
+    from app.models import DocumentReading
     docs_mais_lidos = db.session.query(
         Document,
-        db.func.count(Document.id).label('leituras')
-    ).join(Document.leituras).filter(
-        Document.ativo == True
+        db.func.count(DocumentReading.id).label('leituras')
+    ).join(DocumentReading, Document.id == DocumentReading.documento_id).filter(
+        Document.ativo == True,
+        DocumentReading.data_leitura >= data_limite
     ).group_by(Document.id).order_by(
-        db.func.count(Document.id).desc()
+        db.func.count(DocumentReading.id).desc()
     ).limit(5).all()
 
     return render_template('dashboard/index.html',

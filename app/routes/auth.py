@@ -66,13 +66,12 @@ def register():
         elif User.query.filter_by(username=username).first():
             flash('Este nome de usuário já está em uso.', 'error')
         else:
-            user = User(
-                username=username,
-                email=email,
-                nome_completo=nome_completo,
-                perfil=perfil,
-                ativo=True
-            )
+            user = User()
+            user.username = username
+            user.email = email
+            user.nome_completo = nome_completo
+            user.perfil = perfil
+            user.ativo = True
             user.set_password(password)
             db.session.add(user)
             db.session.commit()
