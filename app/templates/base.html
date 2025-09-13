@@ -36,8 +36,14 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('documents.index') }}">
+                        <a class="nav-link position-relative" href="{{ url_for('documents.index') }}">
                             <i class="bi bi-folder"></i> Documentos
+                            {% if notification_counts.expiring_documents > 0 %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                {{ notification_counts.expiring_documents }}
+                                <span class="visually-hidden">documentos vencendo</span>
+                            </span>
+                            {% endif %}
                         </a>
                     </li>
                     {% if current_user.can_create_documents() %}
@@ -49,8 +55,14 @@
                     {% endif %}
                     {% if current_user.can_approve_documents() %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('approvals.index') }}">
+                        <a class="nav-link position-relative" href="{{ url_for('approvals.index') }}">
                             <i class="bi bi-check-circle"></i> Aprovações
+                            {% if notification_counts.pending_approvals > 0 %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark">
+                                {{ notification_counts.pending_approvals }}
+                                <span class="visually-hidden">aprovações pendentes</span>
+                            </span>
+                            {% endif %}
                         </a>
                     </li>
                     {% endif %}
@@ -62,11 +74,21 @@
                             <li><a class="dropdown-item" href="{{ url_for('equipments.index') }}">
                                 <i class="bi bi-gear"></i> Equipamentos
                             </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('nonconformities.index') }}">
+                            <li><a class="dropdown-item position-relative" href="{{ url_for('nonconformities.index') }}">
                                 <i class="bi bi-exclamation-triangle"></i> Não Conformidades
+                                {% if notification_counts.open_nonconformities > 0 %}
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    {{ notification_counts.open_nonconformities }}
+                                </span>
+                                {% endif %}
                             </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('audits.index') }}">
+                            <li><a class="dropdown-item position-relative" href="{{ url_for('audits.index') }}">
                                 <i class="bi bi-clipboard-check"></i> Auditorias
+                                {% if notification_counts.assigned_audits > 0 %}
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-info">
+                                    {{ notification_counts.assigned_audits }}
+                                </span>
+                                {% endif %}
                             </a></li>
                             {% if current_user.can_admin() %}
                             <li><hr class="dropdown-divider"></li>

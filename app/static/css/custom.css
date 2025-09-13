@@ -159,3 +159,44 @@ footer {
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
+
+/* Badges de notificação na navbar */
+.navbar .badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    min-width: 1.2rem;
+    height: 1.2rem;
+    line-height: 1;
+    padding: 0.2rem 0.3rem;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.2);
+    animation: pulse 2s infinite;
+}
+
+/* Animação para badges */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Dropdown melhorias */
+.dropdown-item.position-relative {
+    padding-right: 3rem; /* Espaço para o badge */
+}
+
+.dropdown-item .badge {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.4rem;
+    margin-left: 0.5rem;
+}
+
+/* Badges menores em mobile */
+@media (max-width: 768px) {
+    .navbar .badge {
+        font-size: 0.6rem;
+        min-width: 1rem;
+        height: 1rem;
+        padding: 0.1rem 0.2rem;
+    }
+}

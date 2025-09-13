@@ -52,6 +52,12 @@ def create_app():
     login_manager.login_view = 'auth.login'  # type: ignore
     login_manager.login_message = 'Por favor, faça login para acessar esta página.'
     login_manager.login_message_category = 'info'
+    
+    # Context processor para contadores de notificações
+    @app.context_processor
+    def inject_notification_counts():
+        from app.utils.notification_counters import get_all_notification_counts
+        return {'notification_counts': get_all_notification_counts()}
 
     # Criar pasta de uploads se não existir
     upload_folder = os.path.join(app.instance_path, app.config['UPLOAD_FOLDER'])
