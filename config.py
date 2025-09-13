@@ -1,4 +1,5 @@
 import os
+import logging
 from datetime import timedelta
 
 class Config:
@@ -46,3 +47,40 @@ class Config:
     SYSTEM_NAME = "Alpha Gestão Documental"
     COMPANY_NAME = "Sua Empresa"
     DOCUMENT_RETENTION_DAYS = 7  # Dias para manter versões antigas
+    
+    # Configurações de segurança
+    WTF_CSRF_TIME_LIMIT = 3600  # 1 hour for CSRF token
+    SESSION_COOKIE_SECURE = os.environ.get('FLASK_ENV') == 'production'
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    
+    # Configurações de logging
+    @staticmethod
+    def init_logging(app):
+        """Initialize logging configuration"""
+        is_production = (os.environ.get('FLASK_ENV') == 'production' or 
+                        os.environ.get('ENV') == 'production')
+        
+        if is_production:
+            # Production logging - more controlled
+            log_level = logging.INFO
+            log_format = '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
+        else:
+            # Development logging - more verbose
+            log_level = logging.DEBUG
+            log_format = '%(asctime)s %(levelname)s %(name)s: %(message)s [in %(pathname)s:%(lineno)d]'
+        
+        # Configure root logger
+        logging.basicConfig(
+            level=log_level,
+            format=log_format,
+            datefmt='%Y-%m-%d %H:%M:%S'
+        )
+        
+        # Set Flask app logger level
+        app.logger.setLevel(log_level)
+        
+        # Reduce noise from some libraries in production
+        if is_production:
+            logging.getLogger('werkzeug').setLevel(logging.WARNING)
+            logging.getLogger('urllib3').setLevel(logging.WARNING)

@@ -18,12 +18,35 @@ csrf = CSRFProtect()
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+    
+    # Initialize logging
+    Config.init_logging(app)
 
     # Inicializar extensões com a aplicação
     db.init_app(app)
     login_manager.init_app(app)
     mail.init_app(app)
     csrf.init_app(app)
+    
+    # Add security headers for production
+    @app.after_request
+    def add_security_headers(response):
+        """Add security headers to all responses"""
+        is_production = (os.environ.get('FLASK_ENV') == 'production' or 
+                        os.environ.get('ENV') == 'production')
+        
+        if is_production:
+            # Security headers for production
+            response.headers['X-Content-Type-Options'] = 'nosniff'
+            response.headers['X-Frame-Options'] = 'DENY'
+            response.headers['X-XSS-Protection'] = '1; mode=block'
+            response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+            response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+            # Remove server header
+            if 'Server' in response.headers:
+                response.headers.pop('Server')
+        
+        return response
 
     # Configurar Flask-Login
     login_manager.login_view = 'auth.login'  # type: ignore
@@ -50,6 +73,10 @@ def create_app():
     @app.errorhandler(Exception)
     def handle_db_error(error):
         """Trata erros de conexão com banco de dados"""
+        # Log the full error for debugging
+        app.logger.error(f"Application error: {error}", exc_info=True)
+        
+        # Handle database connection errors
         if any(err_text in str(error) for err_text in [
             'SSL connection has been closed',
             'psycopg2.OperationalError',
@@ -63,7 +90,17 @@ def create_app():
                 db.engine.dispose()
             except:
                 pass
-        return str(error), 500
+        
+        # Return safe error messages based on environment
+        is_production = (os.environ.get('FLASK_ENV') == 'production' or 
+                        os.environ.get('ENV') == 'production')
+        
+        if is_production:
+            # Don't expose error details in production
+            return "Erro interno do servidor. Entre em contato com o suporte.", 500
+        else:
+            # Show full error in development
+            return str(error), 500
 
     # Criar tabelas do banco de dados
     with app.app_context():
@@ -71,18 +108,26 @@ def create_app():
 
         # Criar usuário administrador padrão se não existir (apenas em desenvolvimento)
         from app.models import User
-        if app.config.get('ENV') != 'production':
+        is_development = (os.environ.get('CREATE_DEFAULT_ADMIN', 'False').lower() in ['true', '1', 'yes'] or
+                         (app.config.get('ENV') != 'production' and 
+                          os.environ.get('FLASK_ENV') != 'production'))
+                          
+        if is_development:
             admin = User.query.filter_by(email='admin@alphagestao.com').first()
             if not admin:
+                # Use environment variable for admin password or default for dev
+                admin_password = os.environ.get('DEFAULT_ADMIN_PASSWORD', 'admin123')
+                
                 admin = User()
                 admin.username = 'admin'
                 admin.email = 'admin@alphagestao.com'
                 admin.nome_completo = 'Administrador do Sistema'
                 admin.perfil = 'administrador'
                 admin.ativo = True
-                admin.set_password('admin123')
+                admin.set_password(admin_password)
                 db.session.add(admin)
                 db.session.commit()
+                app.logger.info("Default admin user created for development")
 
     return app
 
