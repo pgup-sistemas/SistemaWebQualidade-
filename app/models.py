@@ -178,24 +178,6 @@ class DocumentReading(db.Model):
     def __repr__(self):
         return f'<DocumentReading user {self.usuario_id} read doc {self.documento_id}>'
 
-class AuditLog(db.Model):
-    """Modelo de log de auditoria"""
-    __tablename__ = 'audit_logs'
-
-    id = db.Column(db.Integer, primary_key=True)
-    usuario_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    acao = db.Column(db.String(100), nullable=False)
-    entidade_tipo = db.Column(db.String(50), nullable=False)  # document, user, etc
-    entidade_id = db.Column(db.Integer, nullable=False)
-    detalhes = db.Column(db.Text)
-    ip_address = db.Column(db.String(45))
-    data_acao = db.Column(db.DateTime, default=datetime.utcnow)
-
-    # Relacionamento
-    usuario = db.relationship('User', backref='audit_logs')
-
-    def __repr__(self):
-        return f'<AuditLog {self.acao} by user {self.usuario_id}>'
 
 class NonConformity(db.Model):
     """Modelo de não conformidade (CAPA)"""
@@ -496,6 +478,7 @@ class EmailNotification(db.Model):
 class AuditLog(db.Model):
     """Modelo de log de auditoria para rastrear ações do sistema"""
     __tablename__ = 'audit_logs'
+    __table_args__ = {'extend_existing': True}
     
     id = db.Column(db.Integer, primary_key=True)
     usuario_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
