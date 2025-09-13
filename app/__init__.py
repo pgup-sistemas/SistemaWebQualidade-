@@ -26,7 +26,7 @@ def create_app():
     csrf.init_app(app)
 
     # Configurar Flask-Login
-    login_manager.login_view = 'auth.login'
+    login_manager.login_view = 'auth.login'  # type: ignore
     login_manager.login_message = 'Por favor, faça login para acessar esta página.'
     login_manager.login_message_category = 'info'
 
@@ -74,13 +74,12 @@ def create_app():
         if app.config.get('ENV') != 'production':
             admin = User.query.filter_by(email='admin@alphagestao.com').first()
             if not admin:
-                admin = User(
-                    username='admin',
-                    email='admin@alphagestao.com',
-                    nome_completo='Administrador do Sistema',
-                    perfil='administrador',
-                    ativo=True
-                )
+                admin = User()
+                admin.username = 'admin'
+                admin.email = 'admin@alphagestao.com'
+                admin.nome_completo = 'Administrador do Sistema'
+                admin.perfil = 'administrador'
+                admin.ativo = True
                 admin.set_password('admin123')
                 db.session.add(admin)
                 db.session.commit()
