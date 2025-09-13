@@ -16,10 +16,10 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Alpha Gestão Documental"
+args = "Document Management System"
 
 [[workflows.workflow]]
-name = "Alpha Gestão Documental"
+name = "Document Management System"
 author = "agent"
 
 [[workflows.workflow.tasks]]
