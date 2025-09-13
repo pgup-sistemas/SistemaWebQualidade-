@@ -35,7 +35,7 @@ def send_email(subject, recipients, text_body, html_body=None):
         # Enviar de forma assíncrona
         thr = threading.Thread(
             target=send_async_email, 
-            args=[current_app._get_current_object(), msg]
+            args=[current_app, msg]
         )
         thr.start()
         return True
@@ -46,14 +46,13 @@ def send_email(subject, recipients, text_body, html_body=None):
 
 def create_notification(user_id, tipo, assunto, conteudo, entidade_tipo=None, entidade_id=None):
     """Criar notificação na fila de envio"""
-    notification = EmailNotification(
-        destinatario_id=user_id,
-        tipo=tipo,
-        assunto=assunto,
-        conteudo=conteudo,
-        entidade_tipo=entidade_tipo,
-        entidade_id=entidade_id
-    )
+    notification = EmailNotification()
+    notification.destinatario_id = user_id
+    notification.tipo = tipo
+    notification.assunto = assunto
+    notification.conteudo = conteudo
+    notification.entidade_tipo = entidade_tipo
+    notification.entidade_id = entidade_id
     
     db.session.add(notification)
     db.session.commit()
