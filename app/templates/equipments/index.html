@@ -1,287 +1,282 @@
-
 {% extends "base.html" %}
 
 {% block title %}Gestão de Equipamentos{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
+<div class="container-fluid px-2 px-md-3 py-2">
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-3 mb-md-4">
+        <h2 class="h3 h-md-2 mb-2 mb-sm-0"><i class="bi bi-gear text-primary"></i> Gestão de Equipamentos</h2>
+        {% if current_user.can_create_documents() %}
+        <a href="{{ url_for('equipments.create') }}" class="btn btn-primary btn-sm btn-md-normal">
+            <i class="bi bi-plus-circle"></i> <span class="d-none d-sm-inline">Novo Equipamento</span><span class="d-sm-none">Novo</span>
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Cards de Estatísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ total_equipments }}</h4>
+                            <p class="mb-0">Total de Equipamentos</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-gear" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ ativos }}</h4>
+                            <p class="mb-0">Ativos</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-check-circle" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ manutencao }}</h4>
+                            <p class="mb-0">Em Manutenção</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-tools" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ calibracao }}</h4>
+                            <p class="mb-0">Em Calibração</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-speedometer2" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alertas de Vencimento -->
+    {% if calibracoes_vencendo > 0 or manutencoes_vencendo > 0 %}
+    <div class="row mb-4">
         <div class="col-md-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="bi bi-gear text-primary"></i> Gestão de Equipamentos</h2>
+            <div class="alert alert-warning">
+                <h5><i class="bi bi-exclamation-triangle"></i> Alertas de Vencimento</h5>
+                {% if calibracoes_vencendo > 0 %}
+                <p class="mb-1"><strong>{{ calibracoes_vencendo }}</strong> equipamento(s) com calibração vencendo nos próximos 30 dias</p>
+                {% endif %}
+                {% if manutencoes_vencendo > 0 %}
+                <p class="mb-0"><strong>{{ manutencoes_vencendo }}</strong> equipamento(s) com manutenção vencendo nos próximos 30 dias</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label for="search" class="form-label">Buscar</label>
+                    <input type="text" class="form-control" id="search" name="search" 
+                           value="{{ search }}" placeholder="Código, nome ou fabricante">
+                </div>
+                <div class="col-md-3">
+                    <label for="tipo" class="form-label">Tipo</label>
+                    <select class="form-select" id="tipo" name="tipo">
+                        <option value="">Todos os tipos</option>
+                        <option value="medicao" {% if tipo_filter == 'medicao' %}selected{% endif %}>Medição</option>
+                        <option value="teste" {% if tipo_filter == 'teste' %}selected{% endif %}>Teste</option>
+                        <option value="producao" {% if tipo_filter == 'producao' %}selected{% endif %}>Produção</option>
+                        <option value="seguranca" {% if tipo_filter == 'seguranca' %}selected{% endif %}>Segurança</option>
+                        <option value="laboratorio" {% if tipo_filter == 'laboratorio' %}selected{% endif %}>Laboratório</option>
+                        <option value="escritorio" {% if tipo_filter == 'escritorio' %}selected{% endif %}>Escritório</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="status" class="form-label">Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">Todos os status</option>
+                        <option value="ativo" {% if status_filter == 'ativo' %}selected{% endif %}>Ativo</option>
+                        <option value="inativo" {% if status_filter == 'inativo' %}selected{% endif %}>Inativo</option>
+                        <option value="manutencao" {% if status_filter == 'manutencao' %}selected{% endif %}>Manutenção</option>
+                        <option value="calibracao" {% if status_filter == 'calibracao' %}selected{% endif %}>Calibração</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i> Filtrar
+                        </button>
+                        <a href="{{ url_for('equipments.index') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de Equipamentos -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Equipamentos</h5>
+            {% if current_user.can_admin() %}
+            <a href="{{ url_for('equipments.reports') }}" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-graph-up"></i> Relatórios
+            </a>
+            {% endif %}
+        </div>
+        <div class="card-body">
+            {% if equipments.items %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nome</th>
+                            <th>Tipo</th>
+                            <th>Localização</th>
+                            <th>Status</th>
+                            <th>Próx. Calibração</th>
+                            <th>Próx. Manutenção</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for equipment in equipments.items %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('equipments.view', id=equipment.id) }}" class="text-decoration-none">
+                                    <strong>{{ equipment.codigo }}</strong>
+                                </a>
+                            </td>
+                            <td>{{ equipment.nome }}</td>
+                            <td>
+                                <span class="badge bg-secondary">{{ equipment.tipo.title() }}</span>
+                            </td>
+                            <td>{{ equipment.localizacao or '-' }}</td>
+                            <td>
+                                <span class="badge bg-{% if equipment.status == 'ativo' %}success{% elif equipment.status == 'inativo' %}secondary{% elif equipment.status == 'manutencao' %}warning{% elif equipment.status == 'calibracao' %}info{% endif %}">
+                                    {{ equipment.status.title() }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if equipment.data_proxima_calibracao %}
+                                    {% set days = equipment.days_to_calibration() %}
+                                    <span class="{% if days and days < 0 %}text-danger{% elif days and days <= 30 %}text-warning{% endif %}">
+                                        {{ equipment.data_proxima_calibracao.strftime('%d/%m/%Y') }}
+                                        {% if days is not none %}
+                                            ({{ days }}d)
+                                        {% endif %}
+                                    </span>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if equipment.data_proxima_manutencao %}
+                                    {% set days = equipment.days_to_maintenance() %}
+                                    <span class="{% if days and days < 0 %}text-danger{% elif days and days <= 30 %}text-warning{% endif %}">
+                                        {{ equipment.data_proxima_manutencao.strftime('%d/%m/%Y') }}
+                                        {% if days is not none %}
+                                            ({{ days }}d)
+                                        {% endif %}
+                                    </span>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('equipments.view', id=equipment.id) }}" 
+                                       class="btn btn-outline-primary btn-sm" title="Visualizar">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    {% if current_user.can_admin() or equipment.criado_por_id == current_user.id %}
+                                    <a href="{{ url_for('equipments.edit', id=equipment.id) }}" 
+                                       class="btn btn-outline-warning btn-sm" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginação -->
+            {% if equipments.pages > 1 %}
+            <nav aria-label="Navegação de páginas">
+                <ul class="pagination justify-content-center">
+                    {% if equipments.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('equipments.index', page=equipments.prev_num, search=search, tipo=tipo_filter, status=status_filter) }}">Anterior</a>
+                    </li>
+                    {% endif %}
+
+                    {% for page_num in equipments.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                        {% if page_num %}
+                            {% if page_num != equipments.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('equipments.index', page=page_num, search=search, tipo=tipo_filter, status=status_filter) }}">{{ page_num }}</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">…</span>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if equipments.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('equipments.index', page=equipments.next_num, search=search, tipo=tipo_filter, status=status_filter) }}">Próximo</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            {% else %}
+            <div class="text-center py-4">
+                <i class="bi bi-inbox display-4 text-muted"></i>
+                <p class="text-muted mt-2">Nenhum equipamento encontrado</p>
                 {% if current_user.can_create_documents() %}
                 <a href="{{ url_for('equipments.create') }}" class="btn btn-primary">
-                    <i class="bi bi-plus-circle"></i> Novo Equipamento
+                    <i class="bi bi-plus-circle"></i> Cadastrar Primeiro Equipamento
                 </a>
                 {% endif %}
             </div>
-
-            <!-- Cards de Estatísticas -->
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="card text-white bg-primary">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h4 class="mb-0">{{ total_equipments }}</h4>
-                                    <p class="mb-0">Total de Equipamentos</p>
-                                </div>
-                                <div class="align-self-center">
-                                    <i class="bi bi-gear" style="font-size: 2rem;"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-white bg-success">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h4 class="mb-0">{{ ativos }}</h4>
-                                    <p class="mb-0">Ativos</p>
-                                </div>
-                                <div class="align-self-center">
-                                    <i class="bi bi-check-circle" style="font-size: 2rem;"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-white bg-warning">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h4 class="mb-0">{{ manutencao }}</h4>
-                                    <p class="mb-0">Em Manutenção</p>
-                                </div>
-                                <div class="align-self-center">
-                                    <i class="bi bi-tools" style="font-size: 2rem;"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-white bg-info">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h4 class="mb-0">{{ calibracao }}</h4>
-                                    <p class="mb-0">Em Calibração</p>
-                                </div>
-                                <div class="align-self-center">
-                                    <i class="bi bi-speedometer2" style="font-size: 2rem;"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Alertas de Vencimento -->
-            {% if calibracoes_vencendo > 0 or manutencoes_vencendo > 0 %}
-            <div class="row mb-4">
-                <div class="col-md-12">
-                    <div class="alert alert-warning">
-                        <h5><i class="bi bi-exclamation-triangle"></i> Alertas de Vencimento</h5>
-                        {% if calibracoes_vencendo > 0 %}
-                        <p class="mb-1"><strong>{{ calibracoes_vencendo }}</strong> equipamento(s) com calibração vencendo nos próximos 30 dias</p>
-                        {% endif %}
-                        {% if manutencoes_vencendo > 0 %}
-                        <p class="mb-0"><strong>{{ manutencoes_vencendo }}</strong> equipamento(s) com manutenção vencendo nos próximos 30 dias</p>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
             {% endif %}
-
-            <!-- Filtros -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <form method="GET" class="row g-3">
-                        <div class="col-md-4">
-                            <label for="search" class="form-label">Buscar</label>
-                            <input type="text" class="form-control" id="search" name="search" 
-                                   value="{{ search }}" placeholder="Código, nome ou fabricante">
-                        </div>
-                        <div class="col-md-3">
-                            <label for="tipo" class="form-label">Tipo</label>
-                            <select class="form-select" id="tipo" name="tipo">
-                                <option value="">Todos os tipos</option>
-                                <option value="medicao" {% if tipo_filter == 'medicao' %}selected{% endif %}>Medição</option>
-                                <option value="teste" {% if tipo_filter == 'teste' %}selected{% endif %}>Teste</option>
-                                <option value="producao" {% if tipo_filter == 'producao' %}selected{% endif %}>Produção</option>
-                                <option value="seguranca" {% if tipo_filter == 'seguranca' %}selected{% endif %}>Segurança</option>
-                                <option value="laboratorio" {% if tipo_filter == 'laboratorio' %}selected{% endif %}>Laboratório</option>
-                                <option value="escritorio" {% if tipo_filter == 'escritorio' %}selected{% endif %}>Escritório</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="status" class="form-label">Status</label>
-                            <select class="form-select" id="status" name="status">
-                                <option value="">Todos os status</option>
-                                <option value="ativo" {% if status_filter == 'ativo' %}selected{% endif %}>Ativo</option>
-                                <option value="inativo" {% if status_filter == 'inativo' %}selected{% endif %}>Inativo</option>
-                                <option value="manutencao" {% if status_filter == 'manutencao' %}selected{% endif %}>Manutenção</option>
-                                <option value="calibracao" {% if status_filter == 'calibracao' %}selected{% endif %}>Calibração</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label">&nbsp;</label>
-                            <div>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-search"></i> Filtrar
-                                </button>
-                                <a href="{{ url_for('equipments.index') }}" class="btn btn-outline-secondary">
-                                    <i class="bi bi-x-circle"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Lista de Equipamentos -->
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Equipamentos</h5>
-                    {% if current_user.can_admin() %}
-                    <a href="{{ url_for('equipments.reports') }}" class="btn btn-outline-primary btn-sm">
-                        <i class="bi bi-graph-up"></i> Relatórios
-                    </a>
-                    {% endif %}
-                </div>
-                <div class="card-body">
-                    {% if equipments.items %}
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Código</th>
-                                    <th>Nome</th>
-                                    <th>Tipo</th>
-                                    <th>Localização</th>
-                                    <th>Status</th>
-                                    <th>Próx. Calibração</th>
-                                    <th>Próx. Manutenção</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for equipment in equipments.items %}
-                                <tr>
-                                    <td>
-                                        <a href="{{ url_for('equipments.view', id=equipment.id) }}" class="text-decoration-none">
-                                            <strong>{{ equipment.codigo }}</strong>
-                                        </a>
-                                    </td>
-                                    <td>{{ equipment.nome }}</td>
-                                    <td>
-                                        <span class="badge bg-secondary">{{ equipment.tipo.title() }}</span>
-                                    </td>
-                                    <td>{{ equipment.localizacao or '-' }}</td>
-                                    <td>
-                                        <span class="badge bg-{% if equipment.status == 'ativo' %}success{% elif equipment.status == 'inativo' %}secondary{% elif equipment.status == 'manutencao' %}warning{% elif equipment.status == 'calibracao' %}info{% endif %}">
-                                            {{ equipment.status.title() }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        {% if equipment.data_proxima_calibracao %}
-                                            {% set days = equipment.days_to_calibration() %}
-                                            <span class="{% if days and days < 0 %}text-danger{% elif days and days <= 30 %}text-warning{% endif %}">
-                                                {{ equipment.data_proxima_calibracao.strftime('%d/%m/%Y') }}
-                                                {% if days is not none %}
-                                                    ({{ days }}d)
-                                                {% endif %}
-                                            </span>
-                                        {% else %}
-                                            -
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if equipment.data_proxima_manutencao %}
-                                            {% set days = equipment.days_to_maintenance() %}
-                                            <span class="{% if days and days < 0 %}text-danger{% elif days and days <= 30 %}text-warning{% endif %}">
-                                                {{ equipment.data_proxima_manutencao.strftime('%d/%m/%Y') }}
-                                                {% if days is not none %}
-                                                    ({{ days }}d)
-                                                {% endif %}
-                                            </span>
-                                        {% else %}
-                                            -
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <a href="{{ url_for('equipments.view', id=equipment.id) }}" 
-                                               class="btn btn-outline-primary btn-sm" title="Visualizar">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-                                            {% if current_user.can_admin() or equipment.criado_por_id == current_user.id %}
-                                            <a href="{{ url_for('equipments.edit', id=equipment.id) }}" 
-                                               class="btn btn-outline-warning btn-sm" title="Editar">
-                                                <i class="bi bi-pencil"></i>
-                                            </a>
-                                            {% endif %}
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Paginação -->
-                    {% if equipments.pages > 1 %}
-                    <nav aria-label="Navegação de páginas">
-                        <ul class="pagination justify-content-center">
-                            {% if equipments.has_prev %}
-                            <li class="page-item">
-                                <a class="page-link" href="{{ url_for('equipments.index', page=equipments.prev_num, search=search, tipo=tipo_filter, status=status_filter) }}">Anterior</a>
-                            </li>
-                            {% endif %}
-                            
-                            {% for page_num in equipments.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
-                                {% if page_num %}
-                                    {% if page_num != equipments.page %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="{{ url_for('equipments.index', page=page_num, search=search, tipo=tipo_filter, status=status_filter) }}">{{ page_num }}</a>
-                                    </li>
-                                    {% else %}
-                                    <li class="page-item active">
-                                        <span class="page-link">{{ page_num }}</span>
-                                    </li>
-                                    {% endif %}
-                                {% else %}
-                                <li class="page-item disabled">
-                                    <span class="page-link">…</span>
-                                </li>
-                                {% endif %}
-                            {% endfor %}
-                            
-                            {% if equipments.has_next %}
-                            <li class="page-item">
-                                <a class="page-link" href="{{ url_for('equipments.index', page=equipments.next_num, search=search, tipo=tipo_filter, status=status_filter) }}">Próximo</a>
-                            </li>
-                            {% endif %}
-                        </ul>
-                    </nav>
-                    {% endif %}
-                    {% else %}
-                    <div class="text-center py-4">
-                        <i class="bi bi-inbox display-4 text-muted"></i>
-                        <p class="text-muted mt-2">Nenhum equipamento encontrado</p>
-                        {% if current_user.can_create_documents() %}
-                        <a href="{{ url_for('equipments.create') }}" class="btn btn-primary">
-                            <i class="bi bi-plus-circle"></i> Cadastrar Primeiro Equipamento
-                        </a>
-                        {% endif %}
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
         </div>
     </div>
 </div>

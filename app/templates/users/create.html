@@ -20,96 +20,79 @@
                 <div class="card-body">
                     <form method="POST">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                        <div class="row">
-                            <div class="col-md-6">
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
                                 <div class="mb-3">
-                                    <label for="nome_completo" class="form-label">
-                                        <i class="bi bi-person"></i> Nome Completo <span class="text-danger">*</span>
-                                    </label>
+                                    <label for="nome_completo" class="form-label">Nome Completo *</label>
                                     <input type="text" class="form-control" id="nome_completo" name="nome_completo" 
-                                           placeholder="Digite o nome completo" required>
+                                           required placeholder="Digite o nome completo">
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-12 col-md-6">
                                 <div class="mb-3">
-                                    <label for="username" class="form-label">
-                                        <i class="bi bi-at"></i> Nome de Usuário <span class="text-danger">*</span>
-                                    </label>
-                                    <input type="text" class="form-control" id="username" name="username" 
-                                           placeholder="Digite o nome de usuário" required>
+                                    <label for="nome_usuario" class="form-label">Nome de Usuário *</label>
+                                    <input type="text" class="form-control" id="nome_usuario" name="nome_usuario" 
+                                           required placeholder="Digite o nome de usuário">
                                     <div class="form-text">Usado para login no sistema</div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6">
+                        <div class="row g-3">
+                            <div class="col-12 col-md-8">
                                 <div class="mb-3">
-                                    <label for="email" class="form-label">
-                                        <i class="bi bi-envelope"></i> Email <span class="text-danger">*</span>
-                                    </label>
+                                    <label for="email" class="form-label">Email *</label>
                                     <input type="email" class="form-control" id="email" name="email" 
-                                           placeholder="Digite o email" required>
+                                           required placeholder="Digite o email">
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-12 col-md-4">
                                 <div class="mb-3">
-                                    <label for="perfil" class="form-label">
-                                        <i class="bi bi-shield-check"></i> Perfil <span class="text-danger">*</span>
-                                    </label>
+                                    <label for="perfil" class="form-label">Perfil *</label>
                                     <select class="form-select" id="perfil" name="perfil" required>
                                         <option value="">Selecione um perfil</option>
-                                        <option value="administrador">Administrador</option>
-                                        <option value="gestor_qualidade">Gestor de Qualidade</option>
-                                        <option value="aprovador_revisor">Aprovador/Revisor</option>
-                                        <option value="colaborador_leitor">Colaborador/Leitor</option>
-                                        <option value="auditor">Auditor</option>
+                                        <option value="admin">Administrador</option>
+                                        <option value="gestor">Gestor</option>
+                                        <option value="analista">Analista</option>
+                                        <option value="operador">Operador</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6">
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
                                 <div class="mb-3">
-                                    <label for="password" class="form-label">
-                                        <i class="bi bi-lock"></i> Senha <span class="text-danger">*</span>
-                                    </label>
-                                    <input type="password" class="form-control" id="password" name="password" 
-                                           placeholder="Digite a senha" required minlength="6">
+                                    <label for="senha" class="form-label">Senha *</label>
+                                    <input type="password" class="form-control" id="senha" name="senha" 
+                                           required placeholder="Digite a senha">
                                     <div class="form-text">Mínimo de 6 caracteres</div>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-12 col-md-6">
                                 <div class="mb-3">
-                                    <label for="password_confirm" class="form-label">
-                                        <i class="bi bi-lock-fill"></i> Confirmar Senha <span class="text-danger">*</span>
-                                    </label>
-                                    <input type="password" class="form-control" id="password_confirm" 
-                                           placeholder="Confirme a senha" required>
+                                    <label for="confirmar_senha" class="form-label">Confirmar Senha *</label>
+                                    <input type="password" class="form-control" id="confirmar_senha" name="confirmar_senha" 
+                                           required placeholder="Confirme a senha">
                                 </div>
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="ativo" name="ativo" checked>
-                                        <label class="form-check-label" for="ativo">
-                                            <i class="bi bi-check-circle"></i> Usuário ativo
-                                        </label>
-                                    </div>
-                                </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="ativo" name="ativo" checked>
+                                <label class="form-check-label" for="ativo">
+                                    Usuário ativo
+                                </label>
                             </div>
                         </div>
 
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a href="{{ url_for('users.index') }}" class="btn btn-outline-secondary">
-                                <i class="bi bi-x"></i> Cancelar
+                        <div class="d-flex flex-column flex-sm-row gap-2 justify-content-end">
+                            <a href="{{ url_for('users.index') }}" class="btn btn-secondary order-sm-1">
+                                <i class="bi bi-x-circle"></i> Cancelar
                             </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-check"></i> Criar Usuário
+                            <button type="submit" class="btn btn-primary order-sm-2">
+                                <i class="bi bi-check-circle"></i> Criar Usuário
                             </button>
                         </div>
                     </form>
@@ -121,8 +104,8 @@
 
 <script>
 // Validação de senha
-document.getElementById('password_confirm').addEventListener('input', function() {
-    const password = document.getElementById('password').value;
+document.getElementById('confirmar_senha').addEventListener('input', function() {
+    const password = document.getElementById('senha').value;
     const confirm = this.value;
 
     if (password !== confirm) {
@@ -132,15 +115,15 @@ document.getElementById('password_confirm').addEventListener('input', function()
     }
 });
 
-document.getElementById('password').addEventListener('input', function() {
-    const confirm = document.getElementById('password_confirm');
+document.getElementById('senha').addEventListener('input', function() {
+    const confirm = document.getElementById('confirmar_senha');
     if (confirm.value) {
         confirm.dispatchEvent(new Event('input'));
     }
 });
 
 // Validação de username (apenas letras, números e _)
-document.getElementById('username').addEventListener('input', function() {
+document.getElementById('nome_usuario').addEventListener('input', function() {
     const value = this.value;
     const valid = /^[a-zA-Z0-9_]+$/.test(value);
 
