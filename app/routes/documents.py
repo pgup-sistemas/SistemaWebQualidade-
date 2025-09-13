@@ -370,3 +370,74 @@ def restore_version(id, version_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'error': str(e)})
+
+
+@bp.route('/reports')
+@login_required
+def reports():
+    """Relatórios de documentos"""
+    if not current_user.can_admin():
+        flash('Acesso negado.', 'error')
+        return redirect(url_for('documents.index'))
+    
+    # Estatísticas gerais
+    total_documentos = Document.query.count()
+    ativos = Document.query.filter_by(ativo=True).count()
+    aprovados = Document.query.filter_by(status='aprovado').count()
+    rascunhos = Document.query.filter_by(status='rascunho').count()
+    em_revisao = Document.query.filter_by(status='em_revisao').count()
+    obsoletos = Document.query.filter_by(status='obsoleto').count()
+    
+    # Documentos por tipo
+    por_tipo = db.session.query(
+        Document.tipo,
+        db.func.count(Document.id).label('count')
+    ).filter_by(ativo=True).group_by(Document.tipo).order_by(
+        db.func.count(Document.id).desc()
+    ).all()
+    
+    # Documentos vencidos
+    vencidos = Document.query.filter(
+        Document.data_validade < datetime.utcnow(),
+        Document.ativo == True
+    ).count()
+    
+    # Documentos vencendo (próximos 30 dias)
+    data_limite_30 = datetime.utcnow() + timedelta(days=30)
+    vencendo = Document.query.filter(
+        Document.data_validade <= data_limite_30,
+        Document.data_validade >= datetime.utcnow(),
+        Document.ativo == True
+    ).count()
+    
+    # Documentos por departamento
+    por_departamento = db.session.query(
+        Document.departamento,
+        db.func.count(Document.id).label('count')
+    ).filter(
+        Document.ativo == True,
+        Document.departamento.isnot(None),
+        Document.departamento != ''
+    ).group_by(Document.departamento).order_by(
+        db.func.count(Document.id).desc()
+    ).all()
+    
+    # Documentos criados nos últimos 30 dias
+    data_limite = datetime.utcnow() - timedelta(days=30)
+    criados_mes = Document.query.filter(
+        Document.data_criacao >= data_limite,
+        Document.ativo == True
+    ).count()
+    
+    return render_template('documents/reports.html',
+                         total_documentos=total_documentos,
+                         ativos=ativos,
+                         aprovados=aprovados,
+                         rascunhos=rascunhos,
+                         em_revisao=em_revisao,
+                         obsoletos=obsoletos,
+                         por_tipo=por_tipo,
+                         vencidos=vencidos,
+                         vencendo=vencendo,
+                         por_departamento=por_departamento,
+                         criados_mes=criados_mes)
