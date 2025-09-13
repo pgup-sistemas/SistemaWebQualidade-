@@ -6,6 +6,7 @@ from flask_login import login_required, current_user
 from app.models import User, db
 from datetime import datetime, timedelta
 from sqlalchemy import or_
+from app.utils.password_validator import PasswordValidator
 
 bp = Blueprint('users', __name__)
 
@@ -88,6 +89,13 @@ def create():
         if User.query.filter_by(email=email).first():
             flash('Este email já está em uso.', 'error')
             return render_template('users/create.html')
+        
+        # Validar senha com validador robusto
+        is_valid, errors = PasswordValidator.validate_password(password, username, email)
+        if not is_valid:
+            for error in errors:
+                flash(error, 'error')
+            return render_template('users/create.html')
 
         user = User(
             username=username,
@@ -156,6 +164,12 @@ def edit(id):
 
         # Atualizar senha se fornecida
         if password:
+            # Validar nova senha
+            is_valid, errors = PasswordValidator.validate_password(password, username, email)
+            if not is_valid:
+                for error in errors:
+                    flash(error, 'error')
+                return render_template('users/edit.html', user=user)
             user.set_password(password)
 
         db.session.commit()

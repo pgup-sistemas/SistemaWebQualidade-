@@ -20,6 +20,10 @@ class User(UserMixin, db.Model):
     ativo = db.Column(db.Boolean, default=True)
     data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
     ultimo_login = db.Column(db.DateTime)
+    
+    # Reset de senha
+    reset_token = db.Column(db.String(100), unique=True)
+    reset_token_expiry = db.Column(db.DateTime)
 
     # Relacionamentos
     documentos_criados = db.relationship('Document', backref='autor', lazy='dynamic', foreign_keys='Document.autor_id')
@@ -49,6 +53,26 @@ class User(UserMixin, db.Model):
     def is_admin(self):
         """Verifica se o usuário é administrador (alias para can_admin)"""
         return self.perfil == 'administrador'
+    
+    def generate_reset_token(self):
+        """Gera token para reset de senha"""
+        import secrets
+        self.reset_token = secrets.token_urlsafe(32)
+        self.reset_token_expiry = datetime.utcnow() + timedelta(hours=1)
+        return self.reset_token
+    
+    def verify_reset_token(self, token):
+        """Verifica se token de reset é válido"""
+        if not self.reset_token or not self.reset_token_expiry:
+            return False
+        if datetime.utcnow() > self.reset_token_expiry:
+            return False
+        return self.reset_token == token
+    
+    def clear_reset_token(self):
+        """Limpa token de reset após uso"""
+        self.reset_token = None
+        self.reset_token_expiry = None
 
     def __repr__(self):
         return f'<User {self.username}>'
@@ -468,3 +492,46 @@ class EmailNotification(db.Model):
 
     def __repr__(self):
         return f'<EmailNotification {self.tipo} to user {self.destinatario_id}>'
+
+class AuditLog(db.Model):
+    """Modelo de log de auditoria para rastrear ações do sistema"""
+    __tablename__ = 'audit_logs'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    acao = db.Column(db.String(100), nullable=False)  # login, logout, create_user, update_user, etc.
+    recurso = db.Column(db.String(100), nullable=True)  # user, document, etc.
+    recurso_id = db.Column(db.Integer, nullable=True)
+    detalhes = db.Column(db.Text, nullable=True)  # JSON com detalhes da ação
+    ip_address = db.Column(db.String(45), nullable=True)  # Suporte IPv6
+    user_agent = db.Column(db.Text, nullable=True)
+    status = db.Column(db.String(20), default='sucesso')  # sucesso, falha, erro
+    data_acao = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    
+    # Relacionamento
+    usuario = db.relationship('User', backref='logs_auditoria')
+    
+    def __repr__(self):
+        return f'<AuditLog {self.acao} by user {self.usuario_id}>'
+    
+    @staticmethod
+    def registrar_acao(usuario_id, acao, recurso=None, recurso_id=None, 
+                      detalhes=None, ip_address=None, user_agent=None, status='sucesso'):
+        """
+        Registra uma ação de auditoria
+        """
+        log = AuditLog(
+            usuario_id=usuario_id,
+            acao=acao,
+            recurso=recurso,
+            recurso_id=recurso_id,
+            detalhes=detalhes,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            status=status
+        )
+        
+        db.session.add(log)
+        db.session.commit()
+        
+        return log

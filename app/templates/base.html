@@ -148,6 +148,19 @@
                         <ul class="dropdown-menu">
                             <li><h6 class="dropdown-header">{{ current_user.perfil.replace('_', ' ').title() }}</h6></li>
                             <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}">
+                                <i class="bi bi-person-circle"></i> Meu Perfil
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.change_password') }}">
+                                <i class="bi bi-lock"></i> Alterar Senha
+                            </a></li>
+                            {% if current_user.can_admin() %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('users.index') }}">
+                                <i class="bi bi-people"></i> Gerenciar Usuários
+                            </a></li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
                                 <i class="bi bi-box-arrow-right"></i> Sair
                             </a></li>
