@@ -113,30 +113,39 @@ def create_app():
 
     # Criar tabelas do banco de dados
     with app.app_context():
-        db.create_all()
+        try:
+            db.create_all()
 
-        # Criar usuário administrador padrão se não existir (apenas em desenvolvimento)
-        from app.models import User
-        is_development = (os.environ.get('CREATE_DEFAULT_ADMIN', 'False').lower() in ['true', '1', 'yes'] or
-                         (app.config.get('ENV') != 'production' and 
-                          os.environ.get('FLASK_ENV') != 'production'))
-                          
-        if is_development:
-            admin = User.query.filter_by(email='admin@alphagestao.com').first()
-            if not admin:
-                # Use environment variable for admin password or default for dev
-                admin_password = os.environ.get('DEFAULT_ADMIN_PASSWORD', 'admin123')
-                
-                admin = User()
-                admin.username = 'admin'
-                admin.email = 'admin@alphagestao.com'
-                admin.nome_completo = 'Administrador do Sistema'
-                admin.perfil = 'administrador'
-                admin.ativo = True
-                admin.set_password(admin_password)
-                db.session.add(admin)
-                db.session.commit()
-                app.logger.info("Default admin user created for development")
+            # Criar usuário administrador padrão se não existir (apenas em desenvolvimento)
+            from app.models import User
+            is_development = (os.environ.get('CREATE_DEFAULT_ADMIN', 'False').lower() in ['true', '1', 'yes'] or
+                             (app.config.get('ENV') != 'production' and 
+                              os.environ.get('FLASK_ENV') != 'production'))
+                              
+            if is_development:
+                try:
+                    admin = User.query.filter_by(email='admin@alphagestao.com').first()
+                    if not admin:
+                        # Use environment variable for admin password or default for dev
+                        admin_password = os.environ.get('DEFAULT_ADMIN_PASSWORD', 'admin123')
+                        
+                        admin = User()
+                        admin.username = 'admin'
+                        admin.email = 'admin@alphagestao.com'
+                        admin.nome_completo = 'Administrador do Sistema'
+                        admin.perfil = 'administrador'
+                        admin.ativo = True
+                        admin.set_password(admin_password)
+                        db.session.add(admin)
+                        db.session.commit()
+                        app.logger.info("Default admin user created for development")
+                except Exception as e:
+                    # Se houver erro na criação do admin (como coluna não existente), apenas logar
+                    app.logger.warning(f"Could not create default admin user: {e}")
+                    db.session.rollback()
+        except Exception as e:
+            app.logger.error(f"Error creating database tables: {e}")
+            db.session.rollback()
 
     return app
 
