@@ -48,9 +48,9 @@
         .sidebar-sticky {
             position: relative;
             top: 0;
-            height: calc(100vh - 120px); /* Mais espaço para mostrar link documentação completo */
+            height: calc(100vh - 100px); /* Aumentado de 120px para 100px para dar mais espaço */
             padding-top: 0;
-            padding-bottom: 2rem;
+            padding-bottom: 3rem; /* Aumentado de 2rem para 3rem */
             overflow-x: hidden;
             overflow-y: auto;
         }
@@ -142,8 +142,8 @@
             }
 
             .sidebar-sticky {
-                height: calc(100vh - 150px);
-                padding-bottom: 2rem;
+                height: calc(100vh - 130px); /* Ajustado para mobile */
+                padding-bottom: 3rem;
             }
 
             .user-info {
@@ -202,6 +202,7 @@
             backdrop-filter: blur(10px);
             z-index: 110;
             transition: all 0.3s ease;
+            height: 85px; /* Altura fixa para user-info */
         }
 
         .user-info .user-avatar {
