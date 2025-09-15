@@ -1,0 +1,171 @@
+ * Debug mode: off
+2025-09-15 11:56:23 INFO werkzeug: WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://172.31.91.130:5000 [in /home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/werkzeug/_internal.py:97]
+2025-09-15 11:56:23 INFO werkzeug: Press CTRL+C to quit [in /home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/werkzeug/_internal.py:97]
+2025-09-15 11:56:24 ERROR app: Application error: (psycopg2.errors.UndefinedColumn) column documents.tipo_documento_id does not exist
+LINE 2: ...cuments_titulo, documents.tipo AS documents_tipo, documents....
+                                                             ^
+
+[SQL: SELECT count(*) AS count_1 
+FROM (SELECT documents.id AS documents_id, documents.codigo AS documents_codigo, documents.titulo AS documents_titulo, documents.tipo AS documents_tipo, documents.tipo_documento_id AS documents_tipo_documento_id, documents.status AS documents_status, documents.versao_atual AS documents_versao_atual, documents.data_criacao AS documents_data_criacao, documents.data_validade AS documents_data_validade, documents.data_ultima_revisao AS documents_data_ultima_revisao, documents.autor_id AS documents_autor_id, documents.departamento AS documents_departamento, documents.palavras_chave AS documents_palavras_chave, documents.resumo AS documents_resumo, documents.ativo AS documents_ativo 
+FROM documents) AS anon_1]
+(Background on this error at: https://sqlalche.me/e/20/f405) [in /home/runner/workspace/app/__init__.py:83]
+Traceback (most recent call last):
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+psycopg2.errors.UndefinedColumn: column documents.tipo_documento_id does not exist
+LINE 2: ...cuments_titulo, documents.tipo AS documents_tipo, documents....
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask_login/utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/app/routes/dashboard.py", line 17, in index
+    total_documentos = Document.query.count()
+                       ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 3146, in count
+    self._legacy_from_self(col).enable_eagerloads(False).scalar()
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2835, in scalar
+    ret = self.one()
+          ^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2808, in one
+    return self._iter().one()  # type: ignore
+           ^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2365, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2251, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+             ^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+           ^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 526, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column documents.tipo_documento_id does not exist
+LINE 2: ...cuments_titulo, documents.tipo AS documents_tipo, documents....
+                                                             ^
+
+[SQL: SELECT count(*) AS count_1 
+FROM (SELECT documents.id AS documents_id, documents.codigo AS documents_codigo, documents.titulo AS documents_titulo, documents.tipo AS documents_tipo, documents.tipo_documento_id AS documents_tipo_documento_id, documents.status AS documents_status, documents.versao_atual AS documents_versao_atual, documents.data_criacao AS documents_data_criacao, documents.data_validade AS documents_data_validade, documents.data_ultima_revisao AS documents_data_ultima_revisao, documents.autor_id AS documents_autor_id, documents.departamento AS documents_departamento, documents.palavras_chave AS documents_palavras_chave, documents.resumo AS documents_resumo, documents.ativo AS documents_ativo 
+FROM documents) AS anon_1]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-15 11:56:24 INFO werkzeug: 172.31.91.130 - - [15/Sep/2025 11:56:24] "GET / HTTP/1.1" 500 - [in /home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/werkzeug/_internal.py:97]
+2025-09-15 11:56:30 ERROR app: Application error: (psycopg2.errors.UndefinedColumn) column documents.tipo_documento_id does not exist
+LINE 2: ...cuments_titulo, documents.tipo AS documents_tipo, documents....
+                                                             ^
+
+[SQL: SELECT count(*) AS count_1 
+FROM (SELECT documents.id AS documents_id, documents.codigo AS documents_codigo, documents.titulo AS documents_titulo, documents.tipo AS documents_tipo, documents.tipo_documento_id AS documents_tipo_documento_id, documents.status AS documents_status, documents.versao_atual AS documents_versao_atual, documents.data_criacao AS documents_data_criacao, documents.data_validade AS documents_data_validade, documents.data_ultima_revisao AS documents_data_ultima_revisao, documents.autor_id AS documents_autor_id, documents.departamento AS documents_departamento, documents.palavras_chave AS documents_palavras_chave, documents.resumo AS documents_resumo, documents.ativo AS documents_ativo 
+FROM documents) AS anon_1]
+(Background on this error at: https://sqlalche.me/e/20/f405) [in /home/runner/workspace/app/__init__.py:83]
+Traceback (most recent call last):
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+psycopg2.errors.UndefinedColumn: column documents.tipo_documento_id does not exist
+LINE 2: ...cuments_titulo, documents.tipo AS documents_tipo, documents....
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask_login/utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/app/routes/dashboard.py", line 17, in index
+    total_documentos = Document.query.count()
+                       ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 3146, in count
+    self._legacy_from_self(col).enable_eagerloads(False).scalar()
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2835, in scalar
+    ret = self.one()
+          ^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2808, in one
+    return self._iter().one()  # type: ignore
+           ^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2365, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2251, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+             ^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+           ^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 526, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column documents.tipo_documento_id does not exist
+LINE 2: ...cuments_titulo, documents.tipo AS documents_tipo, documents....
+                                                             ^
+
+[SQL: SELECT count(*) AS count_1 
+FROM (SELECT documents.id AS documents_id, documents.codigo AS documents_codigo, documents.titulo AS documents_titulo, documents.tipo AS documents_tipo, documents.tipo_documento_id AS documents_tipo_documento_id, documents.status AS documents_status, documents.versao_atual AS documents_versao_atual, documents.data_criacao AS documents_data_criacao, documents.data_validade AS documents_data_validade, documents.data_ultima_revisao AS documents_data_ultima_revisao, documents.autor_id AS documents_autor_id, documents.departamento AS documents_departamento, documents.palavras_chave AS documents_palavras_chave, documents.resumo AS documents_resumo, documents.ativo AS documents_ativo 
+FROM documents) AS anon_1]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-15 11:56:30 INFO werkzeug: 172.31.91.130 - - [15/Sep/2025 11:56:30] "GET / HTTP/1.1" 500 - [in /home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/werkzeug/_internal.py:97]
+^[[1;2B^[[1;2B
