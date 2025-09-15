@@ -349,6 +349,17 @@
                         Relatórios
                     </a>
                 </li>
+
+                <!-- Ajuda Section -->
+                <div class="sidebar-section">Ajuda</div>
+
+                <li class="nav-item">
+                    <a class="nav-link {% if 'docs' in request.endpoint %}active{% endif %}" 
+                       href="{{ url_for('docs.index') }}">
+                        <i class="bi bi-book"></i>
+                        Documentação
+                    </a>
+                </li>
             </ul>
         </div>
 
@@ -392,7 +403,7 @@
         <div class="ms-auto d-flex align-items-center">
             <span class="text-muted me-3 d-none d-md-inline">
                 <i class="bi bi-calendar3 me-1"></i>
-                {{ moment().format('DD/MM/YYYY') }}
+                <span id="currentDate">{{ moment().format('DD/MM/YYYY') if moment else '' }}</span>
             </span>
 
             <!-- Notifications -->
@@ -475,31 +486,47 @@
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/locale/pt-br.js"></script>
 
     <script>
-        // Set moment locale
-        moment.locale('pt-br');
+        // Wait for moment to be fully loaded
+        window.addEventListener('DOMContentLoaded', function() {
+            // Set moment locale if available
+            if (typeof moment !== 'undefined') {
+                moment.locale('pt-br');
+            }
+        });
 
         // Toggle sidebar for mobile
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('mobileOverlay');
 
-            sidebar.classList.toggle('show');
-            overlay.classList.toggle('show');
+            if (sidebar && overlay) {
+                sidebar.classList.toggle('show');
+                overlay.classList.toggle('show');
+            }
         }
 
         // Close sidebar when clicking overlay
-        document.getElementById('mobileOverlay').addEventListener('click', function() {
-            toggleSidebar();
-        });
+        document.addEventListener('DOMContentLoaded', function() {
+            const overlay = document.getElementById('mobileOverlay');
+            if (overlay) {
+                overlay.addEventListener('click', function() {
+                    toggleSidebar();
+                });
+            }
 
-        // Auto-dismiss alerts after 5 seconds
-        setTimeout(function() {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function(alert) {
-                const bsAlert = new bootstrap.Alert(alert);
-                bsAlert.close();
-            });
-        }, 5000);
+            // Auto-dismiss alerts after 5 seconds
+            setTimeout(function() {
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(function(alert) {
+                    try {
+                        const bsAlert = new bootstrap.Alert(alert);
+                        bsAlert.close();
+                    } catch (e) {
+                        // Silently fail if alert is already closed
+                    }
+                });
+            }, 5000);
+        });
     </script>
 
     <!-- Custom JS -->

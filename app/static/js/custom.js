@@ -1,18 +1,34 @@
 // Alpha Gestão Documental - Custom JavaScript
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Set current date if moment is available
+    if (typeof moment !== 'undefined') {
+        const dateElement = document.getElementById('currentDate');
+        if (dateElement) {
+            dateElement.textContent = moment().format('DD/MM/YYYY');
+        }
+    }
+
     // Inicializar tooltips do Bootstrap
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
+    try {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    } catch (e) {
+        console.warn('Error initializing tooltips:', e);
+    }
 
     // Auto-hide alerts após 5 segundos
     setTimeout(function() {
         var alerts = document.querySelectorAll('.alert');
         alerts.forEach(function(alert) {
-            var bsAlert = new bootstrap.Alert(alert);
-            bsAlert.close();
+            try {
+                var bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            } catch (e) {
+                // Silently ignore if alert is already closed
+            }
         });
     }, 5000);
 

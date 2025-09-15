@@ -22,21 +22,33 @@ def create_app():
     return app
 
 def register_blueprints(app):
-    """Registrar todos os blueprints da aplicação"""
-    from app.routes import auth, dashboard, users, documents, document_types, groups
-    from app.routes import equipments, equipment_types, nonconformities
-    from app.routes import audits, approvals, reports, signatures
+    """Register all blueprints"""
+    from .auth import bp as auth_bp
+    from .dashboard import bp as dashboard_bp
+    from .documents import bp as documents_bp
+    from .document_types import bp as document_types_bp
+    from .users import bp as users_bp
+    from .groups import bp as groups_bp
+    from .approvals import bp as approvals_bp
+    from .nonconformities import bp as nonconformities_bp
+    from .audits import bp as audits_bp
+    from .equipments import bp as equipments_bp
+    from .equipment_types import bp as equipment_types_bp
+    from .reports import bp as reports_bp
+    from .signatures import bp as signatures_bp
+    from .docs import bp as docs_bp
 
-    app.register_blueprint(auth.bp)
-    app.register_blueprint(dashboard.bp, url_prefix='/dashboard')
-    app.register_blueprint(users.bp, url_prefix='/users')
-    app.register_blueprint(documents.bp, url_prefix='/documents')
-    app.register_blueprint(document_types.bp)
-    app.register_blueprint(groups.bp)
-    app.register_blueprint(equipments.bp, url_prefix='/equipments')
-    app.register_blueprint(equipment_types.bp)
-    app.register_blueprint(nonconformities.bp, url_prefix='/nonconformities')
-    app.register_blueprint(audits.bp, url_prefix='/audits')
-    app.register_blueprint(approvals.bp, url_prefix='/approvals')
-    app.register_blueprint(reports.bp, url_prefix='/reports')
-    app.register_blueprint(signatures.bp, url_prefix='/signatures')
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(dashboard_bp)
+    app.register_blueprint(documents_bp)
+    app.register_blueprint(document_types_bp)
+    app.register_blueprint(users_bp)
+    app.register_blueprint(groups_bp)
+    app.register_blueprint(approvals_bp)
+    app.register_blueprint(nonconformities_bp)
+    app.register_blueprint(audits_bp)
+    app.register_blueprint(equipments_bp)
+    app.register_blueprint(equipment_types_bp)
+    app.register_blueprint(reports_bp)
+    app.register_blueprint(signatures_bp)
+    app.register_blueprint(docs_bp)
