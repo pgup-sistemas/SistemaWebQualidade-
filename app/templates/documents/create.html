@@ -3,8 +3,9 @@
 {% block title %}Criar Documento - Alpha Gestão Documental{% endblock %}
 
 {% block extra_head %}
-<!-- TinyMCE Editor - Versão gratuita com máximo de funcionalidades -->
-<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+<!-- Quill.js Editor - Completamente gratuito -->
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -113,7 +114,8 @@
                     <div class="card-body">
                         <div class="mb-3">
                             <label class="form-label">Conteúdo *</label>
-                            <textarea id="conteudo" name="conteudo" required style="height: 400px;"></textarea>
+                            <div id="editor" style="height: 400px;"></div>
+                            <textarea id="conteudo" name="conteudo" required style="display: none;"></textarea>
                             <div class="invalid-feedback">
                                 O conteúdo é obrigatório.
                             </div>
@@ -180,324 +182,179 @@
 
 {% block extra_scripts %}
 <script>
-// Inicializar TinyMCE Editor com MÁXIMO de funcionalidades gratuitas
-tinymce.init({
-    selector: '#conteudo',
-    height: 400,
-    menubar: true,
-    
-    // MÁXIMO de plugins gratuitos para documentos de qualidade
-    plugins: [
-        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-        'insertdatetime', 'media', 'table', 'help', 'wordcount', 'autosave',
-        'save', 'directionality', 'emoticons', 'template', 'codesample',
-        'hr', 'pagebreak', 'nonbreaking', 'toc', 'imagetools', 'quickbars'
-    ],
-    
-    // Toolbar completa para documentos profissionais
-    toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | ' +
-             'forecolor backcolor removeformat | alignleft aligncenter ' +
-             'alignright alignjustify | outdent indent |  numlist bullist | ' +
-             'link image media table | insertdatetime hr pagebreak | ' +
-             'searchreplace code fullscreen preview | qualitycheck template | help',
-             
-    // Configurações específicas para documentos de qualidade
-    block_formats: 'Parágrafo=p; Título 1=h1; Título 2=h2; Título 3=h3; Título 4=h4; Pré-formatado=pre; Citação=blockquote',
-    
-    font_family_formats: 'Arial=arial,helvetica,sans-serif; Times New Roman=times new roman,times,serif; Courier New=courier new,courier,monospace; Calibri=calibri,sans-serif; Tahoma=tahoma,arial,helvetica,sans-serif',
-    
-    font_size_formats: '8pt 9pt 10pt 11pt 12pt 14pt 16pt 18pt 20pt 22pt 24pt 26pt 28pt 36pt 48pt 72pt',
-    
-    // Templates para documentos de qualidade da saúde
-    templates: [
-        {
-            title: 'Procedimento Operacional Padrão (POP) - ONA/ISO',
-            description: 'Template completo para POP conforme normas ONA, ISO 9001 e RDCs ANVISA',
-            content: `
-                <h1 style="text-align: center;">PROCEDIMENTO OPERACIONAL PADRÃO</h1>
-                
-                <table border="1" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-                    <tr><td style="padding: 8px;"><strong>Código:</strong></td><td style="padding: 8px;">[CÓDIGO]</td><td style="padding: 8px;"><strong>Versão:</strong></td><td style="padding: 8px;">1.0</td></tr>
-                    <tr><td style="padding: 8px;"><strong>Título:</strong></td><td colspan="3" style="padding: 8px;">[TÍTULO DO PROCEDIMENTO]</td></tr>
-                    <tr><td style="padding: 8px;"><strong>Área/Setor:</strong></td><td style="padding: 8px;">[ÁREA]</td><td style="padding: 8px;"><strong>Data Vigência:</strong></td><td style="padding: 8px;">[DATA]</td></tr>
-                    <tr><td style="padding: 8px;"><strong>Elaborado por:</strong></td><td style="padding: 8px;">[NOME/CARGO]</td><td style="padding: 8px;"><strong>Aprovado por:</strong></td><td style="padding: 8px;">[NOME/CARGO]</td></tr>
-                    <tr><td style="padding: 8px;"><strong>Próxima Revisão:</strong></td><td style="padding: 8px;">[DATA]</td><td style="padding: 8px;"><strong>Classificação:</strong></td><td style="padding: 8px;">[Crítico/Não-crítico]</td></tr>
-                </table>
-
-                <h2>ÍNDICE</h2>
-                <ol>
-                    <li>OBJETIVO</li>
-                    <li>ESCOPO E ABRANGÊNCIA</li>
-                    <li>DEFINIÇÕES E SIGLAS</li>
-                    <li>RESPONSABILIDADES</li>
-                    <li>REFERÊNCIAS NORMATIVAS</li>
-                    <li>PROCEDIMENTO</li>
-                    <li>INDICADORES E MONITORAMENTO</li>
-                    <li>RISCOS E OPORTUNIDADES</li>
-                    <li>REGISTROS E CONTROLE DOCUMENTAL</li>
-                    <li>DISTRIBUIÇÃO E COMUNICAÇÃO</li>
-                    <li>ANEXOS</li>
-                </ol>
-
-                <h2>1. OBJETIVO</h2>
-                <p>[Descrever claramente o objetivo do procedimento e seu propósito na organização]</p>
-
-                <h2>2. ESCOPO E ABRANGÊNCIA</h2>
-                <p><strong>Aplica-se a:</strong> [Definir setores, unidades, processos específicos]</p>
-                <p><strong>Não se aplica a:</strong> [Definir exclusões quando necessário]</p>
-                <p><strong>Frequência:</strong> [Definir periodicidade de execução]</p>
-
-                <h2>3. DEFINIÇÕES E SIGLAS</h2>
-                <ul>
-                    <li><strong>[TERMO 1]:</strong> [Definição]</li>
-                    <li><strong>[TERMO 2]:</strong> [Definição]</li>
-                    <li><strong>ONA:</strong> Organização Nacional de Acreditação</li>
-                    <li><strong>ANVISA:</strong> Agência Nacional de Vigilância Sanitária</li>
-                </ul>
-
-                <h2>4. RESPONSABILIDADES</h2>
-                <table border="1" style="width: 100%; border-collapse: collapse;">
-                    <tr style="background-color: #f5f5f5;"><th style="padding: 8px;">Função/Cargo</th><th style="padding: 8px;">Responsabilidades</th></tr>
-                    <tr><td style="padding: 8px;">[CARGO 1]</td><td style="padding: 8px;">[Descrição das responsabilidades]</td></tr>
-                    <tr><td style="padding: 8px;">[CARGO 2]</td><td style="padding: 8px;">[Descrição das responsabilidades]</td></tr>
-                </table>
-
-                <h2>5. REFERÊNCIAS NORMATIVAS</h2>
-                <ul>
-                    <li>ISO 9001:2015 - Sistemas de gestão da qualidade</li>
-                    <li>Manual ONA - Organização Nacional de Acreditação</li>
-                    <li>RDC ANVISA nº [NÚMERO] - [Descrição]</li>
-                    <li>[Outras normas e documentos aplicáveis]</li>
-                </ul>
-
-                <h2>6. PROCEDIMENTO</h2>
-                <h3>6.1 Preparação</h3>
-                <ol>
-                    <li>[Passo preparatório 1]</li>
-                    <li>[Passo preparatório 2]</li>
-                </ol>
-
-                <h3>6.2 Execução</h3>
-                <ol>
-                    <li><strong>Ação:</strong> [Descrição detalhada]<br><strong>Responsável:</strong> [Quem executa]<br><strong>Registros:</strong> [Documentos a preencher]</li>
-                    <li><strong>Ação:</strong> [Descrição detalhada]<br><strong>Responsável:</strong> [Quem executa]<br><strong>Registros:</strong> [Documentos a preencher]</li>
-                </ol>
-
-                <h3>6.3 Verificação e Controle</h3>
-                <ol>
-                    <li>[Pontos de verificação obrigatórios]</li>
-                    <li>[Critérios de aceitação]</li>
-                    <li>[Ações em caso de não conformidade]</li>
-                </ol>
-
-                <h2>7. INDICADORES E MONITORAMENTO</h2>
-                <table border="1" style="width: 100%; border-collapse: collapse;">
-                    <tr style="background-color: #f5f5f5;"><th style="padding: 8px;">Indicador</th><th style="padding: 8px;">Meta</th><th style="padding: 8px;">Frequência</th><th style="padding: 8px;">Responsável</th></tr>
-                    <tr><td style="padding: 8px;">[Nome do indicador]</td><td style="padding: 8px;">[Meta]</td><td style="padding: 8px;">[Mensal/Trimestral]</td><td style="padding: 8px;">[Responsável]</td></tr>
-                </table>
-
-                <h2>8. RISCOS E OPORTUNIDADES</h2>
-                <h3>8.1 Riscos Identificados</h3>
-                <ul>
-                    <li><strong>Risco:</strong> [Descrição] | <strong>Controle:</strong> [Medida preventiva]</li>
-                    <li><strong>Risco:</strong> [Descrição] | <strong>Controle:</strong> [Medida preventiva]</li>
-                </ul>
-
-                <h3>8.2 Oportunidades de Melhoria</h3>
-                <ul>
-                    <li>[Oportunidade 1 e como aproveitá-la]</li>
-                    <li>[Oportunidade 2 e como aproveitá-la]</li>
-                </ul>
-
-                <h2>9. REGISTROS E CONTROLE DOCUMENTAL</h2>
-                <table border="1" style="width: 100%; border-collapse: collapse;">
-                    <tr style="background-color: #f5f5f5;"><th style="padding: 8px;">Registro</th><th style="padding: 8px;">Retenção</th><th style="padding: 8px;">Localização</th><th style="padding: 8px;">Acesso</th></tr>
-                    <tr><td style="padding: 8px;">[Nome do registro]</td><td style="padding: 8px;">[Tempo]</td><td style="padding: 8px;">[Local]</td><td style="padding: 8px;">[Quem pode acessar]</td></tr>
-                </table>
-
-                <h2>10. DISTRIBUIÇÃO E COMUNICAÇÃO</h2>
-                <p><strong>Este procedimento deve ser comunicado a:</strong></p>
-                <ul>
-                    <li>[Setor/Cargo 1]</li>
-                    <li>[Setor/Cargo 2]</li>
-                </ul>
-                <p><strong>Método de comunicação:</strong> [Treinamento, e-mail, reunião, etc.]</p>
-
-                <h2>11. ANEXOS</h2>
-                <ul>
-                    <li>Anexo I - [Descrição]</li>
-                    <li>Anexo II - [Descrição]</li>
-                </ul>
-
-                <hr>
-                <h2>HISTÓRICO DE REVISÕES</h2>
-                <table border="1" style="width: 100%; border-collapse: collapse;">
-                    <tr style="background-color: #f5f5f5;"><th style="padding: 8px;">Versão</th><th style="padding: 8px;">Data</th><th style="padding: 8px;">Alterações</th><th style="padding: 8px;">Responsável</th></tr>
-                    <tr><td style="padding: 8px;">1.0</td><td style="padding: 8px;">[DATA]</td><td style="padding: 8px;">Criação do documento</td><td style="padding: 8px;">[NOME]</td></tr>
-                </table>
-
-                <p style="margin-top: 20px; font-size: 12px; color: #666;">
-                    <strong>⚠️ DOCUMENTO CONTROLADO:</strong> Cópias impressas não são controladas. Sempre consulte a versão eletrônica mais atual.
-                </p>
-            `
-        },
-        {
-            title: 'Instrução de Trabalho',
-            description: 'Template para Instrução de Trabalho',
-            content: `
-                <h1>INSTRUÇÃO DE TRABALHO</h1>
-                <table border="1" style="width: 100%; border-collapse: collapse;">
-                    <tr><td><strong>Código:</strong></td><td>[CÓDIGO]</td><td><strong>Versão:</strong></td><td>1.0</td></tr>
-                    <tr><td><strong>Processo:</strong></td><td colspan="3">[NOME DO PROCESSO]</td></tr>
-                    <tr><td><strong>Setor:</strong></td><td>[SETOR]</td><td><strong>Data:</strong></td><td>[DATA]</td></tr>
-                </table>
-                <h2>OBJETIVO</h2>
-                <p>[Objetivo da instrução]</p>
-                <h2>MATERIAIS NECESSÁRIOS</h2>
-                <ul>
-                    <li>[Material 1]</li>
-                    <li>[Material 2]</li>
-                </ul>
-                <h2>PASSO A PASSO</h2>
-                <ol>
-                    <li><strong>Preparação:</strong> [Descrever preparação]</li>
-                    <li><strong>Execução:</strong> [Descrever execução]</li>
-                    <li><strong>Verificação:</strong> [Descrever verificação]</li>
-                </ol>
-                <h2>CUIDADOS ESPECIAIS</h2>
-                <p style="background-color: #fff3cd; padding: 10px; border: 1px solid #ffeaa7;">
-                    ⚠️ [Alertas de segurança e cuidados especiais]
-                </p>
-            `
-        },
-        {
-            title: 'Política de Qualidade',
-            description: 'Template para Política organizacional',
-            content: `
-                <h1>POLÍTICA DE QUALIDADE</h1>
-                <table border="1" style="width: 100%; border-collapse: collapse;">
-                    <tr><td><strong>Documento:</strong></td><td>[TÍTULO DA POLÍTICA]</td></tr>
-                    <tr><td><strong>Código:</strong></td><td>[CÓDIGO]</td><td><strong>Versão:</strong></td><td>1.0</td></tr>
-                    <tr><td><strong>Data de Vigência:</strong></td><td>[DATA]</td><td><strong>Próxima Revisão:</strong></td><td>[DATA]</td></tr>
-                </table>
-                
-                <h2>1. FINALIDADE</h2>
-                <p>[Descrever a finalidade da política]</p>
-                
-                <h2>2. PRINCÍPIOS</h2>
-                <ul>
-                    <li>[Princípio 1]</li>
-                    <li>[Princípio 2]</li>
-                    <li>[Princípio 3]</li>
-                </ul>
-                
-                <h2>3. DIRETRIZES</h2>
-                <p>[Estabelecer as diretrizes principais]</p>
-                
-                <h2>4. RESPONSABILIDADES</h2>
-                <p>[Definir responsabilidades pela implementação]</p>
-                
-                <h2>5. APROVAÇÃO</h2>
-                <p>Esta política foi aprovada pela Direção em [DATA] e entrará em vigor na data de sua publicação.</p>
-            `
+// Inicializar Quill.js Editor - Completamente GRATUITO
+var quill = new Quill('#editor', {
+    theme: 'snow',
+    placeholder: 'Digite o conteúdo do documento aqui...',
+    modules: {
+        toolbar: [
+            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+            [{ 'font': [] }],
+            [{ 'size': ['small', false, 'large', 'huge'] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'color': [] }, { 'background': [] }],
+            [{ 'script': 'sub'}, { 'script': 'super' }],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'indent': '-1'}, { 'indent': '+1' }],
+            [{ 'direction': 'rtl' }],
+            [{ 'align': [] }],
+            ['link', 'image', 'video'],
+            ['blockquote', 'code-block'],
+            ['clean']
+        ],
+        history: {
+            delay: 1000,
+            maxStack: 50,
+            userOnly: true
         }
-    ],
-    
-    // Auto-save configurado
-    autosave_ask_before_unload: true,
-    autosave_interval: '30s',
-    autosave_prefix: 'documento-',
-    autosave_restore_when_empty: true,
-    
-    // Configurações de acessibilidade e produtividade
-    elementpath: true,
-    resize: 'both',
-    statusbar: true,
-    branding: false,
-    contextmenu: 'link image table',
-    
-    // Configurações de conteúdo
-    forced_root_block: 'p',
-    remove_trailing_brs: true,
-    convert_urls: false,
-    relative_urls: false,
-    
-    // Configuração de paste para preservar formatação médica
-    paste_data_images: true,
-    paste_as_text: false,
-    paste_remove_styles_if_webkit: false,
-    
-    // Configurações de tabela para formulários e checklists
-    table_default_attributes: {
-        border: '1',
-        style: 'border-collapse: collapse; width: 100%;'
-    },
-    table_default_styles: {
-        'border-collapse': 'collapse',
-        'width': '100%'
-    },
-    
-    // Configuração de links
-    link_default_target: '_blank',
-    
-    // Callback quando o editor inicializar
-    setup: function (editor) {
-        // Adicionar botões personalizados para qualidade
-        editor.ui.registry.addButton('qualitycheck', {
-            text: 'Check Qualidade',
-            tooltip: 'Verificar conformidade do documento',
-            onAction: function () {
-                verificarConformidadeDocumento(editor);
+    }
+});
+
+// Campo oculto para envio do formulário
+const hiddenInput = document.getElementById('conteudo');
+
+// Templates para documentos de qualidade
+const templates = {
+    pop: `<h1 style="text-align: center;">PROCEDIMENTO OPERACIONAL PADRÃO</h1>
+
+<table style="width: 100%; border-collapse: collapse; border: 1px solid #000;">
+    <tr><td style="padding: 8px; border: 1px solid #000;"><strong>Código:</strong></td><td style="padding: 8px; border: 1px solid #000;">[CÓDIGO]</td><td style="padding: 8px; border: 1px solid #000;"><strong>Versão:</strong></td><td style="padding: 8px; border: 1px solid #000;">1.0</td></tr>
+    <tr><td style="padding: 8px; border: 1px solid #000;"><strong>Título:</strong></td><td colspan="3" style="padding: 8px; border: 1px solid #000;">[TÍTULO DO PROCEDIMENTO]</td></tr>
+    <tr><td style="padding: 8px; border: 1px solid #000;"><strong>Área/Setor:</strong></td><td style="padding: 8px; border: 1px solid #000;">[ÁREA]</td><td style="padding: 8px; border: 1px solid #000;"><strong>Data Vigência:</strong></td><td style="padding: 8px; border: 1px solid #000;">[DATA]</td></tr>
+</table>
+
+<h2>ÍNDICE</h2>
+<ol>
+    <li>OBJETIVO</li>
+    <li>ESCOPO E ABRANGÊNCIA</li>
+    <li>DEFINIÇÕES E SIGLAS</li>
+    <li>RESPONSABILIDADES</li>
+    <li>REFERÊNCIAS NORMATIVAS</li>
+    <li>PROCEDIMENTO</li>
+    <li>INDICADORES E MONITORAMENTO</li>
+    <li>REGISTROS E CONTROLE DOCUMENTAL</li>
+</ol>
+
+<h2>1. OBJETIVO</h2>
+<p>[Descrever claramente o objetivo do procedimento]</p>
+
+<h2>2. ESCOPO E ABRANGÊNCIA</h2>
+<p><strong>Aplica-se a:</strong> [Definir setores, unidades, processos específicos]</p>
+
+<h2>3. DEFINIÇÕES E SIGLAS</h2>
+<ul>
+    <li><strong>ONA:</strong> Organização Nacional de Acreditação</li>
+    <li><strong>ANVISA:</strong> Agência Nacional de Vigilância Sanitária</li>
+</ul>
+
+<h2>4. RESPONSABILIDADES</h2>
+<table style="width: 100%; border-collapse: collapse; border: 1px solid #000;">
+    <tr style="background-color: #f5f5f5;"><th style="padding: 8px; border: 1px solid #000;">Função/Cargo</th><th style="padding: 8px; border: 1px solid #000;">Responsabilidades</th></tr>
+    <tr><td style="padding: 8px; border: 1px solid #000;">[CARGO 1]</td><td style="padding: 8px; border: 1px solid #000;">[Descrição das responsabilidades]</td></tr>
+</table>
+
+<h2>5. REFERÊNCIAS NORMATIVAS</h2>
+<ul>
+    <li>ISO 9001:2015 - Sistemas de gestão da qualidade</li>
+    <li>Manual ONA - Organização Nacional de Acreditação</li>
+</ul>
+
+<h2>6. PROCEDIMENTO</h2>
+<h3>6.1 Preparação</h3>
+<ol>
+    <li>[Passo preparatório 1]</li>
+    <li>[Passo preparatório 2]</li>
+</ol>
+
+<h3>6.2 Execução</h3>
+<ol>
+    <li><strong>Ação:</strong> [Descrição detalhada]<br><strong>Responsável:</strong> [Quem executa]</li>
+    <li><strong>Ação:</strong> [Descrição detalhada]<br><strong>Responsável:</strong> [Quem executa]</li>
+</ol>`,
+
+    instrucao: `<h1>INSTRUÇÃO DE TRABALHO</h1>
+<table style="width: 100%; border-collapse: collapse; border: 1px solid #000;">
+    <tr><td style="padding: 8px; border: 1px solid #000;"><strong>Código:</strong></td><td style="padding: 8px; border: 1px solid #000;">[CÓDIGO]</td><td style="padding: 8px; border: 1px solid #000;"><strong>Versão:</strong></td><td style="padding: 8px; border: 1px solid #000;">1.0</td></tr>
+    <tr><td style="padding: 8px; border: 1px solid #000;"><strong>Processo:</strong></td><td colspan="3" style="padding: 8px; border: 1px solid #000;">[NOME DO PROCESSO]</td></tr>
+</table>
+
+<h2>OBJETIVO</h2>
+<p>[Objetivo da instrução]</p>
+
+<h2>MATERIAIS NECESSÁRIOS</h2>
+<ul>
+    <li>[Material 1]</li>
+    <li>[Material 2]</li>
+</ul>
+
+<h2>PASSO A PASSO</h2>
+<ol>
+    <li><strong>Preparação:</strong> [Descrever preparação]</li>
+    <li><strong>Execução:</strong> [Descrever execução]</li>
+    <li><strong>Verificação:</strong> [Descrever verificação]</li>
+</ol>`,
+
+    politica: `<h1>POLÍTICA DE QUALIDADE</h1>
+<table style="width: 100%; border-collapse: collapse; border: 1px solid #000;">
+    <tr><td style="padding: 8px; border: 1px solid #000;"><strong>Documento:</strong></td><td style="padding: 8px; border: 1px solid #000;">[TÍTULO DA POLÍTICA]</td></tr>
+    <tr><td style="padding: 8px; border: 1px solid #000;"><strong>Código:</strong></td><td style="padding: 8px; border: 1px solid #000;">[CÓDIGO]</td><td style="padding: 8px; border: 1px solid #000;"><strong>Versão:</strong></td><td style="padding: 8px; border: 1px solid #000;">1.0</td></tr>
+</table>
+
+<h2>1. FINALIDADE</h2>
+<p>[Descrever a finalidade da política]</p>
+
+<h2>2. PRINCÍPIOS</h2>
+<ul>
+    <li>[Princípio 1]</li>
+    <li>[Princípio 2]</li>
+    <li>[Princípio 3]</li>
+</ul>
+
+<h2>3. DIRETRIZES</h2>
+<p>[Estabelecer as diretrizes principais]</p>`
+};
+
+// Adicionar botão de templates na toolbar
+function addTemplateButton() {
+    const toolbar = document.querySelector('.ql-toolbar');
+    if (toolbar) {
+        const templateGroup = document.createElement('span');
+        templateGroup.className = 'ql-formats';
+        
+        const select = document.createElement('select');
+        select.className = 'ql-template';
+        select.innerHTML = `
+            <option value="">Selecionar Template</option>
+            <option value="pop">POP - Procedimento Operacional</option>
+            <option value="instrucao">Instrução de Trabalho</option>
+            <option value="politica">Política de Qualidade</option>
+        `;
+        
+        select.addEventListener('change', function() {
+            if (this.value && templates[this.value]) {
+                quill.clipboard.dangerouslyPasteHTML(templates[this.value]);
+                this.value = '';
             }
         });
         
-        // Auto-save com debounce melhorado
-        let saveTimeout;
-        editor.on('input', function () {
-            clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(function() {
-                salvarRascunhoAutomatico();
-            }, 2000); // 2 segundos de debounce
-        });
-    },
-    
-    placeholder: 'Digite o conteúdo do documento aqui. Use os templates disponíveis para documentos de qualidade...'
-});
-
-// Função para verificar conformidade do documento
-function verificarConformidadeDocumento(editor) {
-    const content = editor.getContent({ format: 'text' });
-    const issues = [];
-    
-    // Verificações básicas de conformidade
-    if (content.length < 100) {
-        issues.push('Documento muito curto - mínimo recomendado 100 caracteres');
-    }
-    
-    if (!content.includes('OBJETIVO') && !content.includes('objetivo')) {
-        issues.push('Recomenda-se incluir seção de OBJETIVO');
-    }
-    
-    if (!content.includes('RESPONSABILIDADES') && !content.includes('responsabilidades')) {
-        issues.push('Recomenda-se incluir seção de RESPONSABILIDADES');
-    }
-    
-    // Mostrar resultados
-    if (issues.length === 0) {
-        showAlert('success', '✅ Documento conforme os padrões de qualidade!');
-    } else {
-        showAlert('warning', '⚠️ Sugestões de melhoria:<br>' + issues.join('<br>'));
+        templateGroup.appendChild(select);
+        toolbar.appendChild(templateGroup);
     }
 }
 
-// Função de auto-save melhorada para TinyMCE
-function salvarRascunhoTinyMCE() {
-    const editor = tinymce.get('conteudo');
-    if (editor && editor.getContent({ format: 'text' }).trim().length > 0) {
+// Adicionar botões após inicialização
+setTimeout(addTemplateButton, 100);
+
+// Sincronizar com campo oculto
+quill.on('text-change', function() {
+    hiddenInput.value = quill.root.innerHTML;
+    
+    // Auto-save com debounce
+    clearTimeout(window.autoSaveTimeout);
+    window.autoSaveTimeout = setTimeout(function() {
         salvarRascunhoAutomatico();
-    }
-}
+    }, 2000);
+});
 
 // Variável para armazenar o ID do documento (rascunho)
 let currentDocumentId = null;
