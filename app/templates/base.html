@@ -1,18 +1,17 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Alpha Gestão Documental{% endblock %}</title>
-    
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link href="{{ url_for('static', filename='css/custom.css') }}" rel="stylesheet">
-    
+
     <style>
         /* Sidebar Styles */
         .sidebar {
@@ -122,19 +121,19 @@
             .sidebar {
                 transform: translateX(-100%);
             }
-            
+
             .sidebar.show {
                 transform: translateX(0);
             }
-            
+
             .main-content {
                 margin-left: 0;
             }
-            
+
             .top-navbar {
                 left: 0;
             }
-            
+
             .mobile-overlay {
                 position: fixed;
                 top: 0;
@@ -145,7 +144,7 @@
                 z-index: 99;
                 display: none;
             }
-            
+
             .mobile-overlay.show {
                 display: block;
             }
@@ -215,7 +214,7 @@
             <h4><i class="bi bi-shield-check me-2"></i>Alpha Gestão</h4>
             <small>Sistema de Gestão Documental</small>
         </div>
-        
+
         <div class="sidebar-sticky">
             <ul class="nav flex-column">
                 <!-- Dashboard -->
@@ -229,14 +228,14 @@
 
                 <!-- Documentos Section -->
                 <div class="sidebar-section">Documentos</div>
-                
+
                 <li class="nav-item">
                     <a class="nav-link {% if 'documents' in request.endpoint %}active{% endif %}" 
                        href="{{ url_for('documents.index') }}">
                         <i class="bi bi-file-text"></i>
                         Documentos
-                        {% if notification_counts.documents_expiring > 0 %}
-                            <span class="notification-badge">{{ notification_counts.documents_expiring }}</span>
+                        {% if notification_counts.get('documents_expiring', 0) > 0 %}
+                            <span class="notification-badge">{{ notification_counts.get('documents_expiring', 0) }}</span>
                         {% endif %}
                     </a>
                 </li>
@@ -263,8 +262,8 @@
                        href="{{ url_for('approvals.index') }}">
                         <i class="bi bi-check-circle"></i>
                         Aprovações
-                        {% if notification_counts.pending_approvals > 0 %}
-                            <span class="notification-badge">{{ notification_counts.pending_approvals }}</span>
+                        {% if notification_counts.get('pending_approvals', 0) > 0 %}
+                            <span class="notification-badge">{{ notification_counts.get('pending_approvals', 0) }}</span>
                         {% endif %}
                     </a>
                 </li>
@@ -278,8 +277,8 @@
                        href="{{ url_for('nonconformities.index') }}">
                         <i class="bi bi-exclamation-triangle"></i>
                         Não Conformidades
-                        {% if notification_counts.open_nonconformities > 0 %}
-                            <span class="notification-badge">{{ notification_counts.open_nonconformities }}</span>
+                        {% if notification_counts.get('open_nonconformities', 0) > 0 %}
+                            <span class="notification-badge">{{ notification_counts.get('open_nonconformities', 0) }}</span>
                         {% endif %}
                     </a>
                 </li>
@@ -297,8 +296,8 @@
                        href="{{ url_for('equipments.index') }}">
                         <i class="bi bi-gear"></i>
                         Equipamentos
-                        {% if notification_counts.equipments_due > 0 %}
-                            <span class="notification-badge">{{ notification_counts.equipments_due }}</span>
+                        {% if notification_counts.get('equipments_due', 0) > 0 %}
+                            <span class="notification-badge">{{ notification_counts.get('equipments_due', 0) }}</span>
                         {% endif %}
                     </a>
                 </li>
@@ -342,7 +341,7 @@
 
                 <!-- Relatórios Section -->
                 <div class="sidebar-section">Relatórios</div>
-                
+
                 <li class="nav-item">
                     <a class="nav-link {% if 'reports' in request.endpoint %}active{% endif %}" 
                        href="{{ url_for('reports.index') }}">
@@ -389,19 +388,19 @@
         <button class="sidebar-toggle d-md-none" onclick="toggleSidebar()">
             <i class="bi bi-list"></i>
         </button>
-        
+
         <div class="ms-auto d-flex align-items-center">
             <span class="text-muted me-3 d-none d-md-inline">
                 <i class="bi bi-calendar3 me-1"></i>
                 {{ moment().format('DD/MM/YYYY') }}
             </span>
-            
+
             <!-- Notifications -->
-            {% set total_notifications = (notification_counts.documents_expiring or 0) + 
-                                       (notification_counts.pending_approvals or 0) + 
-                                       (notification_counts.open_nonconformities or 0) + 
-                                       (notification_counts.equipments_due or 0) %}
-            
+            {% set total_notifications = (notification_counts.get('documents_expiring', 0) or 0) + 
+                                       (notification_counts.get('pending_approvals', 0) or 0) + 
+                                       (notification_counts.get('open_nonconformities', 0) or 0) + 
+                                       (notification_counts.get('equipments_due', 0) or 0) %}
+
             {% if total_notifications > 0 %}
             <div class="dropdown me-3">
                 <button class="btn btn-outline-primary position-relative" type="button" data-bs-toggle="dropdown">
@@ -412,32 +411,32 @@
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end" style="min-width: 300px;">
                     <li><h6 class="dropdown-header">Notificações</h6></li>
-                    
-                    {% if notification_counts.documents_expiring > 0 %}
+
+                    {% if notification_counts.get('documents_expiring', 0) > 0 %}
                     <li><a class="dropdown-item" href="{{ url_for('documents.index', filter='expiring') }}">
                         <i class="bi bi-file-text text-warning me-2"></i>
-                        {{ notification_counts.documents_expiring }} documento(s) vencendo
+                        {{ notification_counts.get('documents_expiring', 0) }} documento(s) vencendo
                     </a></li>
                     {% endif %}
-                    
-                    {% if notification_counts.pending_approvals > 0 %}
+
+                    {% if notification_counts.get('pending_approvals', 0) > 0 %}
                     <li><a class="dropdown-item" href="{{ url_for('approvals.index') }}">
                         <i class="bi bi-check-circle text-info me-2"></i>
-                        {{ notification_counts.pending_approvals }} aprovação(ões) pendente(s)
+                        {{ notification_counts.get('pending_approvals', 0) }} aprovação(ões) pendente(s)
                     </a></li>
                     {% endif %}
-                    
-                    {% if notification_counts.open_nonconformities > 0 %}
+
+                    {% if notification_counts.get('open_nonconformities', 0) > 0 %}
                     <li><a class="dropdown-item" href="{{ url_for('nonconformities.index', status='aberta') }}">
                         <i class="bi bi-exclamation-triangle text-danger me-2"></i>
-                        {{ notification_counts.open_nonconformities }} não conformidade(s) aberta(s)
+                        {{ notification_counts.get('open_nonconformities', 0) }} não conformidade(s) aberta(s)
                     </a></li>
                     {% endif %}
-                    
-                    {% if notification_counts.equipments_due > 0 %}
+
+                    {% if notification_counts.get('equipments_due', 0) > 0 %}
                     <li><a class="dropdown-item" href="{{ url_for('equipments.index', filter='due') }}">
                         <i class="bi bi-gear text-warning me-2"></i>
-                        {{ notification_counts.equipments_due }} equipamento(s) vencido(s)
+                        {{ notification_counts.get('equipments_due', 0) }} equipamento(s) vencido(s)
                     </a></li>
                     {% endif %}
                 </ul>
@@ -474,25 +473,25 @@
     <!-- Moment.js for date formatting -->
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/locale/pt-br.js"></script>
-    
+
     <script>
         // Set moment locale
         moment.locale('pt-br');
-        
+
         // Toggle sidebar for mobile
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('mobileOverlay');
-            
+
             sidebar.classList.toggle('show');
             overlay.classList.toggle('show');
         }
-        
+
         // Close sidebar when clicking overlay
         document.getElementById('mobileOverlay').addEventListener('click', function() {
             toggleSidebar();
         });
-        
+
         // Auto-dismiss alerts after 5 seconds
         setTimeout(function() {
             const alerts = document.querySelectorAll('.alert');
@@ -505,7 +504,7 @@
 
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/custom.js') }}"></script>
-    
+
     {% block scripts %}{% endblock %}
 </body>
 </html>

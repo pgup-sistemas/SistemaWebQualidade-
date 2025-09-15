@@ -163,6 +163,40 @@ def migrate_database():
                 result = connection.execute(text("SELECT 1 FROM document_types LIMIT 1"))
                 result.fetchone()
                 print("✓ Tabela document_types já existe")
+                
+                # Verificar se a coluna notificar_grupos existe
+                if is_postgres:
+                    try:
+                        result = connection.execute(text("""
+                            SELECT column_name 
+                            FROM information_schema.columns 
+                            WHERE table_name='document_types' AND column_name='notificar_grupos'
+                        """))
+                        if not result.fetchone():
+                            print("Adicionando coluna notificar_grupos na tabela document_types...")
+                            connection.execute(text("ALTER TABLE document_types ADD COLUMN notificar_grupos BOOLEAN DEFAULT TRUE"))
+                            connection.commit()
+                            print("✓ Coluna notificar_grupos adicionada")
+                        else:
+                            print("✓ Coluna notificar_grupos já existe")
+                    except Exception as e:
+                        connection.rollback()
+                        print(f"Erro ao adicionar notificar_grupos: {e}")
+                else:
+                    try:
+                        result = connection.execute(text("PRAGMA table_info(document_types)"))
+                        columns = [row[1] for row in result.fetchall()]
+                        
+                        if 'notificar_grupos' not in columns:
+                            connection.execute(text("ALTER TABLE document_types ADD COLUMN notificar_grupos BOOLEAN DEFAULT 1"))
+                            connection.commit()
+                            print("✓ Coluna notificar_grupos adicionada")
+                        else:
+                            print("✓ Coluna notificar_grupos já existe")
+                    except Exception as e:
+                        connection.rollback()
+                        print(f"Erro ao adicionar notificar_grupos: {e}")
+                        
             except:
                 print("Criando tabela document_types...")
                 if is_postgres:
