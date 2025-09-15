@@ -64,7 +64,7 @@ def create_app():
     os.makedirs(upload_folder, exist_ok=True)
 
     # Registrar blueprints
-    from app.routes import auth, dashboard, documents, document_types, users, approvals, audits, nonconformities, reports, equipments, equipment_types, groups
+    from app.routes import auth, dashboard, documents, document_types, users, approvals, audits, nonconformities, reports, equipments, equipment_types, groups, docs
     app.register_blueprint(auth.bp, url_prefix='/auth')
     app.register_blueprint(dashboard.bp, url_prefix='/')
     app.register_blueprint(documents.bp, url_prefix='/documents')
@@ -76,7 +76,8 @@ def create_app():
     app.register_blueprint(nonconformities.bp, url_prefix='/nonconformities')
     app.register_blueprint(reports.bp, url_prefix='/reports')
     app.register_blueprint(equipments.bp, url_prefix='/equipments')
-    app.register_blueprint(equipment_types.bp)
+    app.register_blueprint(equipment_types.bp, url_prefix='/equipment_types')
+    app.register_blueprint(docs.bp, url_prefix='/docs')_types.bp)
 
     # Tratamento de erro de banco de dados
     @app.errorhandler(Exception)

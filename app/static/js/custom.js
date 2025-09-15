@@ -7,6 +7,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (dateElement) {
             dateElement.textContent = moment().format('DD/MM/YYYY');
         }
+    } else {
+        // Fallback para data sem moment.js
+        const dateElement = document.getElementById('currentDate');
+        if (dateElement) {
+            const now = new Date();
+            dateElement.textContent = now.toLocaleDateString('pt-BR');
+        }
     }
 
     // Inicializar tooltips do Bootstrap
@@ -166,6 +173,11 @@ function enableAutoSave(formId, interval = 30000) {
     setInterval(() => {
         const formData = new FormData(form);
         
+        // Verificar se TinyMCE está disponível e sincronizar conteúdo
+        if (typeof tinymce !== 'undefined') {
+            tinymce.triggerSave();
+        }
+        
         fetch('/api/save-draft', {
             method: 'POST',
             body: formData,
@@ -184,4 +196,34 @@ function enableAutoSave(formId, interval = 30000) {
             console.error('Erro ao salvar rascunho:', error);
         });
     }, interval);
+}
+
+// Função para salvar rascunho manualmente (compatível com TinyMCE)
+function salvarRascunhoAutomatico() {
+    // Verificar se TinyMCE está disponível
+    if (typeof tinymce !== 'undefined') {
+        tinymce.triggerSave();
+    }
+    
+    const form = document.querySelector('form');
+    if (!form) return;
+    
+    const formData = new FormData(form);
+    
+    fetch('/api/save-draft', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': getCsrfToken()
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Rascunho salvo');
+        }
+    })
+    .catch(error => {
+        console.error('Erro ao salvar rascunho:', error);
+    });
 }

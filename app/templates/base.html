@@ -491,6 +491,19 @@
             // Set moment locale if available
             if (typeof moment !== 'undefined') {
                 moment.locale('pt-br');
+                
+                // Update current date display
+                const dateElement = document.getElementById('currentDate');
+                if (dateElement) {
+                    dateElement.textContent = moment().format('DD/MM/YYYY');
+                }
+            } else {
+                // Fallback sem moment.js
+                const dateElement = document.getElementById('currentDate');
+                if (dateElement) {
+                    const now = new Date();
+                    dateElement.textContent = now.toLocaleDateString('pt-BR');
+                }
             }
         });
 
