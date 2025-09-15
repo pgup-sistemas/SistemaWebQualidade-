@@ -48,9 +48,9 @@
         .sidebar-sticky {
             position: relative;
             top: 0;
-            height: calc(100vh - 48px);
+            height: calc(100vh - 160px); /* Ajustado para dar espaço ao user-info */
             padding-top: 0;
-            padding-bottom: 120px; /* Espaço para user-info */
+            padding-bottom: 1rem;
             overflow-x: hidden;
             overflow-y: auto;
         }
@@ -59,9 +59,11 @@
             color: #bdc3c7;
             padding: 0.75rem 1.5rem;
             transition: all 0.3s ease;
-            border-radius: 0;
-            margin: 0 0.5rem;
             border-radius: 8px;
+            margin: 0.2rem 0.5rem;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
         }
 
         .sidebar .nav-link:hover {
@@ -83,13 +85,17 @@
         }
 
         .sidebar-section {
-            padding: 0.5rem 1.5rem 0.25rem;
-            margin-top: 1rem;
+            padding: 0.75rem 1.5rem 0.5rem;
+            margin-top: 0.5rem;
             color: #95a5a6;
             font-size: 0.75rem;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+        }
+
+        .sidebar-section:first-of-type {
+            margin-top: 0;
         }
 
         /* Main content */
@@ -135,14 +141,17 @@
                 left: 0;
             }
 
-            .user-info {
-                width: 100%;
-                left: -100%;
-                transition: left 0.3s ease;
+            .sidebar-sticky {
+                height: calc(100vh - 200px);
+                padding-bottom: 1rem;
             }
 
-            .sidebar.show .user-info {
+            .user-info {
+                width: 280px;
+                position: absolute;
+                bottom: 0;
                 left: 0;
+                right: 0;
             }
 
             .mobile-overlay {
@@ -182,9 +191,10 @@
 
         /* User info */
         .user-info {
-            position: fixed;
+            position: absolute;
             bottom: 0;
             left: 0;
+            right: 0;
             width: 280px;
             padding: 1rem 1.5rem;
             border-top: 1px solid rgba(255,255,255,0.1);
@@ -230,7 +240,7 @@
         </div>
 
         <div class="sidebar-sticky">
-            <ul class="nav flex-column">
+            <ul class="nav flex-column" style="padding-bottom: 1rem;">
                 <!-- Dashboard -->
                 <li class="nav-item">
                     <a class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}" 

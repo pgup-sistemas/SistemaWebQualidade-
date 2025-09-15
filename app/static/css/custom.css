@@ -205,6 +205,26 @@ footer {
     margin-left: 0.5rem;
 }
 
+/* === MELHORIAS SIDEBAR === */
+.sidebar .nav-item {
+    margin-bottom: 0.1rem;
+}
+
+.sidebar .nav-link {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar .nav-link .notification-badge {
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.sidebar-section + .nav-item .nav-link {
+    margin-top: 0.2rem;
+}
+
 /* === MELHORIAS MOBILE === */
 @media (max-width: 768px) {
     /* Badges menores em mobile */
