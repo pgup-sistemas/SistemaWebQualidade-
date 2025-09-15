@@ -19,6 +19,10 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT, TA_JUSTIFY
 import re
 from io import BytesIO
+import csv
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment
+import xlsxwriter
 
 bp = Blueprint('documents', __name__)
 
@@ -751,3 +755,400 @@ def export_pdf(id):
     except Exception as e:
         flash(f'Erro ao gerar PDF: {str(e)}', 'error')
         return redirect(url_for('documents.view', id=id))
+
+
+@bp.route('/reports/export/<format>')
+@login_required
+def export_reports(format):
+    """Exportar relatórios de documentos em diferentes formatos"""
+    if not current_user.can_admin():
+        flash('Acesso negado.', 'error')
+        return redirect(url_for('documents.reports'))
+    
+    try:
+        # Coletar dados dos relatórios (mesmo código da função reports)
+        total_documentos = Document.query.count()
+        ativos = Document.query.filter_by(ativo=True).count()
+        aprovados = Document.query.filter_by(status='aprovado').count()
+        rascunhos = Document.query.filter_by(status='rascunho').count()
+        em_revisao = Document.query.filter_by(status='em_revisao').count()
+        obsoletos = Document.query.filter_by(status='obsoleto').count()
+        
+        # Documentos por tipo
+        por_tipo = db.session.query(
+            Document.tipo,
+            db.func.count(Document.id).label('count')
+        ).filter_by(ativo=True).group_by(Document.tipo).order_by(
+            db.func.count(Document.id).desc()
+        ).all()
+        
+        # Documentos vencidos
+        vencidos = Document.query.filter(
+            Document.data_validade < datetime.utcnow(),
+            Document.ativo == True
+        ).count()
+        
+        # Documentos vencendo (próximos 30 dias)
+        data_limite_30 = datetime.utcnow() + timedelta(days=30)
+        vencendo = Document.query.filter(
+            Document.data_validade <= data_limite_30,
+            Document.data_validade >= datetime.utcnow(),
+            Document.ativo == True
+        ).count()
+        
+        # Documentos por departamento
+        por_departamento = db.session.query(
+            Document.departamento,
+            db.func.count(Document.id).label('count')
+        ).filter(
+            Document.ativo == True,
+            Document.departamento.isnot(None),
+            Document.departamento != ''
+        ).group_by(Document.departamento).order_by(
+            db.func.count(Document.id).desc()
+        ).all()
+        
+        # Documentos criados nos últimos 30 dias
+        data_limite = datetime.utcnow() - timedelta(days=30)
+        criados_mes = Document.query.filter(
+            Document.data_criacao >= data_limite,
+            Document.ativo == True
+        ).count()
+        
+        if format == 'pdf':
+            return export_reports_pdf({
+                'total_documentos': total_documentos,
+                'ativos': ativos,
+                'aprovados': aprovados,
+                'rascunhos': rascunhos,
+                'em_revisao': em_revisao,
+                'obsoletos': obsoletos,
+                'vencidos': vencidos,
+                'vencendo': vencendo,
+                'criados_mes': criados_mes,
+                'por_tipo': por_tipo,
+                'por_departamento': por_departamento
+            })
+        elif format == 'excel':
+            return export_reports_excel({
+                'total_documentos': total_documentos,
+                'ativos': ativos,
+                'aprovados': aprovados,
+                'rascunhos': rascunhos,
+                'em_revisao': em_revisao,
+                'obsoletos': obsoletos,
+                'vencidos': vencidos,
+                'vencendo': vencendo,
+                'criados_mes': criados_mes,
+                'por_tipo': por_tipo,
+                'por_departamento': por_departamento
+            })
+        elif format == 'csv':
+            return export_reports_csv({
+                'total_documentos': total_documentos,
+                'ativos': ativos,
+                'aprovados': aprovados,
+                'rascunhos': rascunhos,
+                'em_revisao': em_revisao,
+                'obsoletos': obsoletos,
+                'vencidos': vencidos,
+                'vencendo': vencendo,
+                'criados_mes': criados_mes,
+                'por_tipo': por_tipo,
+                'por_departamento': por_departamento
+            })
+        else:
+            flash('Formato de exportação inválido.', 'error')
+            return redirect(url_for('documents.reports'))
+            
+    except Exception as e:
+        flash(f'Erro ao exportar relatório: {str(e)}', 'error')
+        return redirect(url_for('documents.reports'))
+
+
+def export_reports_pdf(data):
+    """Exportar relatórios em PDF"""
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
+    temp_filename = temp_file.name
+    temp_file.close()
+    
+    try:
+        doc = SimpleDocTemplate(
+            temp_filename,
+            pagesize=A4,
+            rightMargin=2*cm,
+            leftMargin=2*cm,
+            topMargin=2*cm,
+            bottomMargin=2*cm
+        )
+        
+        styles = getSampleStyleSheet()
+        story = []
+        
+        # Título
+        title_style = ParagraphStyle(
+            'Title',
+            parent=styles['Title'],
+            fontSize=18,
+            spaceAfter=30,
+            alignment=TA_CENTER
+        )
+        story.append(Paragraph("RELATÓRIO DE DOCUMENTOS", title_style))
+        story.append(Paragraph(f"Gerado em: {datetime.now().strftime('%d/%m/%Y às %H:%M')}", styles['Normal']))
+        story.append(Spacer(1, 20))
+        
+        # Resumo Executivo
+        story.append(Paragraph("RESUMO EXECUTIVO", styles['Heading1']))
+        
+        summary_data = [
+            ['Métrica', 'Valor'],
+            ['Total de Documentos', str(data['total_documentos'])],
+            ['Documentos Ativos', str(data['ativos'])],
+            ['Documentos Aprovados', str(data['aprovados'])],
+            ['Rascunhos', str(data['rascunhos'])],
+            ['Em Revisão', str(data['em_revisao'])],
+            ['Obsoletos', str(data['obsoletos'])],
+            ['Vencidos', str(data['vencidos'])],
+            ['Vencendo (30 dias)', str(data['vencendo'])],
+            ['Criados (último mês)', str(data['criados_mes'])]
+        ]
+        
+        summary_table = Table(summary_data, colWidths=[8*cm, 4*cm])
+        summary_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ]))
+        
+        story.append(summary_table)
+        story.append(Spacer(1, 20))
+        
+        # Documentos por Tipo
+        if data['por_tipo']:
+            story.append(Paragraph("DOCUMENTOS POR TIPO", styles['Heading1']))
+            
+            tipo_data = [['Tipo', 'Quantidade', 'Percentual']]
+            for tipo, count in data['por_tipo']:
+                percentage = (count / data['total_documentos']) * 100 if data['total_documentos'] > 0 else 0
+                tipo_data.append([tipo or 'N/A', str(count), f"{percentage:.1f}%"])
+            
+            tipo_table = Table(tipo_data, colWidths=[6*cm, 3*cm, 3*cm])
+            tipo_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('ALIGN', (1, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 12),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ]))
+            
+            story.append(tipo_table)
+            story.append(Spacer(1, 20))
+        
+        # Documentos por Departamento
+        if data['por_departamento']:
+            story.append(Paragraph("DOCUMENTOS POR DEPARTAMENTO", styles['Heading1']))
+            
+            dept_data = [['Departamento', 'Quantidade', 'Percentual']]
+            for dept, count in data['por_departamento']:
+                percentage = (count / data['total_documentos']) * 100 if data['total_documentos'] > 0 else 0
+                dept_data.append([dept or 'N/A', str(count), f"{percentage:.1f}%"])
+            
+            dept_table = Table(dept_data, colWidths=[6*cm, 3*cm, 3*cm])
+            dept_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('ALIGN', (1, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 12),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ]))
+            
+            story.append(dept_table)
+        
+        doc.build(story)
+        
+        # Ler arquivo PDF
+        with open(temp_filename, 'rb') as f:
+            pdf_data = f.read()
+        
+        # Limpar arquivo temporário
+        os.unlink(temp_filename)
+        
+        # Criar resposta
+        response = make_response(pdf_data)
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = f'attachment; filename="relatorio_documentos_{datetime.now().strftime("%Y%m%d_%H%M")}.pdf"'
+        
+        return response
+        
+    except Exception as e:
+        if os.path.exists(temp_filename):
+            os.unlink(temp_filename)
+        raise e
+
+
+def export_reports_excel(data):
+    """Exportar relatórios em Excel"""
+    # Criar workbook
+    output = BytesIO()
+    workbook = Workbook()
+    
+    # Remover sheet padrão
+    workbook.remove(workbook.active)
+    
+    # Sheet 1: Resumo
+    ws_resumo = workbook.create_sheet("Resumo")
+    
+    # Cabeçalho
+    ws_resumo['A1'] = 'RELATÓRIO DE DOCUMENTOS'
+    ws_resumo['A1'].font = Font(size=16, bold=True)
+    ws_resumo['A2'] = f'Gerado em: {datetime.now().strftime("%d/%m/%Y às %H:%M")}'
+    
+    # Dados do resumo
+    resumo_data = [
+        ['Métrica', 'Valor'],
+        ['Total de Documentos', data['total_documentos']],
+        ['Documentos Ativos', data['ativos']],
+        ['Documentos Aprovados', data['aprovados']],
+        ['Rascunhos', data['rascunhos']],
+        ['Em Revisão', data['em_revisao']],
+        ['Obsoletos', data['obsoletos']],
+        ['Vencidos', data['vencidos']],
+        ['Vencendo (30 dias)', data['vencendo']],
+        ['Criados (último mês)', data['criados_mes']]
+    ]
+    
+    for row_num, row_data in enumerate(resumo_data, 4):
+        for col_num, cell_value in enumerate(row_data, 1):
+            cell = ws_resumo.cell(row=row_num, column=col_num, value=cell_value)
+            if row_num == 4:  # Cabeçalho
+                cell.font = Font(bold=True)
+                cell.fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
+    
+    # Ajustar largura das colunas
+    ws_resumo.column_dimensions['A'].width = 25
+    ws_resumo.column_dimensions['B'].width = 15
+    
+    # Sheet 2: Por Tipo
+    if data['por_tipo']:
+        ws_tipo = workbook.create_sheet("Por Tipo")
+        ws_tipo['A1'] = 'DOCUMENTOS POR TIPO'
+        ws_tipo['A1'].font = Font(size=14, bold=True)
+        
+        tipo_headers = ['Tipo', 'Quantidade', 'Percentual']
+        for col_num, header in enumerate(tipo_headers, 1):
+            cell = ws_tipo.cell(row=3, column=col_num, value=header)
+            cell.font = Font(bold=True)
+            cell.fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
+        
+        for row_num, (tipo, count) in enumerate(data['por_tipo'], 4):
+            percentage = (count / data['total_documentos']) * 100 if data['total_documentos'] > 0 else 0
+            ws_tipo.cell(row=row_num, column=1, value=tipo or 'N/A')
+            ws_tipo.cell(row=row_num, column=2, value=count)
+            ws_tipo.cell(row=row_num, column=3, value=f"{percentage:.1f}%")
+        
+        ws_tipo.column_dimensions['A'].width = 20
+        ws_tipo.column_dimensions['B'].width = 12
+        ws_tipo.column_dimensions['C'].width = 12
+    
+    # Sheet 3: Por Departamento
+    if data['por_departamento']:
+        ws_dept = workbook.create_sheet("Por Departamento")
+        ws_dept['A1'] = 'DOCUMENTOS POR DEPARTAMENTO'
+        ws_dept['A1'].font = Font(size=14, bold=True)
+        
+        dept_headers = ['Departamento', 'Quantidade', 'Percentual']
+        for col_num, header in enumerate(dept_headers, 1):
+            cell = ws_dept.cell(row=3, column=col_num, value=header)
+            cell.font = Font(bold=True)
+            cell.fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
+        
+        for row_num, (dept, count) in enumerate(data['por_departamento'], 4):
+            percentage = (count / data['total_documentos']) * 100 if data['total_documentos'] > 0 else 0
+            ws_dept.cell(row=row_num, column=1, value=dept or 'N/A')
+            ws_dept.cell(row=row_num, column=2, value=count)
+            ws_dept.cell(row=row_num, column=3, value=f"{percentage:.1f}%")
+        
+        ws_dept.column_dimensions['A'].width = 25
+        ws_dept.column_dimensions['B'].width = 12
+        ws_dept.column_dimensions['C'].width = 12
+    
+    # Salvar workbook
+    workbook.save(output)
+    output.seek(0)
+    
+    # Criar resposta
+    response = make_response(output.read())
+    response.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    response.headers['Content-Disposition'] = f'attachment; filename="relatorio_documentos_{datetime.now().strftime("%Y%m%d_%H%M")}.xlsx"'
+    
+    return response
+
+
+def export_reports_csv(data):
+    """Exportar relatórios em CSV"""
+    output = BytesIO()
+    output_text = BytesIO()
+    
+    # Usar StringIO para CSV
+    import io
+    csv_buffer = io.StringIO()
+    writer = csv.writer(csv_buffer)
+    
+    # Cabeçalho
+    writer.writerow(['RELATÓRIO DE DOCUMENTOS'])
+    writer.writerow([f'Gerado em: {datetime.now().strftime("%d/%m/%Y às %H:%M")}'])
+    writer.writerow([])  # Linha em branco
+    
+    # Resumo
+    writer.writerow(['RESUMO EXECUTIVO'])
+    writer.writerow(['Métrica', 'Valor'])
+    writer.writerow(['Total de Documentos', data['total_documentos']])
+    writer.writerow(['Documentos Ativos', data['ativos']])
+    writer.writerow(['Documentos Aprovados', data['aprovados']])
+    writer.writerow(['Rascunhos', data['rascunhos']])
+    writer.writerow(['Em Revisão', data['em_revisao']])
+    writer.writerow(['Obsoletos', data['obsoletos']])
+    writer.writerow(['Vencidos', data['vencidos']])
+    writer.writerow(['Vencendo (30 dias)', data['vencendo']])
+    writer.writerow(['Criados (último mês)', data['criados_mes']])
+    writer.writerow([])  # Linha em branco
+    
+    # Por Tipo
+    if data['por_tipo']:
+        writer.writerow(['DOCUMENTOS POR TIPO'])
+        writer.writerow(['Tipo', 'Quantidade', 'Percentual'])
+        for tipo, count in data['por_tipo']:
+            percentage = (count / data['total_documentos']) * 100 if data['total_documentos'] > 0 else 0
+            writer.writerow([tipo or 'N/A', count, f"{percentage:.1f}%"])
+        writer.writerow([])  # Linha em branco
+    
+    # Por Departamento
+    if data['por_departamento']:
+        writer.writerow(['DOCUMENTOS POR DEPARTAMENTO'])
+        writer.writerow(['Departamento', 'Quantidade', 'Percentual'])
+        for dept, count in data['por_departamento']:
+            percentage = (count / data['total_documentos']) * 100 if data['total_documentos'] > 0 else 0
+            writer.writerow([dept or 'N/A', count, f"{percentage:.1f}%"])
+    
+    # Converter para bytes
+    csv_data = csv_buffer.getvalue().encode('utf-8')
+    
+    # Criar resposta
+    response = make_response(csv_data)
+    response.headers['Content-Type'] = 'text/csv; charset=utf-8'
+    response.headers['Content-Disposition'] = f'attachment; filename="relatorio_documentos_{datetime.now().strftime("%Y%m%d_%H%M")}.csv"'
+    
+    return response
