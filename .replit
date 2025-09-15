@@ -24,7 +24,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python run.py"
+args = "uv run python run.py"
 waitForPort = 5000
 
 [workflows.workflow.metadata]
@@ -33,6 +33,10 @@ outputType = "webview"
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 41445
+externalPort = 3000
 
 [deployment]
 deploymentTarget = "autoscale"
