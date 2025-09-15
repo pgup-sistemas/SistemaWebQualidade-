@@ -64,10 +64,11 @@ def create_app():
     os.makedirs(upload_folder, exist_ok=True)
 
     # Registrar blueprints
-    from app.routes import auth, dashboard, documents, users, approvals, audits, nonconformities, reports, equipments
+    from app.routes import auth, dashboard, documents, document_types, users, approvals, audits, nonconformities, reports, equipments
     app.register_blueprint(auth.bp, url_prefix='/auth')
     app.register_blueprint(dashboard.bp, url_prefix='/')
     app.register_blueprint(documents.bp, url_prefix='/documents')
+    app.register_blueprint(document_types.bp)
     app.register_blueprint(users.bp, url_prefix='/users')
     app.register_blueprint(approvals.bp, url_prefix='/approvals')
     app.register_blueprint(audits.bp, url_prefix='/audits')

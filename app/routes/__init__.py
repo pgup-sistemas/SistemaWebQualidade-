@@ -4,6 +4,7 @@ from flask import Flask
 
 from .signatures import bp as signatures_bp
 from .document_types import bp as document_types_bp
+from app.routes import auth, dashboard, documents, document_types, users, approvals, audits, nonconformities, reports, equipments
 
 def create_app():
     app = Flask(__name__)

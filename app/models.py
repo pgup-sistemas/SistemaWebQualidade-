@@ -500,7 +500,6 @@ class EmailNotification(db.Model):
 class AuditLog(db.Model):
     """Modelo de log de auditoria para rastrear ações do sistema"""
     __tablename__ = 'audit_logs'
-    __table_args__ = {'extend_existing': True}
     
     id = db.Column(db.Integer, primary_key=True)
     usuario_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
