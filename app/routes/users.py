@@ -78,6 +78,8 @@ def create():
         email = request.form.get('email')
         nome_completo = request.form.get('nome_completo')
         perfil = request.form.get('perfil')
+        grupo_id = request.form.get('grupo_id')
+        cargo = request.form.get('cargo')
         password = request.form.get('password')
         ativo = request.form.get('ativo') == 'on'
 
@@ -102,6 +104,8 @@ def create():
             email=email,
             nome_completo=nome_completo,
             perfil=perfil,
+            grupo_id=int(grupo_id) if grupo_id else None,
+            cargo=cargo,
             ativo=ativo,
             data_criacao=datetime.utcnow()
         )
@@ -113,7 +117,9 @@ def create():
         flash(f'Usuário {nome_completo} criado com sucesso!', 'success')
         return redirect(url_for('users.index'))
 
-    return render_template('users/create.html')
+    from app.models import Group
+    groups = Group.query.filter_by(ativo=True).order_by(Group.nome).all()
+    return render_template('users/create.html', groups=groups)
 
 @bp.route('/<int:id>')
 @login_required

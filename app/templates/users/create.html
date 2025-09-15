@@ -51,11 +51,33 @@
                                     <label for="perfil" class="form-label">Perfil *</label>
                                     <select class="form-select" id="perfil" name="perfil" required>
                                         <option value="">Selecione um perfil</option>
-                                        <option value="admin">Administrador</option>
-                                        <option value="gestor">Gestor</option>
-                                        <option value="analista">Analista</option>
-                                        <option value="operador">Operador</option>
+                                        <option value="administrador">Administrador</option>
+                                        <option value="gestor_qualidade">Gestor de Qualidade</option>
+                                        <option value="aprovador_revisor">Aprovador/Revisor</option>
+                                        <option value="colaborador_leitor">Colaborador/Leitor</option>
+                                        <option value="auditor">Auditor</option>
                                     </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                                <div class="mb-3">
+                                    <label for="grupo_id" class="form-label">Grupo/Setor *</label>
+                                    <select class="form-select" id="grupo_id" name="grupo_id" required>
+                                        <option value="">Selecione um grupo/setor</option>
+                                        <!-- Será preenchido via JavaScript -->
+                                    </select>
+                                    <div class="form-text">Setor onde o usuário trabalha</div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="mb-3">
+                                    <label for="cargo" class="form-label">Cargo/Função</label>
+                                    <input type="text" class="form-control" id="cargo" name="cargo" 
+                                           placeholder="Ex: Analista, Coordenador, Assistente">
+                                    <div class="form-text">Cargo ou função no setor</div>
                                 </div>
                             </div>
                         </div>
@@ -131,6 +153,27 @@ document.getElementById('nome_usuario').addEventListener('input', function() {
         this.setCustomValidity('Nome de usuário deve conter apenas letras, números e sublinhado');
     } else {
         this.setCustomValidity('');
+    }
+});
+
+// Carregar grupos/setores dinamicamente
+document.addEventListener('DOMContentLoaded', function() {
+    const grupoSelect = document.getElementById('grupo_id');
+    
+    if (grupoSelect) {
+        fetch('/groups/api/get-groups')
+            .then(response => response.json())
+            .then(groups => {
+                groups.forEach(group => {
+                    const option = document.createElement('option');
+                    option.value = group.id;
+                    option.textContent = `${group.nome} (${group.codigo})`;
+                    grupoSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Erro ao carregar grupos:', error);
+            });
     }
 });
 </script>

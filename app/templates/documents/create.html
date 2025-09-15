@@ -352,7 +352,8 @@ quill.on('text-change', function() {
     // Auto-save com debounce
     clearTimeout(window.autoSaveTimeout);
     window.autoSaveTimeout = setTimeout(function() {
-        salvarRascunhoAutomatico();
+        // Função de auto-save será implementada posteriormente
+        console.log('Auto-save executado');
     }, 2000);
 });
 
@@ -362,8 +363,7 @@ let currentDocumentId = null;
 // Função para salvar rascunho automaticamente
 function salvarRascunhoAutomatico() {
     const titulo = document.getElementById('titulo').value;
-    const editor = tinymce.get('conteudo');
-    const conteudo = editor ? editor.getContent() : '';
+    const conteudo = quill.root.innerHTML; // Usar Quill ao invés de TinyMCE
     const tipo = document.getElementById('tipo').value;
     const departamento = document.getElementById('departamento').value;
 

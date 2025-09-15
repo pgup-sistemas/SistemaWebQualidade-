@@ -144,6 +144,44 @@ def render_email_template(notification):
 
 # Notificações específicas do sistema
 
+def notify_document_created(document):
+    """Notificar grupos sobre novo documento disponível"""
+    if not document.tipo_documento_obj or not document.tipo_documento_obj.notificar_grupos:
+        return
+    
+    # Obter grupos relacionados ao tipo de documento
+    related_groups = document.tipo_documento_obj.get_related_groups()
+    
+    for group in related_groups:
+        if group.notificar_novos_documentos:
+            # Notificar todos os usuários ativos do grupo
+            users = group.get_active_users()
+            
+            for user in users:
+                if user.receber_notificacoes:
+                    assunto = f"Novo documento disponível - {document.tipo}"
+                    conteudo = f"""
+Olá {user.nome_completo},
+
+Um novo documento está disponível para seu setor ({group.nome}):
+
+Título: {document.titulo}
+Código: {document.codigo}
+Tipo: {document.tipo}
+Autor: {document.autor.nome_completo}
+
+Por favor, acesse o sistema para visualizar o documento.
+                    """
+                    
+                    create_notification(
+                        user_id=user.id,
+                        tipo='novo_documento_disponivel',
+                        assunto=assunto,
+                        conteudo=conteudo,
+                        entidade_tipo='document',
+                        entidade_id=document.id
+                    )
+
 def notify_document_expiring(document):
     """Notificar sobre documento próximo do vencimento"""
     if not document.data_validade:
@@ -158,6 +196,12 @@ def notify_document_expiring(document):
             User.ativo == True
         ).all()
         users_to_notify.extend(gestores)
+        
+        # Também notificar grupos relacionados se aplicável
+        if document.tipo_documento_obj:
+            for group in document.tipo_documento_obj.get_related_groups():
+                if group.responsavel:
+                    users_to_notify.append(group.responsavel)
         
         for user in set(users_to_notify):
             assunto = f"Documento {document.codigo} vencendo em {days_to_expire} dias"

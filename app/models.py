@@ -7,6 +7,45 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
 
+class Group(db.Model):
+    """Modelo de grupos/setores dinâmicos"""
+    __tablename__ = 'groups'
+
+    id = db.Column(db.Integer, primary_key=True)
+    codigo = db.Column(db.String(20), unique=True, nullable=False)
+    nome = db.Column(db.String(100), nullable=False)
+    descricao = db.Column(db.Text)
+    cor = db.Column(db.String(7), default='#28a745')  # Cor hexadecimal para identificação
+    icone = db.Column(db.String(50), default='bi-people')  # Classe do ícone Bootstrap
+    responsavel_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    notificar_novos_documentos = db.Column(db.Boolean, default=True)
+    ativo = db.Column(db.Boolean, default=True)
+    data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
+    criado_por_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+    # Relacionamentos
+    criado_por = db.relationship('User', foreign_keys=[criado_por_id], backref='grupos_criados')
+    responsavel = db.relationship('User', foreign_keys=[responsavel_id], backref='grupos_responsavel')
+    usuarios = db.relationship('User', backref='grupo_obj', foreign_keys='User.grupo_id')
+
+    def get_users_count(self):
+        """Retorna número de usuários no grupo"""
+        return User.query.filter_by(grupo_id=self.id, ativo=True).count()
+
+    def get_active_users(self):
+        """Retorna usuários ativos do grupo"""
+        return User.query.filter_by(grupo_id=self.id, ativo=True).all()
+
+    def __repr__(self):
+        return f'<Group {self.codigo}: {self.nome}>'
+
+# Tabela de relacionamento many-to-many entre DocumentType e Group
+document_type_groups = db.Table('document_type_groups',
+    db.Column('document_type_id', db.Integer, db.ForeignKey('document_types.id'), primary_key=True),
+    db.Column('group_id', db.Integer, db.ForeignKey('groups.id'), primary_key=True),
+    db.Column('data_criacao', db.DateTime, default=datetime.utcnow)
+)
+
 class DocumentType(db.Model):
     """Modelo de tipos de documentos dinâmicos"""
     __tablename__ = 'document_types'
@@ -17,6 +56,7 @@ class DocumentType(db.Model):
     descricao = db.Column(db.Text)
     cor = db.Column(db.String(7), default='#007bff')  # Cor hexadecimal para identificação
     icone = db.Column(db.String(50), default='bi-file-text')  # Classe do ícone Bootstrap
+    notificar_grupos = db.Column(db.Boolean, default=True)  # Se deve notificar grupos sobre novos documentos
     ativo = db.Column(db.Boolean, default=True)
     data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
     criado_por_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -24,6 +64,11 @@ class DocumentType(db.Model):
     # Relacionamentos
     criado_por = db.relationship('User', backref='tipos_documentos_criados')
     documentos = db.relationship('Document', backref='tipo_documento_obj', foreign_keys='Document.tipo_documento_id')
+    grupos = db.relationship('Group', secondary=document_type_groups, backref='tipos_documentos')
+
+    def get_related_groups(self):
+        """Retorna grupos relacionados a este tipo de documento"""
+        return self.grupos
 
     def __repr__(self):
         return f'<DocumentType {self.codigo}: {self.nome}>'
@@ -63,6 +108,9 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     nome_completo = db.Column(db.String(200), nullable=False)
     perfil = db.Column(db.String(50), nullable=False)  # administrador, gestor_qualidade, aprovador_revisor, colaborador_leitor, auditor
+    grupo_id = db.Column(db.Integer, db.ForeignKey('groups.id'))  # Novo campo para grupo/setor
+    cargo = db.Column(db.String(100))  # Cargo/função do usuário no grupo
+    receber_notificacoes = db.Column(db.Boolean, default=True)  # Se deve receber notificações
     ativo = db.Column(db.Boolean, default=True)
     data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
     ultimo_login = db.Column(db.DateTime)
