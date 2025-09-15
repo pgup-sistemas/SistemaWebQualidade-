@@ -267,7 +267,7 @@
             // Detectar preferência do sistema se não há preferência salva
             if (!localStorage.getItem('theme')) {
                 if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                    body.setAttribute('data-theme', 'dark');
+                    html.setAttribute('data-theme', 'dark');
                     themeIcon.className = 'bi bi-moon-fill';
                     localStorage.setItem('theme', 'dark');
                 }
