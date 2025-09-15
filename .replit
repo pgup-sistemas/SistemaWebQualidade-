@@ -7,7 +7,7 @@ channel = "stable-25_05"
 packages = ["cargo", "freetype", "glibcLocales", "lcms2", "libiconv", "libimagequant", "libjpeg", "libtiff", "libwebp", "libxcrypt", "openjpeg", "openssl", "pkg-config", "postgresql", "rustc", "tcl", "tk", "zlib"]
 
 [workflows]
-runButton = "Migrar e Executar"
+runButton = "Project"
 
 [[workflows.workflow]]
 name = "Project"
@@ -22,13 +22,13 @@ args = "Document Management System"
 name = "Document Management System"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "uv run python run.py"
-waitForPort = 5000
-
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python run.py"
+waitForPort = 5000
 
 [[workflows.workflow]]
 name = "Document Management System - Port 8000"
@@ -55,6 +55,10 @@ args = "python run.py"
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 38939
+externalPort = 3000
 
 [deployment]
 deploymentTarget = "autoscale"
