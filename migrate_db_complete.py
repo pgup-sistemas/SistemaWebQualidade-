@@ -20,122 +20,172 @@ def migrate_database():
             return False
             
         engine = create_engine(database_url)
-        Session = sessionmaker(bind=engine)
-        session = Session()
         
         # Detectar tipo de banco
         is_postgres = database_url.startswith('postgresql')
         
         print("✓ Conectado ao banco de dados")
         
-        # 1. Verificar e criar tabela groups primeiro
-        try:
-            session.execute(text("SELECT 1 FROM groups LIMIT 1"))
-            print("✓ Tabela groups já existe")
-        except:
-            print("Criando tabela groups...")
-            if is_postgres:
-                session.execute(text("""
-                    CREATE TABLE IF NOT EXISTS groups (
-                        id SERIAL PRIMARY KEY,
-                        codigo VARCHAR(20) UNIQUE NOT NULL,
-                        nome VARCHAR(100) NOT NULL,
-                        descricao TEXT,
-                        cor VARCHAR(7) DEFAULT '#28a745',
-                        icone VARCHAR(50) DEFAULT 'bi-people',
-                        responsavel_id INTEGER,
-                        notificar_novos_documentos BOOLEAN DEFAULT TRUE,
-                        ativo BOOLEAN DEFAULT TRUE,
-                        data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        criado_por_id INTEGER NOT NULL
-                    )
-                """))
-            else:
-                session.execute(text("""
-                    CREATE TABLE IF NOT EXISTS groups (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        codigo VARCHAR(20) UNIQUE NOT NULL,
-                        nome VARCHAR(100) NOT NULL,
-                        descricao TEXT,
-                        cor VARCHAR(7) DEFAULT '#28a745',
-                        icone VARCHAR(50) DEFAULT 'bi-people',
-                        responsavel_id INTEGER,
-                        notificar_novos_documentos BOOLEAN DEFAULT 1,
-                        ativo BOOLEAN DEFAULT 1,
-                        data_criacao DATETIME DEFAULT CURRENT_TIMESTAMP,
-                        criado_por_id INTEGER NOT NULL
-                    )
-                """))
-            session.commit()
-            print("✓ Tabela groups criada")
-        
+        # Executar cada operação em uma transação separada para PostgreSQL
+        with engine.connect() as connection:
+            # 1. Verificar e criar tabela groups primeiro
+            try:
+                result = connection.execute(text("SELECT 1 FROM groups LIMIT 1"))
+                result.fetchone()
+                print("✓ Tabela groups já existe")
+            except:
+                print("Criando tabela groups...")
+                if is_postgres:
+                    connection.execute(text("""
+                        CREATE TABLE IF NOT EXISTS groups (
+                            id SERIAL PRIMARY KEY,
+                            codigo VARCHAR(20) UNIQUE NOT NULL,
+                            nome VARCHAR(100) NOT NULL,
+                            descricao TEXT,
+                            cor VARCHAR(7) DEFAULT '#28a745',
+                            icone VARCHAR(50) DEFAULT 'bi-people',
+                            responsavel_id INTEGER,
+                            notificar_novos_documentos BOOLEAN DEFAULT TRUE,
+                            ativo BOOLEAN DEFAULT TRUE,
+                            data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            criado_por_id INTEGER NOT NULL
+                        )
+                    """))
+                else:
+                    connection.execute(text("""
+                        CREATE TABLE IF NOT EXISTS groups (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            codigo VARCHAR(20) UNIQUE NOT NULL,
+                            nome VARCHAR(100) NOT NULL,
+                            descricao TEXT,
+                            cor VARCHAR(7) DEFAULT '#28a745',
+                            icone VARCHAR(50) DEFAULT 'bi-people',
+                            responsavel_id INTEGER,
+                            notificar_novos_documentos BOOLEAN DEFAULT 1,
+                            ativo BOOLEAN DEFAULT 1,
+                            data_criacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+                            criado_por_id INTEGER NOT NULL
+                        )
+                    """))
+                connection.commit()
+                print("✓ Tabela groups criada")
+
         # 2. Verificar e adicionar colunas na tabela users
-        try:
-            session.execute(text("SELECT grupo_id FROM users LIMIT 1"))
-            print("✓ Coluna grupo_id já existe na tabela users")
-        except:
-            print("Adicionando colunas na tabela users...")
-            if is_postgres:
-                session.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS grupo_id INTEGER"))
-                session.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS cargo VARCHAR(100)"))
-                session.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS receber_notificacoes BOOLEAN DEFAULT TRUE"))
-            else:
-                session.execute(text("ALTER TABLE users ADD COLUMN grupo_id INTEGER"))
-                session.execute(text("ALTER TABLE users ADD COLUMN cargo VARCHAR(100)"))
-                session.execute(text("ALTER TABLE users ADD COLUMN receber_notificacoes BOOLEAN DEFAULT 1"))
-            session.commit()
-            print("✓ Colunas adicionadas na tabela users")
+        with engine.connect() as connection:
+            try:
+                result = connection.execute(text("SELECT grupo_id FROM users LIMIT 1"))
+                result.fetchone()
+                print("✓ Coluna grupo_id já existe na tabela users")
+            except:
+                print("Adicionando colunas na tabela users...")
+                if is_postgres:
+                    connection.execute(text("ALTER TABLE users ADD COLUMN grupo_id INTEGER"))
+                    connection.commit()
+                    
+                    try:
+                        connection.execute(text("ALTER TABLE users ADD COLUMN cargo VARCHAR(100)"))
+                        connection.commit()
+                    except:
+                        pass  # Coluna já existe
+                    
+                    try:
+                        connection.execute(text("ALTER TABLE users ADD COLUMN receber_notificacoes BOOLEAN DEFAULT TRUE"))
+                        connection.commit()
+                    except:
+                        pass  # Coluna já existe
+                else:
+                    connection.execute(text("ALTER TABLE users ADD COLUMN grupo_id INTEGER"))
+                    connection.execute(text("ALTER TABLE users ADD COLUMN cargo VARCHAR(100)"))
+                    connection.execute(text("ALTER TABLE users ADD COLUMN receber_notificacoes BOOLEAN DEFAULT 1"))
+                    connection.commit()
+                print("✓ Colunas adicionadas na tabela users")
         
         # 3. Verificar e criar tabela document_types
-        try:
-            session.execute(text("SELECT 1 FROM document_types LIMIT 1"))
-            print("✓ Tabela document_types já existe")
-        except:
-            print("Criando tabela document_types...")
-            if is_postgres:
-                session.execute(text("""
-                    CREATE TABLE IF NOT EXISTS document_types (
-                        id SERIAL PRIMARY KEY,
-                        codigo VARCHAR(20) UNIQUE NOT NULL,
-                        nome VARCHAR(100) NOT NULL,
-                        descricao TEXT,
-                        cor VARCHAR(7) DEFAULT '#007bff',
-                        icone VARCHAR(50) DEFAULT 'bi-file-text',
-                        notificar_grupos BOOLEAN DEFAULT TRUE,
-                        ativo BOOLEAN DEFAULT TRUE,
-                        data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        criado_por_id INTEGER NOT NULL
-                    )
-                """))
-            else:
-                session.execute(text("""
-                    CREATE TABLE IF NOT EXISTS document_types (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        codigo VARCHAR(20) UNIQUE NOT NULL,
-                        nome VARCHAR(100) NOT NULL,
-                        descricao TEXT,
-                        cor VARCHAR(7) DEFAULT '#007bff',
-                        icone VARCHAR(50) DEFAULT 'bi-file-text',
-                        notificar_grupos BOOLEAN DEFAULT 1,
-                        ativo BOOLEAN DEFAULT 1,
-                        data_criacao DATETIME DEFAULT CURRENT_TIMESTAMP,
-                        criado_por_id INTEGER NOT NULL
-                    )
-                """))
-            session.commit()
-            print("✓ Tabela document_types criada")
+        with engine.connect() as connection:
+            try:
+                result = connection.execute(text("SELECT 1 FROM document_types LIMIT 1"))
+                result.fetchone()
+                print("✓ Tabela document_types já existe")
+            except:
+                print("Criando tabela document_types...")
+                if is_postgres:
+                    connection.execute(text("""
+                        CREATE TABLE IF NOT EXISTS document_types (
+                            id SERIAL PRIMARY KEY,
+                            codigo VARCHAR(20) UNIQUE NOT NULL,
+                            nome VARCHAR(100) NOT NULL,
+                            descricao TEXT,
+                            cor VARCHAR(7) DEFAULT '#007bff',
+                            icone VARCHAR(50) DEFAULT 'bi-file-text',
+                            notificar_grupos BOOLEAN DEFAULT TRUE,
+                            ativo BOOLEAN DEFAULT TRUE,
+                            data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            criado_por_id INTEGER NOT NULL
+                        )
+                    """))
+                else:
+                    connection.execute(text("""
+                        CREATE TABLE IF NOT EXISTS document_types (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            codigo VARCHAR(20) UNIQUE NOT NULL,
+                            nome VARCHAR(100) NOT NULL,
+                            descricao TEXT,
+                            cor VARCHAR(7) DEFAULT '#007bff',
+                            icone VARCHAR(50) DEFAULT 'bi-file-text',
+                            notificar_grupos BOOLEAN DEFAULT 1,
+                            ativo BOOLEAN DEFAULT 1,
+                            data_criacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+                            criado_por_id INTEGER NOT NULL
+                        )
+                    """))
+                connection.commit()
+                print("✓ Tabela document_types criada")
         
         # 4. Verificar e adicionar coluna tipo_documento_id na tabela documents
-        try:
-            session.execute(text("SELECT tipo_documento_id FROM documents LIMIT 1"))
-            print("✓ Coluna tipo_documento_id já existe na tabela documents")
-        except:
-            print("Adicionando coluna tipo_documento_id na tabela documents...")
-            session.execute(text("ALTER TABLE documents ADD COLUMN tipo_documento_id INTEGER"))
-            session.commit()
-            print("✓ Coluna tipo_documento_id adicionada na tabela documents")
+        with engine.connect() as connection:
+            try:
+                result = connection.execute(text("SELECT tipo_documento_id FROM documents LIMIT 1"))
+                result.fetchone()
+                print("✓ Coluna tipo_documento_id já existe na tabela documents")
+            except:
+                print("Adicionando coluna tipo_documento_id na tabela documents...")
+                connection.execute(text("ALTER TABLE documents ADD COLUMN tipo_documento_id INTEGER"))
+                connection.commit()
+                print("✓ Coluna tipo_documento_id adicionada na tabela documents")
+
+        # 5. Criar tabela de relacionamento many-to-many se não existir
+        with engine.connect() as connection:
+            try:
+                result = connection.execute(text("SELECT 1 FROM document_type_groups LIMIT 1"))
+                result.fetchone()
+                print("✓ Tabela document_type_groups já existe")
+            except:
+                print("Criando tabela document_type_groups...")
+                if is_postgres:
+                    connection.execute(text("""
+                        CREATE TABLE IF NOT EXISTS document_type_groups (
+                            document_type_id INTEGER NOT NULL,
+                            group_id INTEGER NOT NULL,
+                            data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            PRIMARY KEY (document_type_id, group_id),
+                            FOREIGN KEY (document_type_id) REFERENCES document_types(id),
+                            FOREIGN KEY (group_id) REFERENCES groups(id)
+                        )
+                    """))
+                else:
+                    connection.execute(text("""
+                        CREATE TABLE IF NOT EXISTS document_type_groups (
+                            document_type_id INTEGER NOT NULL,
+                            group_id INTEGER NOT NULL,
+                            data_criacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+                            PRIMARY KEY (document_type_id, group_id),
+                            FOREIGN KEY (document_type_id) REFERENCES document_types(id),
+                            FOREIGN KEY (group_id) REFERENCES groups(id)
+                        )
+                    """))
+                connection.commit()
+                print("✓ Tabela document_type_groups criada")
         
-        session.close()
         print("✓ Migração de schema concluída!")
         
         # Agora carregar a aplicação para popular dados
