@@ -37,17 +37,25 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label for="tipo" class="form-label">Tipo *</label>
-                                    <select class="form-select" id="tipo" name="tipo" required>
-                                        <option value="">Selecione...</option>
-                                        <option value="medicao">Medição</option>
-                                        <option value="teste">Teste</option>
-                                        <option value="producao">Produção</option>
-                                        <option value="seguranca">Segurança</option>
-                                        <option value="laboratorio">Laboratório</option>
-                                        <option value="escritorio">Escritório</option>
-                                        <option value="outros">Outros</option>
+                                    <label for="tipo_equipamento_id" class="form-label">Tipo *</label>
+                                    <select class="form-select" id="tipo_equipamento_id" name="tipo_equipamento_id" 
+                                            required onchange="loadEquipmentDefaults()">
+                                        <option value="">Selecione um tipo...</option>
+                                        {% for tipo in tipos_equipamento %}
+                                        <option value="{{ tipo.id }}" 
+                                                data-calibracao="{{ tipo.requer_calibracao|lower }}"
+                                                data-freq-calibracao="{{ tipo.frequencia_calibracao_padrao or '' }}"
+                                                data-manutencao="{{ tipo.requer_manutencao|lower }}"
+                                                data-freq-manutencao="{{ tipo.frequencia_manutencao_padrao or '' }}">
+                                            <span style="color: {{ tipo.cor }}">{{ tipo.nome }}</span>
+                                        </option>
+                                        {% endfor %}
                                     </select>
+                                    <div class="form-text">
+                                        <a href="{{ url_for('equipment_types.index') }}" target="_blank" class="text-decoration-none">
+                                            <i class="bi bi-gear"></i> Gerenciar tipos de equipamentos
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -163,4 +171,25 @@
         </div>
     </div>
 </div>
+
+<script>
+function loadEquipmentDefaults() {
+    const select = document.getElementById('tipo_equipamento_id');
+    const selectedOption = select.options[select.selectedIndex];
+    
+    if (selectedOption.value) {
+        // Carregar configurações padrão
+        const freqCalibracaoPadrao = selectedOption.getAttribute('data-freq-calibracao');
+        const freqManutencaoPadrao = selectedOption.getAttribute('data-freq-manutencao');
+        
+        if (freqCalibracaoPadrao) {
+            document.getElementById('frequencia_calibracao').value = freqCalibracaoPadrao;
+        }
+        
+        if (freqManutencaoPadrao) {
+            document.getElementById('frequencia_manutencao').value = freqManutencaoPadrao;
+        }
+    }
+}
+</script>
 {% endblock %}

@@ -28,6 +28,31 @@ class DocumentType(db.Model):
     def __repr__(self):
         return f'<DocumentType {self.codigo}: {self.nome}>'
 
+class EquipmentType(db.Model):
+    """Modelo de tipos de equipamentos dinâmicos"""
+    __tablename__ = 'equipment_types'
+
+    id = db.Column(db.Integer, primary_key=True)
+    codigo = db.Column(db.String(20), unique=True, nullable=False)
+    nome = db.Column(db.String(100), nullable=False)
+    descricao = db.Column(db.Text)
+    cor = db.Column(db.String(7), default='#6c757d')  # Cor hexadecimal para identificação
+    icone = db.Column(db.String(50), default='bi-gear')  # Classe do ícone Bootstrap
+    requer_calibracao = db.Column(db.Boolean, default=False)
+    frequencia_calibracao_padrao = db.Column(db.Integer)  # em meses
+    requer_manutencao = db.Column(db.Boolean, default=True)
+    frequencia_manutencao_padrao = db.Column(db.Integer)  # em meses
+    ativo = db.Column(db.Boolean, default=True)
+    data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
+    criado_por_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+    # Relacionamentos
+    criado_por = db.relationship('User', backref='tipos_equipamentos_criados')
+    equipamentos = db.relationship('Equipment', backref='tipo_equipamento_obj', foreign_keys='Equipment.tipo_equipamento_id')
+
+    def __repr__(self):
+        return f'<EquipmentType {self.codigo}: {self.nome}>'
+
 class User(UserMixin, db.Model):
     """Modelo de usuário do sistema"""
     __tablename__ = 'users'
@@ -390,7 +415,8 @@ class Equipment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     codigo = db.Column(db.String(50), unique=True, nullable=False)
     nome = db.Column(db.String(200), nullable=False)
-    tipo = db.Column(db.String(50), nullable=False)  # medicao, teste, producao, seguranca, etc
+    tipo = db.Column(db.String(50), nullable=False)  # medicao, teste, producao, seguranca, etc (mantido para compatibilidade)
+    tipo_equipamento_id = db.Column(db.Integer, db.ForeignKey('equipment_types.id'))  # Novo campo para tipos dinâmicos
     fabricante = db.Column(db.String(100))
     modelo = db.Column(db.String(100))
     numero_serie = db.Column(db.String(100))

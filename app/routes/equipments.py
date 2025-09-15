@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from app import db
-from app.models import Equipment, ServiceRecord, User, AuditLog
+from app.models import Equipment, ServiceRecord, User, AuditLog, EquipmentType
 
 bp = Blueprint('equipments', __name__, url_prefix='/equipments')
 
@@ -85,7 +85,8 @@ def create():
             equipment = Equipment(
                 codigo=request.form['codigo'].strip(),
                 nome=request.form['nome'].strip(),
-                tipo=request.form['tipo'],
+                tipo=request.form.get('tipo', 'geral'),  # Mantido para compatibilidade
+                tipo_equipamento_id=request.form.get('tipo_equipamento_id') or None,
                 fabricante=request.form.get('fabricante', '').strip(),
                 modelo=request.form.get('modelo', '').strip(),
                 numero_serie=request.form.get('numero_serie', '').strip(),
@@ -135,7 +136,8 @@ def create():
             flash(f'Erro ao criar equipamento: {str(e)}', 'error')
     
     usuarios = User.query.filter_by(ativo=True).order_by(User.nome_completo).all()
-    return render_template('equipments/create.html', usuarios=usuarios)
+    tipos_equipamento = EquipmentType.query.filter_by(ativo=True).order_by(EquipmentType.nome).all()
+    return render_template('equipments/create.html', usuarios=usuarios, tipos_equipamento=tipos_equipamento)
 
 @bp.route('/<int:id>')
 @login_required
@@ -164,7 +166,8 @@ def edit(id):
         try:
             equipment.codigo = request.form['codigo'].strip()
             equipment.nome = request.form['nome'].strip()
-            equipment.tipo = request.form['tipo']
+            equipment.tipo = request.form.get('tipo', 'geral')  # Mantido para compatibilidade
+            equipment.tipo_equipamento_id = request.form.get('tipo_equipamento_id') or None
             equipment.fabricante = request.form.get('fabricante', '').strip()
             equipment.modelo = request.form.get('modelo', '').strip()
             equipment.numero_serie = request.form.get('numero_serie', '').strip()
@@ -221,7 +224,8 @@ def edit(id):
             flash(f'Erro ao atualizar equipamento: {str(e)}', 'error')
     
     usuarios = User.query.filter_by(ativo=True).order_by(User.nome_completo).all()
-    return render_template('equipments/edit.html', equipment=equipment, usuarios=usuarios)
+    tipos_equipamento = EquipmentType.query.filter_by(ativo=True).order_by(EquipmentType.nome).all()
+    return render_template('equipments/edit.html', equipment=equipment, usuarios=usuarios, tipos_equipamento=tipos_equipamento)
 
 @bp.route('/<int:id>/delete', methods=['POST'])
 @login_required

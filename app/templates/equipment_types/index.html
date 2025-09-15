@@ -1,0 +1,194 @@
+
+{% extends "base.html" %}
+
+{% block title %}Tipos de Equipamentos{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-2 px-md-3 py-2">
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-3 mb-md-4">
+        <h2 class="h3 h-md-2 mb-2 mb-sm-0"><i class="bi bi-gear-fill text-primary"></i> Tipos de Equipamentos</h2>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('equipments.index') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i> <span class="d-none d-sm-inline">Voltar aos Equipamentos</span><span class="d-sm-none">Voltar</span>
+            </a>
+            <a href="{{ url_for('equipment_types.create') }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-circle"></i> <span class="d-none d-sm-inline">Novo Tipo</span><span class="d-sm-none">Novo</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-6">
+                    <label for="search" class="form-label">Buscar</label>
+                    <input type="text" class="form-control" id="search" name="search" 
+                           value="{{ search }}" placeholder="Código ou nome do tipo">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">&nbsp;</label>
+                    <div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i> Filtrar
+                        </button>
+                        <a href="{{ url_for('equipment_types.index') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Limpar
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de Tipos -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Tipos de Equipamentos Cadastrados</h5>
+        </div>
+        <div class="card-body">
+            {% if tipos.items %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nome</th>
+                            <th>Descrição</th>
+                            <th>Calibração</th>
+                            <th>Manutenção</th>
+                            <th>Equipamentos</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tipo in tipos.items %}
+                        <tr>
+                            <td>
+                                <span class="badge" style="background-color: {{ tipo.cor }}; color: white;">
+                                    <i class="{{ tipo.icone }}"></i> {{ tipo.codigo }}
+                                </span>
+                            </td>
+                            <td><strong>{{ tipo.nome }}</strong></td>
+                            <td>{{ tipo.descricao or '-' }}</td>
+                            <td>
+                                {% if tipo.requer_calibracao %}
+                                <span class="badge bg-info">
+                                    <i class="bi bi-check-circle"></i> 
+                                    {% if tipo.frequencia_calibracao_padrao %}{{ tipo.frequencia_calibracao_padrao }}m{% endif %}
+                                </span>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if tipo.requer_manutencao %}
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-check-circle"></i>
+                                    {% if tipo.frequencia_manutencao_padrao %}{{ tipo.frequencia_manutencao_padrao }}m{% endif %}
+                                </span>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">{{ tipo.equipamentos|length }}</span>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('equipment_types.edit', id=tipo.id) }}" 
+                                       class="btn btn-outline-warning btn-sm" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-outline-danger btn-sm" 
+                                            onclick="confirmDelete('{{ tipo.id }}', '{{ tipo.nome }}')" title="Excluir">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginação -->
+            {% if tipos.pages > 1 %}
+            <nav aria-label="Navegação de páginas">
+                <ul class="pagination justify-content-center">
+                    {% if tipos.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('equipment_types.index', page=tipos.prev_num, search=search) }}">Anterior</a>
+                    </li>
+                    {% endif %}
+
+                    {% for page_num in tipos.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                        {% if page_num %}
+                            {% if page_num != tipos.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('equipment_types.index', page=page_num, search=search) }}">{{ page_num }}</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">…</span>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if tipos.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('equipment_types.index', page=tipos.next_num, search=search) }}">Próximo</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            {% else %}
+            <div class="text-center py-4">
+                <i class="bi bi-inbox display-4 text-muted"></i>
+                <p class="text-muted mt-2">Nenhum tipo de equipamento encontrado</p>
+                <a href="{{ url_for('equipment_types.create') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Cadastrar Primeiro Tipo
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza de que deseja excluir o tipo de equipamento <strong id="deleteItemName"></strong>?</p>
+                <p class="text-warning"><i class="bi bi-exclamation-triangle"></i> Esta ação não pode ser desfeita.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="POST" id="deleteForm" class="d-inline">
+                    {{ csrf_token() }}
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete(id, name) {
+    document.getElementById('deleteItemName').textContent = name;
+    document.getElementById('deleteForm').action = "{{ url_for('equipment_types.delete', id=0) }}".replace('0', id);
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+</script>
+{% endblock %}

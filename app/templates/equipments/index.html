@@ -144,11 +144,16 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Equipamentos</h5>
-            {% if current_user.can_admin() %}
-            <a href="{{ url_for('equipments.reports') }}" class="btn btn-outline-primary btn-sm">
-                <i class="bi bi-graph-up"></i> Relatórios
-            </a>
-            {% endif %}
+            <div class="d-flex gap-2">
+                {% if current_user.can_admin() %}
+                <a href="{{ url_for('equipment_types.index') }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-gear-fill"></i> Tipos
+                </a>
+                <a href="{{ url_for('equipments.reports') }}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-graph-up"></i> Relatórios
+                </a>
+                {% endif %}
+            </div>
         </div>
         <div class="card-body">
             {% if equipments.items %}
@@ -176,7 +181,13 @@
                             </td>
                             <td>{{ equipment.nome }}</td>
                             <td>
+                                {% if equipment.tipo_equipamento_obj %}
+                                <span class="badge" style="background-color: {{ equipment.tipo_equipamento_obj.cor }}; color: white;">
+                                    <i class="{{ equipment.tipo_equipamento_obj.icone }}"></i> {{ equipment.tipo_equipamento_obj.nome }}
+                                </span>
+                                {% else %}
                                 <span class="badge bg-secondary">{{ equipment.tipo.title() }}</span>
+                                {% endif %}
                             </td>
                             <td>{{ equipment.localizacao or '-' }}</td>
                             <td>

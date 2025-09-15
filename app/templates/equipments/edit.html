@@ -37,17 +37,26 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label for="tipo" class="form-label">Tipo *</label>
-                                    <select class="form-select" id="tipo" name="tipo" required>
-                                        <option value="">Selecione...</option>
-                                        <option value="medicao" {% if equipment.tipo == 'medicao' %}selected{% endif %}>Medição</option>
-                                        <option value="teste" {% if equipment.tipo == 'teste' %}selected{% endif %}>Teste</option>
-                                        <option value="producao" {% if equipment.tipo == 'producao' %}selected{% endif %}>Produção</option>
-                                        <option value="seguranca" {% if equipment.tipo == 'seguranca' %}selected{% endif %}>Segurança</option>
-                                        <option value="laboratorio" {% if equipment.tipo == 'laboratorio' %}selected{% endif %}>Laboratório</option>
-                                        <option value="escritorio" {% if equipment.tipo == 'escritorio' %}selected{% endif %}>Escritório</option>
-                                        <option value="outros" {% if equipment.tipo == 'outros' %}selected{% endif %}>Outros</option>
+                                    <label for="tipo_equipamento_id" class="form-label">Tipo *</label>
+                                    <select class="form-select" id="tipo_equipamento_id" name="tipo_equipamento_id" 
+                                            required onchange="loadEquipmentDefaults()">
+                                        <option value="">Selecione um tipo...</option>
+                                        {% for tipo in tipos_equipamento %}
+                                        <option value="{{ tipo.id }}" 
+                                                {% if equipment.tipo_equipamento_id == tipo.id %}selected{% endif %}
+                                                data-calibracao="{{ tipo.requer_calibracao|lower }}"
+                                                data-freq-calibracao="{{ tipo.frequencia_calibracao_padrao or '' }}"
+                                                data-manutencao="{{ tipo.requer_manutencao|lower }}"
+                                                data-freq-manutencao="{{ tipo.frequencia_manutencao_padrao or '' }}">
+                                            {{ tipo.nome }}
+                                        </option>
+                                        {% endfor %}
                                     </select>
+                                    <div class="form-text">
+                                        <a href="{{ url_for('equipment_types.index') }}" target="_blank" class="text-decoration-none">
+                                            <i class="bi bi-gear"></i> Gerenciar tipos de equipamentos
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -167,4 +176,28 @@
         </div>
     </div>
 </div>
+
+<script>
+function loadEquipmentDefaults() {
+    const select = document.getElementById('tipo_equipamento_id');
+    const selectedOption = select.options[select.selectedIndex];
+    
+    if (selectedOption.value) {
+        // Carregar configurações padrão apenas se os campos estiverem vazios
+        const freqCalibracaoPadrao = selectedOption.getAttribute('data-freq-calibracao');
+        const freqManutencaoPadrao = selectedOption.getAttribute('data-freq-manutencao');
+        
+        const freqCalibracaoInput = document.getElementById('frequencia_calibracao');
+        const freqManutencaoInput = document.getElementById('frequencia_manutencao');
+        
+        if (freqCalibracaoPadrao && !freqCalibracaoInput.value) {
+            freqCalibracaoInput.value = freqCalibracaoPadrao;
+        }
+        
+        if (freqManutencaoPadrao && !freqManutencaoInput.value) {
+            freqManutencaoInput.value = freqManutencaoPadrao;
+        }
+    }
+}
+</script>
 {% endblock %}

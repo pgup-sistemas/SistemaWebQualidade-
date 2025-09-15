@@ -1,0 +1,143 @@
+
+{% extends "base.html" %}
+
+{% block title %}Editar {{ tipo.nome }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-pencil text-warning"></i> Editar Tipo de Equipamento</h2>
+                <a href="{{ url_for('equipment_types.index') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Voltar
+                </a>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST">
+                        {{ csrf_token() }}
+                        
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="codigo" class="form-label">Código *</label>
+                                    <input type="text" class="form-control" id="codigo" name="codigo" required 
+                                           value="{{ tipo.codigo }}" maxlength="20">
+                                    <div class="form-text">Código único para identificação</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="nome" class="form-label">Nome *</label>
+                                    <input type="text" class="form-control" id="nome" name="nome" required 
+                                           value="{{ tipo.nome }}">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="cor" class="form-label">Cor</label>
+                                    <input type="color" class="form-control form-control-color" id="cor" name="cor" 
+                                           value="{{ tipo.cor }}" title="Escolha uma cor">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="icone" class="form-label">Ícone</label>
+                                    <select class="form-select" id="icone" name="icone">
+                                        <option value="bi-gear" {% if tipo.icone == 'bi-gear' %}selected{% endif %}>🔧 Geral</option>
+                                        <option value="bi-speedometer2" {% if tipo.icone == 'bi-speedometer2' %}selected{% endif %}>📊 Medição</option>
+                                        <option value="bi-tools" {% if tipo.icone == 'bi-tools' %}selected{% endif %}>🔨 Ferramentas</option>
+                                        <option value="bi-cpu" {% if tipo.icone == 'bi-cpu' %}selected{% endif %}>💻 Eletrônicos</option>
+                                        <option value="bi-shield-check" {% if tipo.icone == 'bi-shield-check' %}selected{% endif %}>🛡️ Segurança</option>
+                                        <option value="bi-droplet" {% if tipo.icone == 'bi-droplet' %}selected{% endif %}>💧 Fluidos</option>
+                                        <option value="bi-thermometer-half" {% if tipo.icone == 'bi-thermometer-half' %}selected{% endif %}>🌡️ Temperatura</option>
+                                        <option value="bi-lightning" {% if tipo.icone == 'bi-lightning' %}selected{% endif %}>⚡ Elétricos</option>
+                                        <option value="bi-eye" {% if tipo.icone == 'bi-eye' %}selected{% endif %}>👁️ Ópticos</option>
+                                        <option value="bi-wrench" {% if tipo.icone == 'bi-wrench' %}selected{% endif %}>🔧 Mecânicos</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="descricao" class="form-label">Descrição</label>
+                                    <textarea class="form-control" id="descricao" name="descricao" rows="2">{{ tipo.descricao or '' }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+                        <h5><i class="bi bi-sliders"></i> Configurações de Manutenção e Calibração</h5>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="card-title"><i class="bi bi-speedometer2"></i> Calibração</h6>
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input" type="checkbox" value="1" 
+                                                   id="requer_calibracao" name="requer_calibracao"
+                                                   {% if tipo.requer_calibracao %}checked{% endif %}>
+                                            <label class="form-check-label" for="requer_calibracao">
+                                                Este tipo de equipamento requer calibração
+                                            </label>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="frequencia_calibracao_padrao" class="form-label">Frequência Padrão (meses)</label>
+                                            <input type="number" class="form-control" id="frequencia_calibracao_padrao" 
+                                                   name="frequencia_calibracao_padrao" min="1" max="120" 
+                                                   value="{{ tipo.frequencia_calibracao_padrao or '' }}">
+                                            <div class="form-text">Frequência padrão sugerida para calibração</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="card-title"><i class="bi bi-tools"></i> Manutenção</h6>
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input" type="checkbox" value="1" 
+                                                   id="requer_manutencao" name="requer_manutencao"
+                                                   {% if tipo.requer_manutencao %}checked{% endif %}>
+                                            <label class="form-check-label" for="requer_manutencao">
+                                                Este tipo de equipamento requer manutenção
+                                            </label>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="frequencia_manutencao_padrao" class="form-label">Frequência Padrão (meses)</label>
+                                            <input type="number" class="form-control" id="frequencia_manutencao_padrao" 
+                                                   name="frequencia_manutencao_padrao" min="1" max="120" 
+                                                   value="{{ tipo.frequencia_manutencao_padrao or '' }}">
+                                            <div class="form-text">Frequência padrão sugerida para manutenção</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if tipo.equipamentos %}
+                        <div class="alert alert-info mt-3">
+                            <i class="bi bi-info-circle"></i> Este tipo está sendo usado por {{ tipo.equipamentos|length }} equipamento(s).
+                        </div>
+                        {% endif %}
+
+                        <div class="d-flex justify-content-end mt-4">
+                            <a href="{{ url_for('equipment_types.index') }}" class="btn btn-secondary me-2">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-check-circle"></i> Atualizar Tipo
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
