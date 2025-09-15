@@ -48,9 +48,9 @@
         .sidebar-sticky {
             position: relative;
             top: 0;
-            height: calc(100vh - 100px); /* Aumentado de 120px para 100px para dar mais espaço */
+            height: calc(100vh - 50px); /* Reduzido drasticamente para dar muito mais espaço */
             padding-top: 0;
-            padding-bottom: 3rem; /* Aumentado de 2rem para 3rem */
+            padding-bottom: 4rem; /* Aumentado para 4rem */
             overflow-x: hidden;
             overflow-y: auto;
         }
@@ -142,8 +142,8 @@
             }
 
             .sidebar-sticky {
-                height: calc(100vh - 130px); /* Ajustado para mobile */
-                padding-bottom: 3rem;
+                height: calc(100vh - 80px); /* Muito mais espaço no mobile */
+                padding-bottom: 4rem;
             }
 
             .user-info {
@@ -196,13 +196,13 @@
             left: 0;
             right: 0;
             width: 280px;
-            padding: 0.5rem 1.5rem;
+            padding: 0.3rem 1.5rem; /* Reduzido padding */
             border-top: 1px solid rgba(255,255,255,0.1);
             background: rgba(0,0,0,0.2);
             backdrop-filter: blur(10px);
             z-index: 110;
             transition: all 0.3s ease;
-            height: 85px; /* Altura fixa para user-info */
+            height: 65px; /* Reduzido de 85px para 65px */
         }
 
         .user-info .user-avatar {
