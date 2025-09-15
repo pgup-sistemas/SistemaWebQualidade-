@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Regras de Negócio - Alpha Gestão Documental{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('docs.index') }}">Documentação</a></li>
+                    <li class="breadcrumb-item active">Regras de Negócio</li>
+                </ol>
+            </nav>
+            <h1><i class="bi bi-clipboard-check me-2"></i>Regras de Negócio</h1>
+            <p class="lead text-muted">Políticas e procedimentos implementados no sistema</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5><i class="bi bi-shield-lock me-2"></i>Controle de Acesso</h5>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li>Acesso baseado em grupos/setores</li>
+                        <li>Diferentes níveis de permissão por perfil</li>
+                        <li>Documentos confidenciais com acesso restrito</li>
+                        <li>Log completo de todas as ações</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5><i class="bi bi-file-check me-2"></i>Aprovação de Documentos</h5>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li>Fluxo automático baseado no tipo</li>
+                        <li>Múltiplos aprovadores quando necessário</li>
+                        <li>Prazo máximo de 5 dias úteis</li>
+                        <li>Notificações automáticas de pendências</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-warning text-dark">
+                    <h5><i class="bi bi-clock me-2"></i>Controle de Validade</h5>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li>Alertas 30, 15 e 7 dias antes</li>
+                        <li>Documentos expirados ficam inativos</li>
+                        <li>Revisão obrigatória para renovação</li>
+                        <li>Relatórios de conformidade</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                    <h5><i class="bi bi-arrow-repeat me-2"></i>Versionamento</h5>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li>Controle automático de versões</li>
+                        <li>Histórico completo mantido</li>
+                        <li>Possibilidade de restaurar versões</li>
+                        <li>Comparação entre versões</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <h6><i class="bi bi-info-circle me-2"></i>Conformidade</h6>
+                <p class="mb-0">Todas as regras implementadas seguem as normas ISO 9001:2015 e ISO 17025:2017 para garantir a conformidade e rastreabilidade dos processos.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

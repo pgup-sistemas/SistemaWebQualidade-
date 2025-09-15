@@ -50,6 +50,7 @@
             top: 0;
             height: calc(100vh - 48px);
             padding-top: 0;
+            padding-bottom: 120px; /* Espaço para user-info */
             overflow-x: hidden;
             overflow-y: auto;
         }
@@ -134,6 +135,16 @@
                 left: 0;
             }
 
+            .user-info {
+                width: 100%;
+                left: -100%;
+                transition: left 0.3s ease;
+            }
+
+            .sidebar.show .user-info {
+                left: 0;
+            }
+
             .mobile-overlay {
                 position: fixed;
                 top: 0;
@@ -171,13 +182,16 @@
 
         /* User info */
         .user-info {
-            position: absolute;
+            position: fixed;
             bottom: 0;
             left: 0;
-            right: 0;
+            width: 280px;
             padding: 1rem 1.5rem;
             border-top: 1px solid rgba(255,255,255,0.1);
-            background: rgba(0,0,0,0.1);
+            background: rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+            z-index: 110;
+            transition: all 0.3s ease;
         }
 
         .user-info .user-avatar {

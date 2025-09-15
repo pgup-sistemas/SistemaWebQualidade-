@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+
+{% block title %}Documentação - Alpha Gestão Documental{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="jumbotron bg-primary text-white rounded p-5">
+                <h1 class="display-4">
+                    <i class="bi bi-book me-3"></i>Documentação do Sistema
+                </h1>
+                <p class="lead">Guia completo para utilizar o Alpha Gestão Documental de forma eficiente</p>
+                <hr class="my-4">
+                <p>Aqui você encontra tudo que precisa para dominar o sistema: tutoriais, guias práticos, perguntas frequentes e muito mais.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards de Documentação -->
+    <div class="row g-4 mb-5">
+        <!-- Guia do Usuário -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm doc-card">
+                <div class="card-body text-center">
+                    <i class="bi bi-person-check display-3 text-primary mb-3"></i>
+                    <h5 class="card-title">Guia do Usuário</h5>
+                    <p class="card-text">Aprenda a usar todas as funcionalidades passo a passo, desde o login até a gestão completa de documentos.</p>
+                    <a href="{{ url_for('docs.user_guide') }}" class="btn btn-primary">
+                        <i class="bi bi-arrow-right me-1"></i>Acessar Guia
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tutoriais -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm doc-card">
+                <div class="card-body text-center">
+                    <i class="bi bi-play-circle display-3 text-success mb-3"></i>
+                    <h5 class="card-title">Tutoriais Práticos</h5>
+                    <p class="card-text">Tutoriais detalhados com exemplos práticos para as principais funcionalidades do sistema.</p>
+                    <a href="{{ url_for('docs.tutorials') }}" class="btn btn-success">
+                        <i class="bi bi-arrow-right me-1"></i>Ver Tutoriais
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm doc-card">
+                <div class="card-body text-center">
+                    <i class="bi bi-question-circle display-3 text-warning mb-3"></i>
+                    <h5 class="card-title">Perguntas Frequentes</h5>
+                    <p class="card-text">Respostas para as dúvidas mais comuns sobre o uso do sistema e suas funcionalidades.</p>
+                    <a href="{{ url_for('docs.faq') }}" class="btn btn-warning">
+                        <i class="bi bi-arrow-right me-1"></i>Ver FAQ
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Regras de Negócio -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm doc-card">
+                <div class="card-body text-center">
+                    <i class="bi bi-clipboard-check display-3 text-info mb-3"></i>
+                    <h5 class="card-title">Regras de Negócio</h5>
+                    <p class="card-text">Políticas, procedimentos e regras implementadas no sistema para garantir conformidade.</p>
+                    <a href="{{ url_for('docs.business_rules') }}" class="btn btn-info">
+                        <i class="bi bi-arrow-right me-1"></i>Consultar Regras
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tipos de Usuário -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm doc-card">
+                <div class="card-body text-center">
+                    <i class="bi bi-people display-3 text-danger mb-3"></i>
+                    <h5 class="card-title">Perfis de Usuário</h5>
+                    <p class="card-text">Entenda os diferentes tipos de usuário e suas permissões no sistema.</p>
+                    <a href="#perfis" class="btn btn-danger">
+                        <i class="bi bi-arrow-right me-1"></i>Ver Perfis
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Suporte -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm doc-card">
+                <div class="card-body text-center">
+                    <i class="bi bi-headset display-3 text-secondary mb-3"></i>
+                    <h5 class="card-title">Suporte Técnico</h5>
+                    <p class="card-text">Precisa de ajuda? Entre em contato com nossa equipe de suporte.</p>
+                    <a href="mailto:suporte@alphagestao.com" class="btn btn-secondary">
+                        <i class="bi bi-envelope me-1"></i>Contatar Suporte
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Início Rápido -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-rocket me-2"></i>Início Rápido</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center">
+                                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px;">
+                                    <strong>1</strong>
+                                </div>
+                                <h6>Primeiro Acesso</h6>
+                                <p class="small text-muted">Faça login com suas credenciais e explore o dashboard inicial.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center">
+                                <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px;">
+                                    <strong>2</strong>
+                                </div>
+                                <h6>Configure seu Perfil</h6>
+                                <p class="small text-muted">Atualize suas informações pessoais e preferências.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center">
+                                <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px;">
+                                    <strong>3</strong>
+                                </div>
+                                <h6>Crie um Documento</h6>
+                                <p class="small text-muted">Use os templates predefinidos para criar seu primeiro documento.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center">
+                                <div class="bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px;">
+                                    <strong>4</strong>
+                                </div>
+                                <h6>Explore as Funcionalidades</h6>
+                                <p class="small text-muted">Conheça aprovações, auditorias e outras funcionalidades.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Perfis de Usuário -->
+    <div class="row mb-5" id="perfis">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="bi bi-people me-2"></i>Perfis de Usuário</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="border rounded p-3 h-100">
+                                <h6 class="text-primary"><i class="bi bi-shield-check me-1"></i>Administrador</h6>
+                                <ul class="small mb-0">
+                                    <li>Acesso total ao sistema</li>
+                                    <li>Gerenciar usuários e grupos</li>
+                                    <li>Configurar tipos de documentos</li>
+                                    <li>Acessar todos os relatórios</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="border rounded p-3 h-100">
+                                <h6 class="text-success"><i class="bi bi-person-badge me-1"></i>Gestor de Qualidade</h6>
+                                <ul class="small mb-0">
+                                    <li>Gerenciar não conformidades</li>
+                                    <li>Conduzir auditorias internas</li>
+                                    <li>Aprovar documentos críticos</li>
+                                    <li>Relatórios de qualidade</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="border rounded p-3 h-100">
+                                <h6 class="text-warning"><i class="bi bi-person-check me-1"></i>Aprovador/Revisor</h6>
+                                <ul class="small mb-0">
+                                    <li>Aprovar documentos</li>
+                                    <li>Revisar conteúdo</li>
+                                    <li>Criar documentos</li>
+                                    <li>Assinar digitalmente</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="border rounded p-3 h-100">
+                                <h6 class="text-info"><i class="bi bi-person me-1"></i>Colaborador/Leitor</h6>
+                                <ul class="small mb-0">
+                                    <li>Ler documentos autorizados</li>
+                                    <li>Confirmar leitura</li>
+                                    <li>Criar rascunhos</li>
+                                    <li>Relatórios básicos</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="border rounded p-3 h-100">
+                                <h6 class="text-secondary"><i class="bi bi-search me-1"></i>Auditor</h6>
+                                <ul class="small mb-0">
+                                    <li>Conduzir auditorias</li>
+                                    <li>Acessar logs do sistema</li>
+                                    <li>Relatórios de auditoria</li>
+                                    <li>Verificar conformidade</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Links Úteis -->
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-light border">
+                <h6><i class="bi bi-bookmark me-2"></i>Links Úteis</h6>
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('documents.create') }}" class="text-decoration-none">
+                            <i class="bi bi-file-plus text-primary me-1"></i>Criar Documento
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('documents.index') }}" class="text-decoration-none">
+                            <i class="bi bi-files text-success me-1"></i>Meus Documentos
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('approvals.index') }}" class="text-decoration-none">
+                            <i class="bi bi-check-circle text-warning me-1"></i>Aprovações
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('reports.index') }}" class="text-decoration-none">
+                            <i class="bi bi-graph-up text-info me-1"></i>Relatórios
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.doc-card { 
+    transition: transform 0.2s, box-shadow 0.2s; 
+}
+.doc-card:hover { 
+    transform: translateY(-5px); 
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+.jumbotron {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+</style>
+{% endblock %}

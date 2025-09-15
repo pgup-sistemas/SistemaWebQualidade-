@@ -1,5 +1,5 @@
 
-from flask import Blueprint, render_template_string, send_from_directory, current_app
+from flask import Blueprint, render_template, render_template_string, send_from_directory, current_app
 from flask_login import login_required
 import os
 from pathlib import Path
@@ -10,6 +10,36 @@ bp = Blueprint('docs', __name__, url_prefix='/docs')
 @login_required 
 def index():
     """Página inicial da documentação"""
+    return render_template('docs/index.html')
+
+@bp.route('/guia-usuario')
+@login_required
+def user_guide():
+    """Guia do usuário"""
+    return render_template('docs/user_guide.html')
+
+@bp.route('/tutoriais')
+@login_required
+def tutorials():
+    """Tutoriais do sistema"""
+    return render_template('docs/tutorials.html')
+
+@bp.route('/faq')
+@login_required
+def faq():
+    """Perguntas frequentes"""
+    return render_template('docs/faq.html')
+
+@bp.route('/regras-negocio')
+@login_required
+def business_rules():
+    """Regras de negócio"""
+    return render_template('docs/business_rules.html')
+
+@bp.route('/index-old')
+@login_required 
+def index_old():
+    """Página inicial da documentação (versão antiga)"""
     return render_template_string("""
 <!DOCTYPE html>
 <html lang="pt-BR">

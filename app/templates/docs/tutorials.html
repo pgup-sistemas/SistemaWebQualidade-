@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}Tutoriais - Alpha Gestão Documental{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('docs.index') }}">Documentação</a></li>
+                    <li class="breadcrumb-item active">Tutoriais</li>
+                </ol>
+            </nav>
+            <h1><i class="bi bi-play-circle me-2"></i>Tutoriais Práticos</h1>
+            <p class="lead text-muted">Aprenda passo a passo como usar as principais funcionalidades</p>
+        </div>
+    </div>
+
+    <!-- Tutoriais Cards -->
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 tutorial-card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-file-plus me-2"></i>Criando seu Primeiro Documento</h5>
+                </div>
+                <div class="card-body">
+                    <div class="tutorial-steps">
+                        <div class="step">
+                            <span class="step-number">1</span>
+                            <span>Acesse "Criar Documento" no menu</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">2</span>
+                            <span>Preencha título e selecione o tipo</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">3</span>
+                            <span>Use o editor para escrever o conteúdo</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">4</span>
+                            <span>Salve como rascunho ou envie para aprovação</span>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('documents.create') }}" class="btn btn-primary mt-3">
+                        <i class="bi bi-arrow-right me-1"></i>Começar Agora
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 tutorial-card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-check-circle me-2"></i>Aprovando Documentos</h5>
+                </div>
+                <div class="card-body">
+                    <div class="tutorial-steps">
+                        <div class="step">
+                            <span class="step-number">1</span>
+                            <span>Acesse "Aprovações" no menu lateral</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">2</span>
+                            <span>Clique no documento para revisar</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">3</span>
+                            <span>Leia o conteúdo e adicione comentários</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">4</span>
+                            <span>Clique em "Aprovar" ou "Rejeitar"</span>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('approvals.index') }}" class="btn btn-success mt-3">
+                        <i class="bi bi-arrow-right me-1"></i>Ver Aprovações
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 tutorial-card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Registrando Não Conformidades</h5>
+                </div>
+                <div class="card-body">
+                    <div class="tutorial-steps">
+                        <div class="step">
+                            <span class="step-number">1</span>
+                            <span>Vá em "Não Conformidades"</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">2</span>
+                            <span>Clique em "Nova Não Conformidade"</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">3</span>
+                            <span>Descreva o problema e evidências</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">4</span>
+                            <span>Defina ações corretivas e prazos</span>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('nonconformities.index') }}" class="btn btn-warning mt-3">
+                        <i class="bi bi-arrow-right me-1"></i>Acessar Módulo
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 tutorial-card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-clipboard-check me-2"></i>Conduzindo Auditorias</h5>
+                </div>
+                <div class="card-body">
+                    <div class="tutorial-steps">
+                        <div class="step">
+                            <span class="step-number">1</span>
+                            <span>Acesse "Auditorias" no menu</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">2</span>
+                            <span>Programe uma nova auditoria</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">3</span>
+                            <span>Use os checklists predefinidos</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">4</span>
+                            <span>Registre evidências e gere relatório</span>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('audits.index') }}" class="btn btn-info mt-3">
+                        <i class="bi bi-arrow-right me-1"></i>Iniciar Auditoria
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 tutorial-card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Gerenciando Equipamentos</h5>
+                </div>
+                <div class="card-body">
+                    <div class="tutorial-steps">
+                        <div class="step">
+                            <span class="step-number">1</span>
+                            <span>Vá em "Equipamentos"</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">2</span>
+                            <span>Cadastre um novo equipamento</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">3</span>
+                            <span>Configure cronograma de manutenção</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">4</span>
+                            <span>Monitore alertas de vencimento</span>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('equipments.index') }}" class="btn btn-secondary mt-3">
+                        <i class="bi bi-arrow-right me-1"></i>Gerenciar Equipamentos
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 tutorial-card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Gerando Relatórios</h5>
+                </div>
+                <div class="card-body">
+                    <div class="tutorial-steps">
+                        <div class="step">
+                            <span class="step-number">1</span>
+                            <span>Acesse "Relatórios" no menu</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">2</span>
+                            <span>Escolha o tipo de relatório</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">3</span>
+                            <span>Configure filtros e período</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">4</span>
+                            <span>Gere e exporte em PDF/Excel</span>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('reports.index') }}" class="btn btn-dark mt-3">
+                        <i class="bi bi-arrow-right me-1"></i>Acessar Relatórios
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dicas Gerais -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="bi bi-lightbulb me-2"></i>Dicas Gerais de Uso</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">🎯 Produtividade</h6>
+                            <ul>
+                                <li>Use as palavras-chave para encontrar documentos rapidamente</li>
+                                <li>Salve rascunhos frequentemente durante a edição</li>
+                                <li>Configure notificações para não perder prazos</li>
+                                <li>Use templates para agilizar a criação</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-success">✅ Boas Práticas</h6>
+                            <ul>
+                                <li>Mantenha títulos claros e descritivos</li>
+                                <li>Adicione resumos nos documentos importantes</li>
+                                <li>Revise sempre antes de enviar para aprovação</li>
+                                <li>Confirme leituras obrigatórias em dia</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.tutorial-card {
+    transition: transform 0.2s;
+}
+
+.tutorial-card:hover {
+    transform: translateY(-5px);
+}
+
+.tutorial-steps {
+    margin: 1rem 0;
+}
+
+.step {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.step-number {
+    background: #007bff;
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: bold;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+}
+
+.card-header.bg-primary .step-number { background: rgba(255,255,255,0.2); }
+.card-header.bg-success .step-number { background: #198754; }
+.card-header.bg-warning .step-number { background: #fd7e14; }
+.card-header.bg-info .step-number { background: #0dcaf0; }
+.card-header.bg-secondary .step-number { background: #6c757d; }
+.card-header.bg-dark .step-number { background: #495057; }
+</style>
+{% endblock %}

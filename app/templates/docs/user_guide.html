@@ -1,0 +1,384 @@
+{% extends "base.html" %}
+
+{% block title %}Guia do Usuário - Alpha Gestão Documental{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('docs.index') }}">Documentação</a></li>
+                    <li class="breadcrumb-item active">Guia do Usuário</li>
+                </ol>
+            </nav>
+            <h1><i class="bi bi-person-check me-2"></i>Guia do Usuário</h1>
+            <p class="lead text-muted">Aprenda a usar todas as funcionalidades do sistema passo a passo</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Navegação Lateral -->
+        <div class="col-md-3">
+            <div class="card sticky-top" style="top: 100px;">
+                <div class="card-header">
+                    <h6 class="mb-0">Índice</h6>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="#primeiros-passos" class="list-group-item list-group-item-action">
+                        <i class="bi bi-play-circle me-2"></i>Primeiros Passos
+                    </a>
+                    <a href="#documentos" class="list-group-item list-group-item-action">
+                        <i class="bi bi-file-text me-2"></i>Gestão de Documentos
+                    </a>
+                    <a href="#aprovacoes" class="list-group-item list-group-item-action">
+                        <i class="bi bi-check-circle me-2"></i>Aprovações
+                    </a>
+                    <a href="#qualidade" class="list-group-item list-group-item-action">
+                        <i class="bi bi-shield-check me-2"></i>Gestão de Qualidade
+                    </a>
+                    <a href="#equipamentos" class="list-group-item list-group-item-action">
+                        <i class="bi bi-gear me-2"></i>Equipamentos
+                    </a>
+                    <a href="#relatorios" class="list-group-item list-group-item-action">
+                        <i class="bi bi-graph-up me-2"></i>Relatórios
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Conteúdo Principal -->
+        <div class="col-md-9">
+            <!-- Primeiros Passos -->
+            <section id="primeiros-passos" class="mb-5">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="mb-0"><i class="bi bi-play-circle me-2"></i>Primeiros Passos</h3>
+                    </div>
+                    <div class="card-body">
+                        <h5>1. Fazendo Login</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                <ol>
+                                    <li>Acesse o sistema através do link fornecido pelo administrador</li>
+                                    <li>Digite seu <strong>usuário</strong> e <strong>senha</strong></li>
+                                    <li>Clique em <span class="badge bg-primary">Entrar</span></li>
+                                    <li>Se esqueceu sua senha, clique em "Esqueci minha senha"</li>
+                                </ol>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="alert alert-info">
+                                    <strong>Dica:</strong> Use a opção "Lembrar-me" para não ter que fazer login toda vez.
+                                </div>
+                            </div>
+                        </div>
+
+                        <h5>2. Conhecendo o Dashboard</h5>
+                        <p>Após o login, você verá o painel principal com:</p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul>
+                                    <li><strong>Menu Lateral:</strong> Acesso a todas as funcionalidades</li>
+                                    <li><strong>Notificações:</strong> Alertas de documentos e tarefas</li>
+                                    <li><strong>Resumo:</strong> Estatísticas importantes</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul>
+                                    <li><strong>Documentos Recentes:</strong> Últimos documentos acessados</li>
+                                    <li><strong>Tarefas Pendentes:</strong> Aprovações e ações necessárias</li>
+                                    <li><strong>Perfil do Usuário:</strong> Suas informações e configurações</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <h5>3. Configurando seu Perfil</h5>
+                        <ol>
+                            <li>Clique no seu nome no canto inferior esquerdo</li>
+                            <li>Selecione <span class="badge bg-secondary">Perfil</span></li>
+                            <li>Atualize suas informações pessoais</li>
+                            <li>Configure suas preferências de notificação</li>
+                            <li>Altere sua senha se necessário</li>
+                        </ol>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Gestão de Documentos -->
+            <section id="documentos" class="mb-5">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h3 class="mb-0"><i class="bi bi-file-text me-2"></i>Gestão de Documentos</h3>
+                    </div>
+                    <div class="card-body">
+                        <h5>Criando um Documento</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-8">
+                                <ol>
+                                    <li>No menu lateral, clique em <span class="badge bg-success">Criar Documento</span></li>
+                                    <li>Preencha as informações básicas:
+                                        <ul>
+                                            <li><strong>Título:</strong> Nome do documento</li>
+                                            <li><strong>Tipo:</strong> Selecione o tipo apropriado</li>
+                                            <li><strong>Departamento:</strong> Setor responsável</li>
+                                            <li><strong>Data de Validade:</strong> Quando expira (opcional)</li>
+                                        </ul>
+                                    </li>
+                                    <li>Use o editor de texto para escrever o conteúdo</li>
+                                    <li>Clique em <span class="badge bg-primary">Criar Documento</span> ou <span class="badge bg-warning">Salvar Rascunho</span></li>
+                                </ol>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="alert alert-success">
+                                    <strong>Templates:</strong> Ao selecionar o tipo, um template será carregado automaticamente para facilitar a criação.
+                                </div>
+                            </div>
+                        </div>
+
+                        <h5>Editando um Documento</h5>
+                        <ol>
+                            <li>Vá em <span class="badge bg-info">Documentos</span> no menu</li>
+                            <li>Encontre o documento na lista ou use a busca</li>
+                            <li>Clique no título para visualizar</li>
+                            <li>Clique em <span class="badge bg-warning">Editar</span></li>
+                            <li>Faça as alterações necessárias</li>
+                            <li>Salve as alterações</li>
+                        </ol>
+
+                        <h5>Tipos de Documento</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul>
+                                    <li><strong>Procedimento:</strong> Processos operacionais</li>
+                                    <li><strong>Instrução:</strong> Instruções de trabalho</li>
+                                    <li><strong>Política:</strong> Políticas da empresa</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul>
+                                    <li><strong>Manual:</strong> Manuais técnicos</li>
+                                    <li><strong>Formulário:</strong> Formulários padrão</li>
+                                    <li><strong>Outros:</strong> Documentos diversos</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <h5>Versionamento</h5>
+                        <div class="alert alert-info">
+                            <strong>Importante:</strong> Cada edição cria uma nova versão. O histórico completo é mantido permanentemente. Você pode comparar versões e restaurar versões anteriores se necessário.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Aprovações -->
+            <section id="aprovacoes" class="mb-5">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h3 class="mb-0"><i class="bi bi-check-circle me-2"></i>Sistema de Aprovações</h3>
+                    </div>
+                    <div class="card-body">
+                        <h5>Como Funciona</h5>
+                        <p>O sistema possui fluxos de aprovação automáticos baseados no tipo de documento e departamento.</p>
+
+                        <h5>Enviando para Aprovação</h5>
+                        <ol>
+                            <li>Termine de editar seu documento</li>
+                            <li>Clique em <span class="badge bg-primary">Enviar para Aprovação</span></li>
+                            <li>O sistema automaticamente define os aprovadores</li>
+                            <li>Notificações são enviadas aos responsáveis</li>
+                            <li>Acompanhe o status na tela de documentos</li>
+                        </ol>
+
+                        <h5>Aprovando Documentos (Para Aprovadores)</h5>
+                        <ol>
+                            <li>Acesse <span class="badge bg-warning">Aprovações</span> no menu</li>
+                            <li>Visualize a lista de documentos pendentes</li>
+                            <li>Clique no documento para revisar</li>
+                            <li>Adicione comentários se necessário</li>
+                            <li>Clique em <span class="badge bg-success">Aprovar</span> ou <span class="badge bg-danger">Rejeitar</span></li>
+                        </ol>
+
+                        <div class="alert alert-warning">
+                            <strong>Atenção:</strong> Documentos rejeitados voltam para o autor com comentários para correção.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Gestão de Qualidade -->
+            <section id="qualidade" class="mb-5">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h3 class="mb-0"><i class="bi bi-shield-check me-2"></i>Gestão de Qualidade</h3>
+                    </div>
+                    <div class="card-body">
+                        <h5>Não Conformidades</h5>
+                        <p>Registre e acompanhe não conformidades identificadas nos processos.</p>
+                        <ol>
+                            <li>Vá em <span class="badge bg-danger">Não Conformidades</span></li>
+                            <li>Clique em <span class="badge bg-success">Nova Não Conformidade</span></li>
+                            <li>Preencha a descrição detalhada</li>
+                            <li>Defina ações corretivas e preventivas</li>
+                            <li>Atribua responsáveis e prazos</li>
+                            <li>Acompanhe o andamento até a conclusão</li>
+                        </ol>
+
+                        <h5>Auditorias Internas</h5>
+                        <ol>
+                            <li>Acesse <span class="badge bg-primary">Auditorias</span></li>
+                            <li>Programe uma nova auditoria</li>
+                            <li>Use os checklists predefinidos</li>
+                            <li>Registre as evidências encontradas</li>
+                            <li>Gere relatórios automáticos</li>
+                        </ol>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Equipamentos -->
+            <section id="equipamentos" class="mb-5">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h3 class="mb-0"><i class="bi bi-gear me-2"></i>Gestão de Equipamentos</h3>
+                    </div>
+                    <div class="card-body">
+                        <h5>Cadastrando Equipamentos</h5>
+                        <ol>
+                            <li>Vá em <span class="badge bg-secondary">Equipamentos</span></li>
+                            <li>Clique em <span class="badge bg-success">Novo Equipamento</span></li>
+                            <li>Preencha os dados técnicos</li>
+                            <li>Configure cronograma de manutenção</li>
+                            <li>Defina alertas de vencimento</li>
+                        </ol>
+
+                        <h5>Controle de Manutenção</h5>
+                        <ul>
+                            <li>Receba notificações automáticas de vencimento</li>
+                            <li>Registre manutenções realizadas</li>
+                            <li>Mantenha histórico completo</li>
+                            <li>Gere relatórios de conformidade</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Relatórios -->
+            <section id="relatorios" class="mb-5">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h3 class="mb-0"><i class="bi bi-graph-up me-2"></i>Relatórios e Dashboards</h3>
+                    </div>
+                    <div class="card-body">
+                        <h5>Tipos de Relatórios Disponíveis</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul>
+                                    <li><strong>Documentos:</strong> Status, vencimentos, histórico</li>
+                                    <li><strong>Aprovações:</strong> Pendências, tempo médio</li>
+                                    <li><strong>Qualidade:</strong> Não conformidades, auditorias</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul>
+                                    <li><strong>Equipamentos:</strong> Manutenções, conformidade</li>
+                                    <li><strong>Usuários:</strong> Atividade, acessos</li>
+                                    <li><strong>Personalizado:</strong> Relatórios sob medida</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <h5>Gerando Relatórios</h5>
+                        <ol>
+                            <li>Acesse <span class="badge bg-dark">Relatórios</span></li>
+                            <li>Escolha o tipo de relatório</li>
+                            <li>Defina o período e filtros</li>
+                            <li>Clique em <span class="badge bg-primary">Gerar Relatório</span></li>
+                            <li>Exporte em PDF ou Excel se necessário</li>
+                        </ol>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dicas Importantes -->
+            <section class="mb-5">
+                <div class="card border-warning">
+                    <div class="card-header bg-warning text-dark">
+                        <h4 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Dicas Importantes</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6><i class="bi bi-check-circle text-success"></i> Faça Sempre</h6>
+                                <ul>
+                                    <li>Salve rascunhos frequentemente</li>
+                                    <li>Use palavras-chave para facilitar buscas</li>
+                                    <li>Mantenha documentos atualizados</li>
+                                    <li>Confirme leituras obrigatórias</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6><i class="bi bi-x-circle text-danger"></i> Evite</h6>
+                                <ul>
+                                    <li>Deixar documentos sem versionamento</li>
+                                    <li>Ignorar notificações de vencimento</li>
+                                    <li>Criar documentos sem aprovação</li>
+                                    <li>Compartilhar senhas ou acessos</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<style>
+.sticky-top {
+    z-index: 1020;
+}
+section {
+    scroll-margin-top: 100px;
+}
+</style>
+
+<script>
+// Smooth scrolling para links do índice
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
+});
+
+// Destacar seção ativa no índice
+window.addEventListener('scroll', function() {
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.list-group-item[href^="#"]');
+    
+    let current = '';
+    sections.forEach(section => {
+        const sectionTop = section.offsetTop - 150;
+        const sectionHeight = section.offsetHeight;
+        if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
+            current = section.getAttribute('id');
+        }
+    });
+    
+    navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === '#' + current) {
+            link.classList.add('active');
+        }
+    });
+});
+</script>
+{% endblock %}
