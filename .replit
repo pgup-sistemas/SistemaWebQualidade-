@@ -7,7 +7,7 @@ channel = "stable-25_05"
 packages = ["cargo", "freetype", "glibcLocales", "lcms2", "libiconv", "libimagequant", "libjpeg", "libtiff", "libwebp", "libxcrypt", "openjpeg", "openssl", "pkg-config", "postgresql", "rustc", "tcl", "tk", "zlib"]
 
 [workflows]
-runButton = "Document Management System - Port 8000"
+runButton = "Migrar e Executar"
 
 [[workflows.workflow]]
 name = "Project"
@@ -38,6 +38,19 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "uv run python -c \"import os; os.environ['FLASK_RUN_PORT'] = '8000'; exec(open('run.py').read())\""
+
+[[workflows.workflow]]
+name = "Migrar e Executar"
+author = 47623307
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python migrate_db_complete.py"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python run.py"
 
 [[ports]]
 localPort = 5000

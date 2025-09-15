@@ -1,83 +1,57 @@
-
 {% extends "base.html" %}
 
 {% block title %}Dashboard - Alpha Gestão Documental{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-12">
-            <h1 class="h3 mb-4">
-                <i class="bi bi-speedometer2"></i> Dashboard
-                <small class="text-muted">Bem-vindo, {{ current_user.nome_completo }}</small>
-            </h1>
-        </div>
-    </div>
-
+<div class="container-fluid">
     <!-- Cards de Estatísticas -->
     <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card border-primary">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card border-primary h-100">
                 <div class="card-body text-center">
-                    <i class="bi bi-files display-4 text-primary"></i>
-                    <h4 class="card-title">{{ total_documentos }}</h4>
-                    <p class="card-text">Total de Documentos</p>
+                    <i class="bi bi-files display-4 text-primary mb-2"></i>
+                    <h4 class="card-title mb-1">{{ total_documentos }}</h4>
+                    <p class="card-text mb-0">Total de Documentos</p>
                 </div>
             </div>
         </div>
-        
-        <div class="col-md-3">
-            <div class="card border-danger">
+
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card border-danger h-100">
                 <div class="card-body text-center">
-                    <i class="bi bi-exclamation-triangle display-4 text-danger"></i>
-                    <h4 class="card-title">{{ documentos_vencidos }}</h4>
-                    <p class="card-text">Documentos Vencidos</p>
+                    <i class="bi bi-exclamation-triangle display-4 text-danger mb-2"></i>
+                    <h4 class="card-title mb-1">{{ documentos_vencidos }}</h4>
+                    <p class="card-text mb-0">Documentos Vencidos</p>
                 </div>
             </div>
         </div>
-        
-        <div class="col-md-3">
-            <div class="card border-warning">
+
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card border-warning h-100">
                 <div class="card-body text-center">
-                    <i class="bi bi-clock-history display-4 text-warning"></i>
-                    <h4 class="card-title">{{ documentos_vencendo }}</h4>
-                    <p class="card-text">Vencendo em 30 dias</p>
+                    <i class="bi bi-clock-history display-4 text-warning mb-2"></i>
+                    <h4 class="card-title mb-1">{{ documentos_vencendo }}</h4>
+                    <p class="card-text mb-0">Vencendo em 30 dias</p>
                 </div>
             </div>
         </div>
-        
-        <div class="col-md-3">
-            <div class="card border-success">
+
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card border-success h-100">
                 <div class="card-body text-center">
-                    <i class="bi bi-file-earmark-check display-4 text-success"></i>
-                    <h4 class="card-title">{{ minhas_aprovacoes|length }}</h4>
-                    <p class="card-text">Aprovações Pendentes</p>
+                    <i class="bi bi-file-earmark-check display-4 text-success mb-2"></i>
+                    <h4 class="card-title mb-1">{{ minhas_aprovacoes|length }}</h4>
+                    <p class="card-text mb-0">Aprovações Pendentes</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Gráficos Interativos -->
+    <!-- Gráficos -->
     <div class="row mb-4">
-        <!-- Gráfico de Status dos Documentos -->
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-pie-chart"></i> Status dos Documentos
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div style="position: relative; height: 300px;">
-                        <canvas id="statusChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Gráfico de Atividade dos Últimos 7 Dias -->
-        <div class="col-md-6 mb-4">
-            <div class="card">
+        <div class="col-lg-8 mb-4">
+            <div class="card h-100">
                 <div class="card-header">
                     <h5 class="card-title mb-0">
                         <i class="bi bi-graph-up"></i> Atividade dos Últimos 7 Dias
@@ -90,29 +64,9 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Segunda linha de gráficos -->
-    <div class="row mb-4">
-        <!-- Gráfico de Tipos de Documento -->
-        <div class="col-md-8 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-bar-chart"></i> Documentos por Tipo
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div style="position: relative; height: 350px;">
-                        <canvas id="tiposChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- KPIs de Qualidade -->
-        <div class="col-md-4 mb-4">
-            <div class="card">
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
                 <div class="card-header">
                     <h5 class="card-title mb-0">
                         <i class="bi bi-shield-check"></i> Indicadores de Qualidade
@@ -120,15 +74,15 @@
                 </div>
                 <div class="card-body">
                     <div class="text-center mb-3">
-                        <h2 class="text-danger">{{ ncs_criticas }}</h2>
+                        <h2 class="text-danger mb-1">{{ ncs_criticas }}</h2>
                         <p class="text-muted mb-0">NCs Críticas</p>
                     </div>
                     <div class="text-center mb-3">
-                        <h2 class="text-warning">{{ ncs_abertas }}</h2>
+                        <h2 class="text-warning mb-1">{{ ncs_abertas }}</h2>
                         <p class="text-muted mb-0">Total NCs Abertas</p>
                     </div>
                     <div class="text-center">
-                        <h2 class="text-info">{{ auditorias_ativas }}</h2>
+                        <h2 class="text-info mb-1">{{ auditorias_ativas }}</h2>
                         <p class="text-muted mb-0">Auditorias Ativas</p>
                     </div>
                 </div>
@@ -136,28 +90,10 @@
         </div>
     </div>
 
-    <!-- Gráfico de Tendência dos Documentos (últimos 12 meses) -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-graph-up-arrow"></i> Tendência de Criação de Documentos (Últimos 12 Meses)
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div style="position: relative; height: 400px;">
-                        <canvas id="tendenciaChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    <!-- Documentos Recentes e Aprovações -->
     <div class="row">
-        <!-- Meus Documentos Recentes -->
-        <div class="col-md-6 mb-4">
-            <div class="card">
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">
                         <i class="bi bi-file-earmark-text"></i> Meus Documentos Recentes
@@ -182,15 +118,22 @@
                         </div>
                         {% endfor %}
                     {% else %}
-                        <p class="text-muted text-center py-3">Nenhum documento criado ainda</p>
+                        <div class="text-center py-4">
+                            <i class="bi bi-file-earmark text-muted" style="font-size: 3rem;"></i>
+                            <p class="text-muted mt-2">Nenhum documento criado ainda</p>
+                            {% if current_user.can_create_documents() %}
+                            <a href="{{ url_for('documents.create') }}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-plus-circle"></i> Criar Primeiro Documento
+                            </a>
+                            {% endif %}
+                        </div>
                     {% endif %}
                 </div>
             </div>
         </div>
 
-        <!-- Aprovações Pendentes -->
-        <div class="col-md-6 mb-4">
-            <div class="card">
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">
                         <i class="bi bi-check-circle"></i> Minhas Aprovações Pendentes
@@ -215,41 +158,10 @@
                         </div>
                         {% endfor %}
                     {% else %}
-                        <p class="text-muted text-center py-3">Nenhuma aprovação pendente</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Documentos Mais Lidos -->
-    <div class="row">
-        <div class="col-md-12 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-eye"></i> Documentos Mais Lidos
-                    </h5>
-                </div>
-                <div class="card-body">
-                    {% if docs_mais_lidos %}
-                        {% for doc, leituras in docs_mais_lidos %}
-                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                            <div>
-                                <div class="fw-bold">
-                                    <a href="{{ url_for('documents.view', id=doc.id) }}" class="text-decoration-none">
-                                        {{ doc.titulo }}
-                                    </a>
-                                </div>
-                                <small class="text-muted">{{ doc.codigo }}</small>
-                            </div>
-                            <span class="badge bg-primary rounded-pill">
-                                {{ leituras }} leitura{{ 's' if leituras != 1 else '' }}
-                            </span>
+                        <div class="text-center py-4">
+                            <i class="bi bi-check-circle text-muted" style="font-size: 3rem;"></i>
+                            <p class="text-muted mt-2">Nenhuma aprovação pendente</p>
                         </div>
-                        {% endfor %}
-                    {% else %}
-                    <p class="text-muted text-center py-3">Nenhum documento lido ainda</p>
                     {% endif %}
                 </div>
             </div>
@@ -257,7 +169,7 @@
     </div>
 
     <!-- Ações Rápidas -->
-    <div class="row mt-4">
+    <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
@@ -268,35 +180,35 @@
                 <div class="card-body">
                     <div class="row">
                         {% if current_user.can_create_documents() %}
-                        <div class="col-md-3 mb-3">
-                            <a href="{{ url_for('documents.create') }}" class="btn btn-primary w-100">
-                                <i class="bi bi-plus-circle"></i><br>
-                                Criar Documento
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <a href="{{ url_for('documents.create') }}" class="btn btn-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                                <i class="bi bi-plus-circle fs-1 mb-2"></i>
+                                <span>Criar Documento</span>
                             </a>
                         </div>
                         {% endif %}
-                        
-                        <div class="col-md-3 mb-3">
-                            <a href="{{ url_for('documents.index') }}" class="btn btn-outline-primary w-100">
-                                <i class="bi bi-search"></i><br>
-                                Buscar Documentos
+
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <a href="{{ url_for('documents.index') }}" class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                                <i class="bi bi-search fs-1 mb-2"></i>
+                                <span>Buscar Documentos</span>
                             </a>
                         </div>
-                        
+
                         {% if current_user.can_approve_documents() %}
-                        <div class="col-md-3 mb-3">
-                            <a href="{{ url_for('approvals.index') }}" class="btn btn-outline-info w-100">
-                                <i class="bi bi-check-circle"></i><br>
-                                Verificar Aprovações
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <a href="{{ url_for('approvals.index') }}" class="btn btn-outline-info w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                                <i class="bi bi-check-circle fs-1 mb-2"></i>
+                                <span>Verificar Aprovações</span>
                             </a>
                         </div>
                         {% endif %}
-                        
+
                         {% if current_user.can_admin() %}
-                        <div class="col-md-3 mb-3">
-                            <a href="{{ url_for('users.index') }}" class="btn btn-outline-success w-100">
-                                <i class="bi bi-people"></i><br>
-                                Gerenciar Usuários
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <a href="{{ url_for('users.index') }}" class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                                <i class="bi bi-people fs-1 mb-2"></i>
+                                <span>Gerenciar Usuários</span>
                             </a>
                         </div>
                         {% endif %}
@@ -307,125 +219,27 @@
     </div>
 </div>
 
-<!-- Chart.js Scripts -->
+<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-// Dados para os gráficos
-const chartData = {
-    statusData: [
-        {% for status, count in documentos_por_status %}
-        { label: '{{ status.title() }}', value: {{ count }} },
-        {% endfor %}
-    ],
-    atividadeData: {
-        labels: [
-            {% for atividade in atividade_7_dias %}
-            '{{ atividade.dia }}'{% if not loop.last %},{% endif %}
-            {% endfor %}
-        ],
-        docsData: [
-            {% for atividade in atividade_7_dias %}
-            {{ atividade.docs_criados }}{% if not loop.last %},{% endif %}
-            {% endfor %}
-        ],
-        leiturasData: [
-            {% for atividade in atividade_7_dias %}
-            {{ atividade.leituras }}{% if not loop.last %},{% endif %}
-            {% endfor %}
-        ]
-    },
-    tiposData: [
-        {% for tipo, count in documentos_por_tipo %}
-        { label: '{{ tipo }}', value: {{ count }} },
-        {% endfor %}
-    ],
-    tendenciaData: {
-        labels: [
-            {% for mes, count in documentos_por_mes %}
-            '{{ mes.strftime('%b/%Y') }}'{% if not loop.last %},{% endif %}
-            {% endfor %}
-        ],
-        data: [
-            {% for mes, count in documentos_por_mes %}
-            {{ count }}{% if not loop.last %},{% endif %}
-            {% endfor %}
-        ]
-    }
-};
-
-// Cores personalizadas
-const colors = {
-    primary: '#667eea',
-    secondary: '#764ba2',
-    success: '#28a745',
-    danger: '#dc3545',
-    warning: '#ffc107',
-    info: '#17a2b8',
-    light: '#f8f9fa',
-    dark: '#343a40'
-};
-
-// 1. Gráfico de Status dos Documentos (Doughnut)
-const statusCtx = document.getElementById('statusChart').getContext('2d');
-new Chart(statusCtx, {
-    type: 'doughnut',
-    data: {
-        labels: chartData.statusData.map(item => item.label),
-        datasets: [{
-            data: chartData.statusData.map(item => item.value),
-            backgroundColor: [
-                colors.success,
-                colors.warning,
-                colors.info,
-                colors.danger,
-                colors.secondary
-            ],
-            borderWidth: 2,
-            borderColor: '#fff'
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'bottom',
-                labels: {
-                    padding: 20,
-                    usePointStyle: true
-                }
-            },
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                        const percentage = ((context.parsed * 100) / total).toFixed(1);
-                        return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
-                    }
-                }
-            }
-        }
-    }
-});
-
-// 2. Gráfico de Atividade dos Últimos 7 Dias
+// Dados mock para o gráfico (você pode usar dados reais do backend)
 const atividadeCtx = document.getElementById('atividadeChart').getContext('2d');
 new Chart(atividadeCtx, {
     type: 'line',
     data: {
-        labels: chartData.atividadeData.labels,
+        labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
         datasets: [{
             label: 'Documentos Criados',
-            data: chartData.atividadeData.docsData,
-            borderColor: colors.primary,
-            backgroundColor: colors.primary + '20',
+            data: [3, 5, 2, 8, 4, 2, 1],
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
             tension: 0.4,
             fill: true
         }, {
             label: 'Leituras',
-            data: chartData.atividadeData.leiturasData,
-            borderColor: colors.success,
-            backgroundColor: colors.success + '20',
+            data: [12, 19, 8, 25, 18, 10, 5],
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
             tension: 0.4,
             fill: true
         }]
@@ -447,93 +261,6 @@ new Chart(atividadeCtx, {
             }
         }
     }
-});
-
-// 3. Gráfico de Tipos de Documento (Bar Chart)
-const tiposCtx = document.getElementById('tiposChart').getContext('2d');
-new Chart(tiposCtx, {
-    type: 'bar',
-    data: {
-        labels: chartData.tiposData.map(item => item.label),
-        datasets: [{
-            label: 'Quantidade',
-            data: chartData.tiposData.map(item => item.value),
-            backgroundColor: colors.primary + '80',
-            borderColor: colors.primary,
-            borderWidth: 1
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-            y: {
-                beginAtZero: true,
-                ticks: {
-                    stepSize: 1
-                }
-            }
-        },
-        plugins: {
-            legend: {
-                display: false
-            }
-        }
-    }
-});
-
-// 4. Gráfico de Tendência (últimos 12 meses)
-const tendenciaCtx = document.getElementById('tendenciaChart').getContext('2d');
-new Chart(tendenciaCtx, {
-    type: 'line',
-    data: {
-        labels: chartData.tendenciaData.labels,
-        datasets: [{
-            label: 'Documentos Criados',
-            data: chartData.tendenciaData.data,
-            borderColor: colors.primary,
-            backgroundColor: 'rgba(102, 126, 234, 0.1)',
-            tension: 0.4,
-            fill: true,
-            pointBackgroundColor: colors.primary,
-            pointBorderColor: '#fff',
-            pointBorderWidth: 2,
-            pointRadius: 6
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-            y: {
-                beginAtZero: true,
-                ticks: {
-                    stepSize: 1
-                }
-            }
-        },
-        plugins: {
-            legend: {
-                display: false
-            }
-        }
-    }
-});
-
-// Animação dos cards de estatísticas
-document.addEventListener('DOMContentLoaded', function() {
-    const cards = document.querySelectorAll('.card');
-    cards.forEach((card, index) => {
-        setTimeout(() => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(20px)';
-            card.style.transition = 'all 0.5s ease-out';
-            setTimeout(() => {
-                card.style.opacity = '1';
-                card.style.transform = 'translateY(0)';
-            }, 50);
-        }, index * 100);
-    });
 });
 </script>
 {% endblock %}

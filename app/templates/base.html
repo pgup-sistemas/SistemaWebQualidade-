@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -22,163 +23,424 @@
     <!-- Custom CSS -->
     <link href="{{ url_for('static', filename='css/custom.css') }}" rel="stylesheet">
 
+    <style>
+        :root {
+            --sidebar-width: 280px;
+            --sidebar-collapsed-width: 70px;
+            --header-height: 60px;
+            --sidebar-bg: #1e293b;
+            --sidebar-text: #94a3b8;
+            --sidebar-hover: #334155;
+            --sidebar-active: #3b82f6;
+        }
+
+        [data-theme="dark"] {
+            --sidebar-bg: #0f172a;
+            --sidebar-text: #64748b;
+            --sidebar-hover: #1e293b;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .app-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            background: var(--bs-body-bg);
+            border-bottom: 1px solid var(--bs-border-color);
+            z-index: 1030;
+            display: flex;
+            align-items: center;
+            padding: 0 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-open .app-header {
+            left: var(--sidebar-width);
+        }
+
+        .sidebar-collapsed .app-header {
+            left: var(--sidebar-collapsed-width);
+        }
+
+        /* Sidebar */
+        .app-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            transform: translateX(-100%);
+            transition: all 0.3s ease;
+            z-index: 1040;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .sidebar-open .app-sidebar {
+            transform: translateX(0);
+        }
+
+        .sidebar-collapsed .app-sidebar {
+            width: var(--sidebar-collapsed-width);
+            transform: translateX(0);
+        }
+
+        /* Sidebar Header */
+        .sidebar-header {
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-brand {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .sidebar-collapsed .sidebar-brand {
+            opacity: 0;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            margin: 0.25rem 0;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            color: var(--sidebar-text);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            position: relative;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .nav-link:hover {
+            background: var(--sidebar-hover);
+            color: white;
+        }
+
+        .nav-link.active {
+            background: var(--sidebar-active);
+            color: white;
+        }
+
+        .nav-link i {
+            width: 20px;
+            margin-right: 0.75rem;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .nav-text {
+            white-space: nowrap;
+            overflow: hidden;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar-collapsed .nav-text {
+            opacity: 0;
+        }
+
+        .nav-badge {
+            margin-left: auto;
+            font-size: 0.75rem;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar-collapsed .nav-badge {
+            opacity: 0;
+        }
+
+        /* Dropdown */
+        .nav-dropdown {
+            position: relative;
+        }
+
+        .nav-dropdown-menu {
+            display: none;
+            background: rgba(0, 0, 0, 0.2);
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-dropdown.show .nav-dropdown-menu {
+            display: block;
+        }
+
+        .nav-dropdown-item {
+            padding: 0.5rem 1rem 0.5rem 3rem;
+            color: var(--sidebar-text);
+            text-decoration: none;
+            display: block;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .nav-dropdown-item:hover {
+            background: var(--sidebar-hover);
+            color: white;
+        }
+
+        /* Main Content */
+        .app-main {
+            margin-top: var(--header-height);
+            padding: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-open .app-main {
+            margin-left: var(--sidebar-width);
+        }
+
+        .sidebar-collapsed .app-main {
+            margin-left: var(--sidebar-collapsed-width);
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .app-header {
+                left: 0 !important;
+            }
+
+            .app-main {
+                margin-left: 0 !important;
+            }
+
+            .sidebar-open .app-sidebar {
+                width: 100vw;
+            }
+        }
+
+        /* Overlay para mobile */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1035;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-open .sidebar-overlay {
+                display: block;
+            }
+        }
+
+        /* User Menu */
+        .user-menu {
+            margin-top: auto;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 1rem;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--sidebar-text);
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            transition: all 0.2s ease;
+        }
+
+        .theme-toggle:hover {
+            background: var(--sidebar-hover);
+            color: white;
+        }
+    </style>
+
     {% block extra_head %}{% endblock %}
 </head>
-<body>
+<body class="sidebar-collapsed">
     {% if current_user.is_authenticated %}
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('dashboard.index') }}">
-                <i class="bi bi-file-earmark-text"></i> Alpha Gestão Documental
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside class="app-sidebar">
+        <div class="sidebar-header">
+            <a href="{{ url_for('dashboard.index') }}" class="sidebar-brand">
+                <i class="bi bi-file-earmark-text me-2"></i>
+                Alpha Gestão
             </a>
+        </div>
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+        <nav class="sidebar-nav">
+            <!-- Dashboard -->
+            <div class="nav-item">
+                <a href="{{ url_for('dashboard.index') }}" class="nav-link">
+                    <i class="bi bi-speedometer2"></i>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+            </div>
 
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('dashboard.index') }}">
-                            <i class="bi bi-speedometer2"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link position-relative" href="{{ url_for('documents.index') }}">
-                            <i class="bi bi-folder"></i> Documentos
-                            {% if notification_counts.expiring_documents > 0 %}
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                {{ notification_counts.expiring_documents }}
-                                <span class="visually-hidden">documentos vencendo</span>
-                            </span>
-                            {% endif %}
-                        </a>
-                    </li>
+            <!-- Documentos -->
+            <div class="nav-item nav-dropdown">
+                <button class="nav-link" onclick="toggleDropdown(this)">
+                    <i class="bi bi-folder"></i>
+                    <span class="nav-text">Documentos</span>
+                    {% if notification_counts.expiring_documents > 0 %}
+                    <span class="badge bg-danger rounded-pill nav-badge">{{ notification_counts.expiring_documents }}</span>
+                    {% endif %}
+                    <i class="bi bi-chevron-right ms-auto nav-badge" style="margin-left: auto;"></i>
+                </button>
+                <div class="nav-dropdown-menu">
+                    <a href="{{ url_for('documents.index') }}" class="nav-dropdown-item">
+                        <i class="bi bi-list"></i> Todos os Documentos
+                    </a>
                     {% if current_user.can_create_documents() %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('documents.create') }}">
-                            <i class="bi bi-plus-circle"></i> Novo Documento
-                        </a>
-                    </li>
+                    <a href="{{ url_for('documents.create') }}" class="nav-dropdown-item">
+                        <i class="bi bi-plus-circle"></i> Novo Documento
+                    </a>
                     {% endif %}
-                    {% if current_user.can_approve_documents() %}
-                    <li class="nav-item">
-                        <a class="nav-link position-relative" href="{{ url_for('approvals.index') }}">
-                            <i class="bi bi-check-circle"></i> Aprovações
-                            {% if notification_counts.pending_approvals > 0 %}
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark">
-                                {{ notification_counts.pending_approvals }}
-                                <span class="visually-hidden">aprovações pendentes</span>
-                            </span>
-                            {% endif %}
-                        </a>
-                    </li>
-                    {% endif %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-shield-check"></i> Qualidade
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('equipments.index') }}">
-                                <i class="bi bi-gear"></i> Equipamentos
-                            </a></li>
-                            <li><a class="dropdown-item position-relative" href="{{ url_for('nonconformities.index') }}">
-                                <i class="bi bi-exclamation-triangle"></i> Não Conformidades
-                                {% if notification_counts.open_nonconformities > 0 %}
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                    {{ notification_counts.open_nonconformities }}
-                                </span>
-                                {% endif %}
-                            </a></li>
-                            <li><a class="dropdown-item position-relative" href="{{ url_for('audits.index') }}">
-                                <i class="bi bi-clipboard-check"></i> Auditorias
-                                {% if notification_counts.assigned_audits > 0 %}
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-info">
-                                    {{ notification_counts.assigned_audits }}
-                                </span>
-                                {% endif %}
-                            </a></li>
-                            {% if current_user.can_admin() %}
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('equipments.reports') }}">
-                                <i class="bi bi-graph-up"></i> Relatórios Equipamentos
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('nonconformities.reports') }}">
-                                <i class="bi bi-graph-up"></i> Relatórios NC
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('audits.reports') }}">
-                                <i class="bi bi-bar-chart"></i> Relatórios Auditoria
-                            </a></li>
-                            {% endif %}
-                        </ul>
-                    </li>
-                    {% if current_user.can_admin() %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="reportsDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-graph-up"></i> Relatórios
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('reports.index') }}">Dashboard de Relatórios</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('documents.index') }}">Relatório de Documentos</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('audits.reports') if 'audits' in blueprints else '#' }}">Relatório de Auditorias</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('nonconformities.reports') if 'nonconformities' in blueprints else '#' }}">Relatório de NCs</a></li>
-                        </ul>
-                    </li>
-                    {% endif %}
-                </ul>
+                    <a href="{{ url_for('document_types.index') }}" class="nav-dropdown-item">
+                        <i class="bi bi-tags"></i> Tipos de Documentos
+                    </a>
+                </div>
+            </div>
 
-                <ul class="navbar-nav">
-                    <!-- Toggle Modo Escuro -->
-                    <li class="nav-item">
-                        <button class="theme-toggle nav-link border-0 bg-transparent" 
-                                onclick="toggleTheme()" 
-                                title="Alternar modo escuro"
-                                aria-label="Alternar entre modo claro e escuro"
-                                aria-pressed="false"
-                                id="theme-toggle-btn">
-                            <i class="bi bi-sun-fill" id="theme-icon"></i>
-                        </button>
-                    </li>
+            <!-- Aprovações -->
+            {% if current_user.can_approve_documents() %}
+            <div class="nav-item">
+                <a href="{{ url_for('approvals.index') }}" class="nav-link">
+                    <i class="bi bi-check-circle"></i>
+                    <span class="nav-text">Aprovações</span>
+                    {% if notification_counts.pending_approvals > 0 %}
+                    <span class="badge bg-warning text-dark rounded-pill nav-badge">{{ notification_counts.pending_approvals }}</span>
+                    {% endif %}
+                </a>
+            </div>
+            {% endif %}
 
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-person"></i> {{ current_user.nome_completo }}
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><h6 class="dropdown-header">{{ current_user.perfil.replace('_', ' ').title() }}</h6></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}">
-                                <i class="bi bi-person-circle"></i> Meu Perfil
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('auth.change_password') }}">
-                                <i class="bi bi-lock"></i> Alterar Senha
-                            </a></li>
-                            {% if current_user.can_admin() %}
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('users.index') }}">
-                                <i class="bi bi-people"></i> Usuários
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('document_types.index') }}">
-                                <i class="bi bi-tags"></i> Tipos de Documentos
-                            </a></li>
-                            {% endif %}
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
-                                <i class="bi bi-box-arrow-right"></i> Sair
-                            </a></li>
-                        </ul>
-                    </li>
-                </ul>
+            <!-- Qualidade -->
+            <div class="nav-item nav-dropdown">
+                <button class="nav-link" onclick="toggleDropdown(this)">
+                    <i class="bi bi-shield-check"></i>
+                    <span class="nav-text">Qualidade</span>
+                    <i class="bi bi-chevron-right ms-auto nav-badge" style="margin-left: auto;"></i>
+                </button>
+                <div class="nav-dropdown-menu">
+                    <a href="{{ url_for('equipments.index') }}" class="nav-dropdown-item">
+                        <i class="bi bi-gear"></i> Equipamentos
+                    </a>
+                    <a href="{{ url_for('nonconformities.index') }}" class="nav-dropdown-item">
+                        <i class="bi bi-exclamation-triangle"></i> Não Conformidades
+                        {% if notification_counts.open_nonconformities > 0 %}
+                        <span class="badge bg-danger rounded-pill ms-1">{{ notification_counts.open_nonconformities }}</span>
+                        {% endif %}
+                    </a>
+                    <a href="{{ url_for('audits.index') }}" class="nav-dropdown-item">
+                        <i class="bi bi-clipboard-check"></i> Auditorias
+                        {% if notification_counts.assigned_audits > 0 %}
+                        <span class="badge bg-info rounded-pill ms-1">{{ notification_counts.assigned_audits }}</span>
+                        {% endif %}
+                    </a>
+                </div>
+            </div>
+
+            <!-- Administração -->
+            {% if current_user.can_admin() %}
+            <div class="nav-item nav-dropdown">
+                <button class="nav-link" onclick="toggleDropdown(this)">
+                    <i class="bi bi-gear-wide-connected"></i>
+                    <span class="nav-text">Administração</span>
+                    <i class="bi bi-chevron-right ms-auto nav-badge" style="margin-left: auto;"></i>
+                </button>
+                <div class="nav-dropdown-menu">
+                    <a href="{{ url_for('users.index') }}" class="nav-dropdown-item">
+                        <i class="bi bi-people"></i> Usuários
+                    </a>
+                    <a href="{{ url_for('groups.index') }}" class="nav-dropdown-item">
+                        <i class="bi bi-collection"></i> Grupos/Setores
+                    </a>
+                    <a href="{{ url_for('reports.index') }}" class="nav-dropdown-item">
+                        <i class="bi bi-graph-up"></i> Relatórios
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </nav>
+
+        <!-- User Menu -->
+        <div class="user-menu">
+            <div class="nav-item nav-dropdown">
+                <button class="nav-link" onclick="toggleDropdown(this)">
+                    <i class="bi bi-person-circle"></i>
+                    <span class="nav-text">{{ current_user.nome_completo.split()[0] }}</span>
+                    <i class="bi bi-chevron-right ms-auto nav-badge" style="margin-left: auto;"></i>
+                </button>
+                <div class="nav-dropdown-menu">
+                    <a href="{{ url_for('auth.profile') }}" class="nav-dropdown-item">
+                        <i class="bi bi-person"></i> Meu Perfil
+                    </a>
+                    <a href="{{ url_for('auth.change_password') }}" class="nav-dropdown-item">
+                        <i class="bi bi-lock"></i> Alterar Senha
+                    </a>
+                    <hr style="margin: 0.5rem 1rem; border-color: rgba(255,255,255,0.1);">
+                    <a href="{{ url_for('auth.logout') }}" class="nav-dropdown-item">
+                        <i class="bi bi-box-arrow-right"></i> Sair
+                    </a>
+                </div>
+            </div>
+
+            <div class="nav-item">
+                <button class="nav-link theme-toggle" onclick="toggleTheme()" title="Alternar tema">
+                    <i class="bi bi-sun-fill" id="theme-icon"></i>
+                    <span class="nav-text">Tema</span>
+                </button>
             </div>
         </div>
-    </nav>
+    </aside>
+
+    <!-- Header -->
+    <header class="app-header">
+        <button class="btn btn-link text-decoration-none me-3" onclick="toggleSidebar()" title="Menu">
+            <i class="bi bi-list fs-4"></i>
+        </button>
+
+        <h1 class="h5 mb-0 me-auto">{% block page_title %}{% endblock %}</h1>
+
+        <div class="d-flex align-items-center gap-2">
+            <small class="text-muted d-none d-md-block">
+                {{ current_user.perfil.replace('_', ' ').title() }}
+            </small>
+        </div>
+    </header>
     {% endif %}
 
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-        <div class="container-fluid mt-3">
+        <div class="position-fixed top-0 end-0 p-3" style="z-index: 1050;">
             {% for category, message in messages %}
             <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
                 {{ message }}
@@ -190,121 +452,131 @@
     {% endwith %}
 
     <!-- Main Content -->
-    <main>
+    <main class="app-main">
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Footer -->
-    {% if current_user.is_authenticated %}
-    <footer class="bg-light py-3 mt-5">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-6">
-                    <small class="text-muted">© 2025 Alpha Gestão Documental</small>
-                </div>
-                <div class="col-md-6 text-end">
-                    <small class="text-muted">
-                        Usuário: {{ current_user.nome_completo }} | 
-                        Perfil: {{ current_user.perfil.replace('_', ' ').title() }}
-                    </small>
-                </div>
-            </div>
-        </div>
-    </footer>
-    {% endif %}
-
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JS -->
-    <script src="{{ url_for('static', filename='js/custom.js') }}"></script>
 
-    {% block extra_scripts %}{% endblock %}
-
-    <!-- Sistema de Modo Escuro -->
     <script>
-        // Função para alternar o tema
+        // Sidebar Management
+        function toggleSidebar() {
+            const body = document.body;
+            const isOpen = body.classList.contains('sidebar-open');
+            const isCollapsed = body.classList.contains('sidebar-collapsed');
+
+            if (window.innerWidth <= 768) {
+                // Mobile: toggle open/closed
+                body.classList.toggle('sidebar-open');
+            } else {
+                // Desktop: toggle collapsed/expanded
+                if (isOpen) {
+                    body.classList.remove('sidebar-open');
+                    body.classList.add('sidebar-collapsed');
+                } else if (isCollapsed) {
+                    body.classList.remove('sidebar-collapsed');
+                    body.classList.add('sidebar-open');
+                } else {
+                    body.classList.add('sidebar-open');
+                }
+            }
+
+            // Save state
+            localStorage.setItem('sidebarState', body.className);
+        }
+
+        // Dropdown Management
+        function toggleDropdown(button) {
+            const dropdown = button.parentElement;
+            const isOpen = dropdown.classList.contains('show');
+            
+            // Close all dropdowns
+            document.querySelectorAll('.nav-dropdown.show').forEach(d => {
+                d.classList.remove('show');
+                d.querySelector('i:last-child').style.transform = 'rotate(0deg)';
+            });
+
+            // Toggle current dropdown
+            if (!isOpen) {
+                dropdown.classList.add('show');
+                button.querySelector('i:last-child').style.transform = 'rotate(90deg)';
+            }
+        }
+
+        // Theme Management
         function toggleTheme() {
             const html = document.documentElement;
             const themeIcon = document.getElementById('theme-icon');
-            const toggleBtn = document.getElementById('theme-toggle-btn');
             const currentTheme = html.getAttribute('data-theme');
 
             if (currentTheme === 'dark') {
-                // Mudar para modo claro
                 html.setAttribute('data-theme', 'light');
                 themeIcon.className = 'bi bi-sun-fill';
-                toggleBtn.setAttribute('aria-pressed', 'false');
-                toggleBtn.title = 'Ativar modo escuro';
                 localStorage.setItem('theme', 'light');
             } else {
-                // Mudar para modo escuro
                 html.setAttribute('data-theme', 'dark');
                 themeIcon.className = 'bi bi-moon-fill';
-                toggleBtn.setAttribute('aria-pressed', 'true');
-                toggleBtn.title = 'Ativar modo claro';
                 localStorage.setItem('theme', 'dark');
             }
         }
 
-        // Aplicar tema salvo no carregamento da página
+        // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            const html = document.documentElement;
-            const savedTheme = html.getAttribute('data-theme') || 'light';
-            const themeIcon = document.getElementById('theme-icon');
-            const toggleBtn = document.getElementById('theme-toggle-btn');
-
-            // Sincronizar ícone e acessibilidade
-            if (savedTheme === 'dark') {
-                themeIcon.className = 'bi bi-moon-fill';
-                toggleBtn.setAttribute('aria-pressed', 'true');
-                toggleBtn.title = 'Ativar modo claro';
-            } else {
-                themeIcon.className = 'bi bi-sun-fill';
-                toggleBtn.setAttribute('aria-pressed', 'false');
-                toggleBtn.title = 'Ativar modo escuro';
+            // Restore sidebar state
+            const savedState = localStorage.getItem('sidebarState');
+            if (savedState) {
+                document.body.className = savedState;
             }
 
-            // Detectar preferência do sistema se não há preferência salva
-            if (!localStorage.getItem('theme')) {
-                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                    html.setAttribute('data-theme', 'dark');
-                    themeIcon.className = 'bi bi-moon-fill';
-                    localStorage.setItem('theme', 'dark');
+            // Initialize theme
+            const savedTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const themeIcon = document.getElementById('theme-icon');
+            if (themeIcon) {
+                themeIcon.className = savedTheme === 'dark' ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
+            }
+
+            // Set active nav items
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.nav-link[href], .nav-dropdown-item[href]').forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                    
+                    // Open parent dropdown if needed
+                    const dropdown = link.closest('.nav-dropdown');
+                    if (dropdown) {
+                        dropdown.classList.add('show');
+                        const button = dropdown.querySelector('button');
+                        if (button) {
+                            button.querySelector('i:last-child').style.transform = 'rotate(90deg)';
+                        }
+                    }
+                }
+            });
+
+            // Auto-hide flash messages
+            setTimeout(() => {
+                document.querySelectorAll('.alert-dismissible').forEach(alert => {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                });
+            }, 5000);
+        });
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(e) {
+            if (window.innerWidth <= 768) {
+                const sidebar = document.querySelector('.app-sidebar');
+                const toggleBtn = document.querySelector('[onclick="toggleSidebar()"]');
+                
+                if (!sidebar.contains(e.target) && !toggleBtn.contains(e.target) && 
+                    document.body.classList.contains('sidebar-open')) {
+                    toggleSidebar();
                 }
             }
         });
-
-        // Melhorias de acessibilidade mobile
-        document.addEventListener('DOMContentLoaded', function() {
-            // Melhorar toque em dispositivos móveis
-            if ('ontouchstart' in window) {
-                document.body.classList.add('touch-device');
-
-                // Adicionar feedback visual ao toque
-                const buttons = document.querySelectorAll('.btn, .nav-link, .dropdown-item');
-                buttons.forEach(button => {
-                    button.addEventListener('touchstart', function() {
-                        this.style.transform = 'scale(0.98)';
-                    });
-                    button.addEventListener('touchend', function() {
-                        this.style.transform = 'scale(1)';
-                    });
-                });
-            }
-
-            // Auto-collapse navbar em mobile após clique
-            const navLinks = document.querySelectorAll('.navbar-nav .nav-link:not(.dropdown-toggle)');
-            const navCollapse = document.querySelector('.navbar-collapse');
-
-            navLinks.forEach(link => {
-                link.addEventListener('click', () => {
-                    if (window.innerWidth <= 991 && navCollapse.classList.contains('show')) {
-                        const toggleButton = document.querySelector('.navbar-toggler');
-                        if (toggleButton) toggleButton.click();
-                    }
-                });
-            });
-        });
     </script>
+
+    {% block extra_scripts %}{% endblock %}
 </body>
 </html>

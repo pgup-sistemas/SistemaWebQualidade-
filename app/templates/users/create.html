@@ -50,7 +50,7 @@
                                 <div class="mb-3">
                                     <label for="perfil" class="form-label">Perfil *</label>
                                     <select class="form-select" id="perfil" name="perfil" required>
-                                        <option value="">Selecione um perfil</option>
+                                        <option value="">Selecionar perfil...</option>
                                         <option value="administrador">Administrador</option>
                                         <option value="gestor_qualidade">Gestor de Qualidade</option>
                                         <option value="aprovador_revisor">Aprovador/Revisor</option>
@@ -159,7 +159,7 @@ document.getElementById('nome_usuario').addEventListener('input', function() {
 // Carregar grupos/setores dinamicamente
 document.addEventListener('DOMContentLoaded', function() {
     const grupoSelect = document.getElementById('grupo_id');
-    
+
     if (grupoSelect) {
         fetch('/groups/api/get-groups')
             .then(response => response.json())

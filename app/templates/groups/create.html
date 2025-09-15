@@ -1,0 +1,110 @@
+
+{% extends "base.html" %}
+
+{% block title %}Criar Grupo/Setor - Alpha Gestão Documental{% endblock %}
+{% block page_title %}Criar Grupo/Setor{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-plus-circle"></i> Novo Grupo/Setor
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ csrf_token() }}
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="codigo" class="form-label">Código *</label>
+                                <input type="text" class="form-control" id="codigo" name="codigo" 
+                                       required maxlength="20" style="text-transform: uppercase;"
+                                       placeholder="Ex: RH, FIN, LAB">
+                                <div class="form-text">Código único para identificação (letras maiúsculas, números e hífens)</div>
+                            </div>
+                            
+                            <div class="col-md-8 mb-3">
+                                <label for="nome" class="form-label">Nome *</label>
+                                <input type="text" class="form-control" id="nome" name="nome" 
+                                       required maxlength="100" placeholder="Nome do grupo/setor">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="descricao" class="form-label">Descrição</label>
+                            <textarea class="form-control" id="descricao" name="descricao" rows="3"
+                                      placeholder="Descrição detalhada do grupo/setor"></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="cor" class="form-label">Cor de Identificação</label>
+                                <input type="color" class="form-control form-control-color" id="cor" name="cor" 
+                                       value="#28a745" title="Escolha uma cor">
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="icone" class="form-label">Ícone</label>
+                                <select class="form-select" id="icone" name="icone">
+                                    <option value="bi-people">👥 Pessoas</option>
+                                    <option value="bi-cash-stack">💰 Financeiro</option>
+                                    <option value="bi-microscope">🔬 Laboratório</option>
+                                    <option value="bi-person-check">✅ Atendimento</option>
+                                    <option value="bi-award">🏆 Qualidade</option>
+                                    <option value="bi-building">🏢 Administração</option>
+                                    <option value="bi-gear">⚙️ Técnico</option>
+                                    <option value="bi-shield-check">🛡️ Segurança</option>
+                                    <option value="bi-graph-up">📈 Análise</option>
+                                    <option value="bi-truck">🚚 Logística</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="responsavel_id" class="form-label">Responsável</label>
+                                <select class="form-select" id="responsavel_id" name="responsavel_id">
+                                    <option value="">Selecionar responsável...</option>
+                                    {% for user in users %}
+                                    <option value="{{ user.id }}">{{ user.nome_completo }} ({{ user.perfil.replace('_', ' ').title() }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3 d-flex align-items-end">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="notificar_novos_documentos" 
+                                           name="notificar_novos_documentos" checked>
+                                    <label class="form-check-label" for="notificar_novos_documentos">
+                                        Notificar sobre novos documentos
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('groups.index') }}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Voltar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg"></i> Criar Grupo
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Preview da cor e ícone
+document.getElementById('codigo').addEventListener('input', function() {
+    this.value = this.value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
+});
+</script>
+{% endblock %}
