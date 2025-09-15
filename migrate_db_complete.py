@@ -72,33 +72,90 @@ def migrate_database():
 
         # 2. Verificar e adicionar colunas na tabela users
         with engine.connect() as connection:
-            try:
-                result = connection.execute(text("SELECT grupo_id FROM users LIMIT 1"))
-                result.fetchone()
-                print("✓ Coluna grupo_id já existe na tabela users")
-            except:
-                print("Adicionando colunas na tabela users...")
-                if is_postgres:
-                    connection.execute(text("ALTER TABLE users ADD COLUMN grupo_id INTEGER"))
-                    connection.commit()
-                    
-                    try:
+            # Verificar se a coluna grupo_id existe usando information_schema
+            if is_postgres:
+                try:
+                    result = connection.execute(text("""
+                        SELECT column_name 
+                        FROM information_schema.columns 
+                        WHERE table_name='users' AND column_name='grupo_id'
+                    """))
+                    if result.fetchone():
+                        print("✓ Coluna grupo_id já existe na tabela users")
+                    else:
+                        print("Adicionando coluna grupo_id na tabela users...")
+                        connection.execute(text("ALTER TABLE users ADD COLUMN grupo_id INTEGER"))
+                        connection.commit()
+                        print("✓ Coluna grupo_id adicionada")
+                except Exception as e:
+                    connection.rollback()
+                    print(f"Erro ao adicionar grupo_id: {e}")
+                
+                # Verificar e adicionar coluna cargo
+                try:
+                    result = connection.execute(text("""
+                        SELECT column_name 
+                        FROM information_schema.columns 
+                        WHERE table_name='users' AND column_name='cargo'
+                    """))
+                    if not result.fetchone():
+                        print("Adicionando coluna cargo na tabela users...")
                         connection.execute(text("ALTER TABLE users ADD COLUMN cargo VARCHAR(100)"))
                         connection.commit()
-                    except:
-                        pass  # Coluna já existe
-                    
-                    try:
+                        print("✓ Coluna cargo adicionada")
+                    else:
+                        print("✓ Coluna cargo já existe")
+                except Exception as e:
+                    connection.rollback()
+                    print(f"Erro ao adicionar cargo: {e}")
+                
+                # Verificar e adicionar coluna receber_notificacoes
+                try:
+                    result = connection.execute(text("""
+                        SELECT column_name 
+                        FROM information_schema.columns 
+                        WHERE table_name='users' AND column_name='receber_notificacoes'
+                    """))
+                    if not result.fetchone():
+                        print("Adicionando coluna receber_notificacoes na tabela users...")
                         connection.execute(text("ALTER TABLE users ADD COLUMN receber_notificacoes BOOLEAN DEFAULT TRUE"))
                         connection.commit()
-                    except:
-                        pass  # Coluna já existe
-                else:
-                    connection.execute(text("ALTER TABLE users ADD COLUMN grupo_id INTEGER"))
-                    connection.execute(text("ALTER TABLE users ADD COLUMN cargo VARCHAR(100)"))
-                    connection.execute(text("ALTER TABLE users ADD COLUMN receber_notificacoes BOOLEAN DEFAULT 1"))
+                        print("✓ Coluna receber_notificacoes adicionada")
+                    else:
+                        print("✓ Coluna receber_notificacoes já existe")
+                except Exception as e:
+                    connection.rollback()
+                    print(f"Erro ao adicionar receber_notificacoes: {e}")
+            else:
+                # Para SQLite, usar PRAGMA table_info
+                try:
+                    result = connection.execute(text("PRAGMA table_info(users)"))
+                    columns = [row[1] for row in result.fetchall()]
+                    
+                    if 'grupo_id' not in columns:
+                        connection.execute(text("ALTER TABLE users ADD COLUMN grupo_id INTEGER"))
+                        print("✓ Coluna grupo_id adicionada")
+                    else:
+                        print("✓ Coluna grupo_id já existe")
+                    
+                    if 'cargo' not in columns:
+                        connection.execute(text("ALTER TABLE users ADD COLUMN cargo VARCHAR(100)"))
+                        print("✓ Coluna cargo adicionada")
+                    else:
+                        print("✓ Coluna cargo já existe")
+                    
+                    if 'receber_notificacoes' not in columns:
+                        connection.execute(text("ALTER TABLE users ADD COLUMN receber_notificacoes BOOLEAN DEFAULT 1"))
+                        print("✓ Coluna receber_notificacoes adicionada")
+                    else:
+                        print("✓ Coluna receber_notificacoes já existe")
+                    
                     connection.commit()
-                print("✓ Colunas adicionadas na tabela users")
+                except Exception as e:
+                    connection.rollback()
+                    print(f"Erro ao adicionar colunas: {e}")
+            
+            print("✓ Verificação de colunas da tabela users concluída")
         
         # 3. Verificar e criar tabela document_types
         with engine.connect() as connection:
@@ -143,15 +200,37 @@ def migrate_database():
         
         # 4. Verificar e adicionar coluna tipo_documento_id na tabela documents
         with engine.connect() as connection:
-            try:
-                result = connection.execute(text("SELECT tipo_documento_id FROM documents LIMIT 1"))
-                result.fetchone()
-                print("✓ Coluna tipo_documento_id já existe na tabela documents")
-            except:
-                print("Adicionando coluna tipo_documento_id na tabela documents...")
-                connection.execute(text("ALTER TABLE documents ADD COLUMN tipo_documento_id INTEGER"))
-                connection.commit()
-                print("✓ Coluna tipo_documento_id adicionada na tabela documents")
+            if is_postgres:
+                try:
+                    result = connection.execute(text("""
+                        SELECT column_name 
+                        FROM information_schema.columns 
+                        WHERE table_name='documents' AND column_name='tipo_documento_id'
+                    """))
+                    if result.fetchone():
+                        print("✓ Coluna tipo_documento_id já existe na tabela documents")
+                    else:
+                        print("Adicionando coluna tipo_documento_id na tabela documents...")
+                        connection.execute(text("ALTER TABLE documents ADD COLUMN tipo_documento_id INTEGER"))
+                        connection.commit()
+                        print("✓ Coluna tipo_documento_id adicionada na tabela documents")
+                except Exception as e:
+                    connection.rollback()
+                    print(f"Erro ao adicionar tipo_documento_id: {e}")
+            else:
+                try:
+                    result = connection.execute(text("PRAGMA table_info(documents)"))
+                    columns = [row[1] for row in result.fetchall()]
+                    
+                    if 'tipo_documento_id' not in columns:
+                        connection.execute(text("ALTER TABLE documents ADD COLUMN tipo_documento_id INTEGER"))
+                        connection.commit()
+                        print("✓ Coluna tipo_documento_id adicionada na tabela documents")
+                    else:
+                        print("✓ Coluna tipo_documento_id já existe na tabela documents")
+                except Exception as e:
+                    connection.rollback()
+                    print(f"Erro ao adicionar tipo_documento_id: {e}")
 
         # 5. Criar tabela de relacionamento many-to-many se não existir
         with engine.connect() as connection:
