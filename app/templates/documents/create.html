@@ -46,17 +46,30 @@
 
                         <div class="mb-3">
                             <label for="tipo" class="form-label">Tipo *</label>
-                            <select class="form-select" id="tipo" name="tipo" required>
-                                <option value="">Selecione o tipo</option>
-                                <option value="procedimento">Procedimento</option>
-                                <option value="instrucao">Instrução de Trabalho</option>
-                                <option value="politica">Política</option>
-                                <option value="manual">Manual</option>
-                                <option value="formulario">Formulário</option>
-                                <option value="plano">Plano</option>
-                                <option value="registro">Registro</option>
-                                <option value="outros">Outros</option>
-                            </select>
+                            <div class="d-flex">
+                                <select class="form-select me-2" id="tipo" name="tipo" required>
+                                    <option value="">Selecione o tipo</option>
+                                    {% for doc_type in document_types %}
+                                    <option value="{{ doc_type.codigo }}" data-id="{{ doc_type.id }}">
+                                        {{ doc_type.nome }}
+                                    </option>
+                                    {% endfor %}
+                                    <!-- Tipos padrão para compatibilidade -->
+                                    <option value="procedimento">Procedimento</option>
+                                    <option value="instrucao">Instrução de Trabalho</option>
+                                    <option value="politica">Política</option>
+                                    <option value="manual">Manual</option>
+                                    <option value="formulario">Formulário</option>
+                                    <option value="plano">Plano</option>
+                                    <option value="registro">Registro</option>
+                                    <option value="outros">Outros</option>
+                                </select>
+                                <button type="button" class="btn btn-outline-success" 
+                                        onclick="showNewTypeModal()" title="Criar novo tipo">
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                            </div>
+                            <input type="hidden" id="tipo_documento_id" name="tipo_documento_id">
                             <div class="invalid-feedback">
                                 Selecione o tipo do documento.
                             </div>
@@ -129,6 +142,41 @@
             </div>
         </div>
     </form>
+</div>
+
+<!-- Modal para Criar Novo Tipo -->
+<div class="modal fade" id="newTypeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Criar Novo Tipo de Documento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="newTypeForm">
+                    <div class="mb-3">
+                        <label for="newTipoCodigo" class="form-label">Código *</label>
+                        <input type="text" class="form-control" id="newTipoCodigo" 
+                               pattern="[A-Z0-9-]+" maxlength="20"
+                               placeholder="Ex: LAB, CERT, PROC">
+                        <div class="form-text">Apenas letras maiúsculas, números e hífens</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newTipoNome" class="form-label">Nome *</label>
+                        <input type="text" class="form-control" id="newTipoNome" 
+                               maxlength="100"
+                               placeholder="Ex: Certificação Laboratorial">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="createNewType()">
+                    <i class="bi bi-check-circle"></i> Criar
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
@@ -278,6 +326,78 @@ quill.on('text-change', function() {
     if (draftBtn) {
         draftBtn.disabled = !hasContent && !titulo;
     }
+});
+
+// Gerenciar seleção de tipo dinâmico
+document.getElementById('tipo').addEventListener('change', function() {
+    const selectedOption = this.options[this.selectedIndex];
+    const tipoDocumentoId = selectedOption.getAttribute('data-id');
+    document.getElementById('tipo_documento_id').value = tipoDocumentoId || '';
+});
+
+// Função para mostrar modal de novo tipo
+function showNewTypeModal() {
+    new bootstrap.Modal(document.getElementById('newTypeModal')).show();
+}
+
+// Função para criar novo tipo via AJAX
+function createNewType() {
+    const codigo = document.getElementById('newTipoCodigo').value.trim().toUpperCase();
+    const nome = document.getElementById('newTipoNome').value.trim();
+    
+    if (!codigo || !nome) {
+        alert('Código e nome são obrigatórios!');
+        return;
+    }
+    
+    if (!/^[A-Z0-9-]+$/.test(codigo)) {
+        alert('Código deve conter apenas letras maiúsculas, números e hífens!');
+        return;
+    }
+    
+    // Criar FormData
+    const formData = new FormData();
+    formData.append('codigo', codigo);
+    formData.append('nome', nome);
+    formData.append('csrf_token', document.querySelector('input[name="csrf_token"]').value);
+    
+    // Enviar requisição
+    fetch('/document-types/api/create', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Adicionar nova opção ao select
+            const tipoSelect = document.getElementById('tipo');
+            const newOption = new Option(data.nome, data.codigo);
+            newOption.setAttribute('data-id', data.id);
+            tipoSelect.add(newOption);
+            
+            // Selecionar o novo tipo
+            tipoSelect.value = data.codigo;
+            document.getElementById('tipo_documento_id').value = data.id;
+            
+            // Fechar modal e limpar campos
+            bootstrap.Modal.getInstance(document.getElementById('newTypeModal')).hide();
+            document.getElementById('newTypeForm').reset();
+            
+            // Mostrar mensagem de sucesso
+            showAutoSaveIndicator(true, `Tipo "${data.nome}" criado com sucesso!`);
+        } else {
+            alert('Erro ao criar tipo: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('Erro de conexão ao criar tipo');
+    });
+}
+
+// Converter código para maiúsculas no modal
+document.getElementById('newTipoCodigo').addEventListener('input', function() {
+    this.value = this.value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
 });
 
 // Verificar título para habilitar botões

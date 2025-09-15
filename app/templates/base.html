@@ -140,7 +140,7 @@
                             <i class="bi bi-sun-fill" id="theme-icon"></i>
                         </button>
                     </li>
-                    
+
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                             <i class="bi bi-person"></i> {{ current_user.nome_completo }}
@@ -157,7 +157,10 @@
                             {% if current_user.can_admin() %}
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('users.index') }}">
-                                <i class="bi bi-people"></i> Gerenciar Usuários
+                                <i class="bi bi-people"></i> Usuários
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('document_types.index') }}">
+                                <i class="bi bi-tags"></i> Tipos de Documentos
                             </a></li>
                             {% endif %}
                             <li><hr class="dropdown-divider"></li>
@@ -216,7 +219,7 @@
     <script src="{{ url_for('static', filename='js/custom.js') }}"></script>
 
     {% block extra_scripts %}{% endblock %}
-    
+
     <!-- Sistema de Modo Escuro -->
     <script>
         // Função para alternar o tema
@@ -225,7 +228,7 @@
             const themeIcon = document.getElementById('theme-icon');
             const toggleBtn = document.getElementById('theme-toggle-btn');
             const currentTheme = html.getAttribute('data-theme');
-            
+
             if (currentTheme === 'dark') {
                 // Mudar para modo claro
                 html.setAttribute('data-theme', 'light');
@@ -242,14 +245,14 @@
                 localStorage.setItem('theme', 'dark');
             }
         }
-        
+
         // Aplicar tema salvo no carregamento da página
         document.addEventListener('DOMContentLoaded', function() {
             const html = document.documentElement;
             const savedTheme = html.getAttribute('data-theme') || 'light';
             const themeIcon = document.getElementById('theme-icon');
             const toggleBtn = document.getElementById('theme-toggle-btn');
-            
+
             // Sincronizar ícone e acessibilidade
             if (savedTheme === 'dark') {
                 themeIcon.className = 'bi bi-moon-fill';
@@ -260,7 +263,7 @@
                 toggleBtn.setAttribute('aria-pressed', 'false');
                 toggleBtn.title = 'Ativar modo escuro';
             }
-            
+
             // Detectar preferência do sistema se não há preferência salva
             if (!localStorage.getItem('theme')) {
                 if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -270,13 +273,13 @@
                 }
             }
         });
-        
+
         // Melhorias de acessibilidade mobile
         document.addEventListener('DOMContentLoaded', function() {
             // Melhorar toque em dispositivos móveis
             if ('ontouchstart' in window) {
                 document.body.classList.add('touch-device');
-                
+
                 // Adicionar feedback visual ao toque
                 const buttons = document.querySelectorAll('.btn, .nav-link, .dropdown-item');
                 buttons.forEach(button => {
@@ -288,11 +291,11 @@
                     });
                 });
             }
-            
+
             // Auto-collapse navbar em mobile após clique
             const navLinks = document.querySelectorAll('.navbar-nav .nav-link:not(.dropdown-toggle)');
             const navCollapse = document.querySelector('.navbar-collapse');
-            
+
             navLinks.forEach(link => {
                 link.addEventListener('click', () => {
                     if (window.innerWidth <= 991 && navCollapse.classList.contains('show')) {

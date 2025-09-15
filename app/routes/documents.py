@@ -3,7 +3,7 @@ Rotas de documentos para o Sistema Alpha Gestão Documental
 """
 from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
 from flask_login import login_required, current_user
-from app.models import Document, DocumentVersion, DocumentReading, ApprovalFlow
+from app.models import Document, DocumentVersion, DocumentReading, ApprovalFlow, DocumentType
 from app import db
 from datetime import datetime, timedelta
 import uuid
@@ -69,11 +69,15 @@ def create():
         # Gerar código único
         codigo = f"{tipo.upper()}-{datetime.now().strftime('%Y')}-{str(uuid.uuid4())[:8].upper()}"
         
+        # Obter tipo_documento_id se fornecido
+        tipo_documento_id = request.form.get('tipo_documento_id')
+        
         # Criar documento
         document = Document(
             codigo=codigo,
             titulo=titulo,
             tipo=tipo,
+            tipo_documento_id=int(tipo_documento_id) if tipo_documento_id else None,
             departamento=departamento,
             palavras_chave=palavras_chave,
             resumo=resumo,
@@ -107,7 +111,9 @@ def create():
         
         return redirect(url_for('documents.view', id=document.id))
     
-    return render_template('documents/create.html')
+    # Carregar tipos de documentos dinâmicos
+    document_types = DocumentType.query.filter_by(ativo=True).order_by(DocumentType.nome).all()
+    return render_template('documents/create.html', document_types=document_types)
 
 @bp.route('/<int:id>')
 @login_required

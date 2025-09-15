@@ -1,0 +1,152 @@
+
+{% extends "base.html" %}
+
+{% block title %}Editar Tipo de Documento - Alpha Gestão Documental{% endblock %}
+
+{% block extra_head %}
+<style>
+.color-preview {
+    width: 40px;
+    height: 40px;
+    border-radius: 5px;
+    border: 2px solid #ddd;
+    display: inline-block;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">
+                    <i class="bi bi-pencil"></i> Editar Tipo de Documento
+                    <small class="text-muted">{{ document_type.codigo }} - {{ document_type.nome }}</small>
+                </h1>
+                <a href="{{ url_for('document_types.index') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-info-circle"></i> Informações do Tipo
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="needs-validation" novalidate>
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="codigo" class="form-label">Código</label>
+                                <input type="text" class="form-control" id="codigo" 
+                                       value="{{ document_type.codigo }}" disabled>
+                                <div class="form-text">O código não pode ser alterado</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="nome" class="form-label">Nome *</label>
+                                <input type="text" class="form-control" id="nome" name="nome" 
+                                       required maxlength="100" value="{{ document_type.nome }}"
+                                       placeholder="Ex: Procedimento, Instrução de Trabalho">
+                                <div class="invalid-feedback">
+                                    O nome é obrigatório.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="descricao" class="form-label">Descrição</label>
+                            <textarea class="form-control" id="descricao" name="descricao" 
+                                      rows="3" maxlength="500"
+                                      placeholder="Descrição detalhada do tipo de documento...">{{ document_type.descricao or '' }}</textarea>
+                            <div class="form-text">Opcional - máximo 500 caracteres</div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="cor" class="form-label">Cor de Identificação</label>
+                                <div class="d-flex align-items-center">
+                                    <input type="color" class="form-control form-control-color me-3" 
+                                           id="cor" name="cor" value="{{ document_type.cor }}">
+                                    <div class="color-preview" id="colorPreview" style="background-color: {{ document_type.cor }};"></div>
+                                </div>
+                                <div class="form-text">Cor para identificar visualmente o tipo</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="icone" class="form-label">Ícone</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i id="iconePreview" class="{{ document_type.icone }}"></i>
+                                    </span>
+                                    <select class="form-select" id="icone" name="icone">
+                                        <option value="bi-file-text" {{ 'selected' if document_type.icone == 'bi-file-text' else '' }}>Documento Texto</option>
+                                        <option value="bi-file-earmark" {{ 'selected' if document_type.icone == 'bi-file-earmark' else '' }}>Documento</option>
+                                        <option value="bi-file-earmark-text" {{ 'selected' if document_type.icone == 'bi-file-earmark-text' else '' }}>Documento com Texto</option>
+                                        <option value="bi-clipboard" {{ 'selected' if document_type.icone == 'bi-clipboard' else '' }}>Clipboard</option>
+                                        <option value="bi-list-check" {{ 'selected' if document_type.icone == 'bi-list-check' else '' }}>Lista Checklist</option>
+                                        <option value="bi-gear" {{ 'selected' if document_type.icone == 'bi-gear' else '' }}>Configuração</option>
+                                        <option value="bi-tools" {{ 'selected' if document_type.icone == 'bi-tools' else '' }}>Ferramentas</option>
+                                        <option value="bi-shield-check" {{ 'selected' if document_type.icone == 'bi-shield-check' else '' }}>Segurança</option>
+                                        <option value="bi-graph-up" {{ 'selected' if document_type.icone == 'bi-graph-up' else '' }}>Relatório</option>
+                                        <option value="bi-award" {{ 'selected' if document_type.icone == 'bi-award' else '' }}>Certificação</option>
+                                        <option value="bi-bookmark" {{ 'selected' if document_type.icone == 'bi-bookmark' else '' }}>Política</option>
+                                        <option value="bi-book" {{ 'selected' if document_type.icone == 'bi-book' else '' }}>Manual</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('document_types.index') }}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Salvar Alterações
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Atualizar preview da cor
+document.getElementById('cor').addEventListener('change', function() {
+    document.getElementById('colorPreview').style.backgroundColor = this.value;
+});
+
+// Atualizar preview do ícone
+document.getElementById('icone').addEventListener('change', function() {
+    const iconPreview = document.getElementById('iconePreview');
+    iconPreview.className = this.value;
+});
+
+// Validação do formulário
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+</script>
+{% endblock %}

@@ -7,6 +7,27 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
 
+class DocumentType(db.Model):
+    """Modelo de tipos de documentos dinâmicos"""
+    __tablename__ = 'document_types'
+
+    id = db.Column(db.Integer, primary_key=True)
+    codigo = db.Column(db.String(20), unique=True, nullable=False)
+    nome = db.Column(db.String(100), nullable=False)
+    descricao = db.Column(db.Text)
+    cor = db.Column(db.String(7), default='#007bff')  # Cor hexadecimal para identificação
+    icone = db.Column(db.String(50), default='bi-file-text')  # Classe do ícone Bootstrap
+    ativo = db.Column(db.Boolean, default=True)
+    data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
+    criado_por_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+    # Relacionamentos
+    criado_por = db.relationship('User', backref='tipos_documentos_criados')
+    documentos = db.relationship('Document', backref='tipo_documento_obj', foreign_keys='Document.tipo_documento_id')
+
+    def __repr__(self):
+        return f'<DocumentType {self.codigo}: {self.nome}>'
+
 class User(UserMixin, db.Model):
     """Modelo de usuário do sistema"""
     __tablename__ = 'users'
@@ -84,7 +105,8 @@ class Document(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     codigo = db.Column(db.String(50), unique=True, nullable=False)
     titulo = db.Column(db.String(200), nullable=False)
-    tipo = db.Column(db.String(50), nullable=False)  # procedimento, instrucao, politica, etc
+    tipo = db.Column(db.String(50), nullable=False)  # procedimento, instrucao, politica, etc (mantido para compatibilidade)
+    tipo_documento_id = db.Column(db.Integer, db.ForeignKey('document_types.id'))  # Novo campo para tipos dinâmicos
     status = db.Column(db.String(50), default='rascunho')  # rascunho, em_revisao, aprovado, obsoleto
     versao_atual = db.Column(db.String(10), default='1.0')
     data_criacao = db.Column(db.DateTime, default=datetime.utcnow)

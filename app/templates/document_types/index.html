@@ -1,0 +1,188 @@
+
+{% extends "base.html" %}
+
+{% block title %}Tipos de Documentos - Alpha Gestão Documental{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">
+                    <i class="bi bi-tags"></i> Tipos de Documentos
+                    <small class="text-muted">Gerenciar tipos dinâmicos</small>
+                </h1>
+                <a href="{{ url_for('document_types.create') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Novo Tipo
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <form method="GET" class="d-flex">
+                <input type="text" class="form-control me-2" name="search" 
+                       value="{{ search }}" placeholder="Buscar por código ou nome...">
+                <button type="submit" class="btn btn-outline-primary">
+                    <i class="bi bi-search"></i>
+                </button>
+                {% if search %}
+                <a href="{{ url_for('document_types.index') }}" class="btn btn-outline-secondary ms-2">
+                    <i class="bi bi-x"></i>
+                </a>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de Tipos -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    {% if document_types.items %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Nome</th>
+                                    <th>Descrição</th>
+                                    <th>Cor</th>
+                                    <th>Ícone</th>
+                                    <th>Data Criação</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for doc_type in document_types.items %}
+                                <tr>
+                                    <td>
+                                        <span class="badge" style="background-color: {{ doc_type.cor }}">
+                                            {{ doc_type.codigo }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <i class="{{ doc_type.icone }} me-2"></i>
+                                        {{ doc_type.nome }}
+                                    </td>
+                                    <td>{{ doc_type.descricao[:50] }}{% if doc_type.descricao|length > 50 %}...{% endif %}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="color-sample me-2" style="width: 20px; height: 20px; background-color: {{ doc_type.cor }}; border-radius: 3px;"></div>
+                                            {{ doc_type.cor }}
+                                        </div>
+                                    </td>
+                                    <td><i class="{{ doc_type.icone }}"></i></td>
+                                    <td>{{ doc_type.data_criacao.strftime('%d/%m/%Y') }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('document_types.edit', id=doc_type.id) }}" 
+                                               class="btn btn-outline-primary" title="Editar">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-outline-danger" 
+                                                    onclick="confirmDelete({{ doc_type.id }}, '{{ doc_type.nome }}')" 
+                                                    title="Excluir">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginação -->
+                    {% if document_types.pages > 1 %}
+                    <nav aria-label="Paginação">
+                        <ul class="pagination justify-content-center">
+                            {% if document_types.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('document_types.index', page=document_types.prev_num, search=search) }}">
+                                    Anterior
+                                </a>
+                            </li>
+                            {% endif %}
+
+                            {% for page_num in document_types.iter_pages() %}
+                            {% if page_num %}
+                            {% if page_num != document_types.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('document_types.index', page=page_num, search=search) }}">
+                                    {{ page_num }}
+                                </a>
+                            </li>
+                            {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% endif %}
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">…</span>
+                            </li>
+                            {% endif %}
+                            {% endfor %}
+
+                            {% if document_types.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('document_types.index', page=document_types.next_num, search=search) }}">
+                                    Próxima
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-tags text-muted" style="font-size: 3rem;"></i>
+                        <h5 class="text-muted mt-3">Nenhum tipo de documento encontrado</h5>
+                        <p class="text-muted">Crie o primeiro tipo de documento para começar.</p>
+                        <a href="{{ url_for('document_types.create') }}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Criar Primeiro Tipo
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Deseja realmente excluir o tipo de documento <strong id="deleteItemName"></strong>?</p>
+                <p class="text-danger"><small>Esta ação não pode ser desfeita.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function confirmDelete(id, name) {
+    document.getElementById('deleteItemName').textContent = name;
+    document.getElementById('deleteForm').action = '{{ url_for("document_types.delete", id=0) }}'.replace('0', id);
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+</script>
+{% endblock %}
