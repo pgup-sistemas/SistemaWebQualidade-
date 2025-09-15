@@ -7,7 +7,7 @@ channel = "stable-25_05"
 packages = ["cargo", "freetype", "glibcLocales", "lcms2", "libiconv", "libimagequant", "libjpeg", "libtiff", "libwebp", "libxcrypt", "openjpeg", "openssl", "pkg-config", "postgresql", "rustc", "tcl", "tk", "zlib"]
 
 [workflows]
-runButton = "Project"
+runButton = "Document Management System - Port 8000"
 
 [[workflows.workflow]]
 name = "Project"
@@ -29,6 +29,15 @@ waitForPort = 5000
 
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[workflows.workflow]]
+name = "Document Management System - Port 8000"
+author = 47623307
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "uv run python -c \"import os; os.environ['FLASK_RUN_PORT'] = '8000'; exec(open('run.py').read())\""
 
 [[ports]]
 localPort = 5000
