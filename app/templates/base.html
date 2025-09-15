@@ -1,453 +1,566 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() if csrf_token else '' }}">
-    <title>{% block title %}Alpha Gestão Documental{% endblock %}</title>
-
-    <!-- Inicialização de tema (previne FOUC) -->
-    <script>
-        (function() {
-            const savedTheme = localStorage.getItem('theme') || 
-                (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-            document.documentElement.setAttribute('data-theme', savedTheme);
-        })();
-    </script>
-
-    <!-- Bootstrap 5 CSS -->
+    <title>{% block title %}Alpha Gestão - Sistema de Gestão da Qualidade{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link href="{{ url_for('static', filename='css/custom.css') }}" rel="stylesheet">
-
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- TinyMCE -->
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    
     <style>
         :root {
             --sidebar-width: 260px;
-            --navbar-height: 76px;
-            --primary-color: #0d6efd;
-            --sidebar-bg: #212529;
-            --sidebar-text: #adb5bd;
-            --sidebar-hover: #495057;
-            --sidebar-active: #0d6efd;
+            --sidebar-collapsed-width: 60px;
+            --primary-color: #2c5aa0;
+            --secondary-color: #f8f9fa;
+            --text-color: #333;
+            --border-color: #dee2e6;
+            --hover-color: #e9ecef;
         }
 
         body {
-            padding-top: var(--navbar-height);
-            background-color: #f8f9fa;
-        }
-
-        .navbar-brand img {
-            height: 40px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
         }
 
         /* Sidebar Styles */
         .sidebar {
             position: fixed;
-            top: var(--navbar-height);
-            left: -var(--sidebar-width);
+            top: 0;
+            left: 0;
+            height: 100vh;
             width: var(--sidebar-width);
-            height: calc(100vh - var(--navbar-height));
-            background: var(--sidebar-bg);
-            transition: left 0.3s ease;
-            z-index: 1040;
-            overflow-y: auto;
+            background: linear-gradient(135deg, var(--primary-color) 0%, #1e4080 100%);
+            transition: width 0.3s ease;
+            z-index: 1000;
+            overflow-x: hidden;
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
         }
 
-        .sidebar.show {
-            left: 0;
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
         }
 
         .sidebar-header {
-            padding: 1.5rem 1rem;
-            border-bottom: 1px solid #495057;
-        }
-
-        .sidebar-header h6 {
-            color: #fff;
-            margin: 0;
-            font-size: 0.9rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .sidebar-nav {
-            padding: 1rem 0;
-        }
-
-        .sidebar-section {
-            margin-bottom: 1.5rem;
-        }
-
-        .sidebar-section-title {
-            padding: 0.5rem 1rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            color: #6c757d;
-            letter-spacing: 0.5px;
-            border-bottom: 1px solid #495057;
-            margin-bottom: 0.5rem;
-        }
-
-        .sidebar-nav .nav-link {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
             display: flex;
             align-items: center;
-            padding: 0.75rem 1rem;
-            color: var(--sidebar-text);
-            text-decoration: none;
-            transition: all 0.2s ease;
-            border-left: 3px solid transparent;
+            justify-content: space-between;
+            min-height: 70px;
         }
 
-        .sidebar-nav .nav-link:hover {
-            background-color: var(--sidebar-hover);
-            color: #fff;
-            transform: translateX(3px);
-        }
-
-        .sidebar-nav .nav-link.active {
-            background-color: rgba(13, 110, 253, 0.1);
-            color: var(--sidebar-active);
-            border-left-color: var(--sidebar-active);
-        }
-
-        .sidebar-nav .nav-link i {
-            width: 20px;
-            margin-right: 0.75rem;
-            font-size: 1rem;
-            text-align: center;
-        }
-
-        .sidebar-nav .nav-link .badge {
-            margin-left: auto;
-            font-size: 0.7rem;
-        }
-
-        .sidebar-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1030;
-            display: none;
-            opacity: 0;
+        .sidebar-header h4 {
+            color: white;
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            white-space: nowrap;
+            opacity: 1;
             transition: opacity 0.3s ease;
         }
 
-        .sidebar-overlay.show {
-            display: block;
-            opacity: 1;
+        .sidebar.collapsed .sidebar-header h4 {
+            opacity: 0;
         }
 
         .sidebar-toggle {
             background: none;
             border: none;
-            color: #fff;
+            color: white;
             font-size: 1.2rem;
+            cursor: pointer;
             padding: 0.5rem;
-            margin-right: 0.5rem;
+            border-radius: 0.25rem;
+            transition: background-color 0.2s ease;
         }
 
+        .sidebar-toggle:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .sidebar-menu {
+            padding: 1rem 0;
+        }
+
+        .menu-item {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            position: relative;
+        }
+
+        .menu-item:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+            text-decoration: none;
+        }
+
+        .menu-item.active {
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+            border-right: 3px solid white;
+        }
+
+        .menu-item i {
+            width: 20px;
+            margin-right: 0.75rem;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .menu-text {
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .sidebar.collapsed .menu-text {
+            opacity: 0;
+        }
+
+        .submenu {
+            background-color: rgba(0,0,0,0.1);
+            padding-left: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .submenu.show {
+            max-height: 500px;
+        }
+
+        .submenu .menu-item {
+            padding-left: 3rem;
+            font-size: 0.9rem;
+        }
+
+        .submenu .menu-item i {
+            font-size: 0.9rem;
+        }
+
+        /* Main Content */
         .main-content {
+            margin-left: var(--sidebar-width);
             transition: margin-left 0.3s ease;
-            min-height: calc(100vh - var(--navbar-height));
+            min-height: 100vh;
         }
 
-        /* Desktop Styles */
-        @media (min-width: 992px) {
-            .sidebar {
-                left: 0;
-                position: fixed;
-            }
+        .main-content.expanded {
+            margin-left: var(--sidebar-collapsed-width);
+        }
 
+        .main-header {
+            background: white;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .main-body {
+            padding: 1.5rem;
+        }
+
+        /* User Menu */
+        .user-menu {
+            margin-top: auto;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 1rem;
+        }
+
+        .user-info {
+            padding: 0.75rem 1rem;
+            color: rgba(255,255,255,0.9);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .user-info .user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .user-info .user-role {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            
             .main-content {
-                margin-left: var(--sidebar-width);
+                margin-left: 0;
             }
-
-            .sidebar-overlay {
-                display: none !important;
-            }
-
-            .sidebar-toggle {
+            
+            .mobile-overlay {
                 display: none;
-            }
-        }
-
-        /* Mobile adjustments */
-        @media (max-width: 991.98px) {
-            .sidebar {
-                width: 280px;
-                left: -280px;
-            }
-
-            .sidebar.show {
+                position: fixed;
+                top: 0;
                 left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0,0,0,0.5);
+                z-index: 999;
+            }
+            
+            .mobile-overlay.show {
+                display: block;
             }
         }
 
-        /* Scrollbar customization for sidebar */
+        /* Custom scrollbar for sidebar */
         .sidebar::-webkit-scrollbar {
             width: 4px;
         }
 
         .sidebar::-webkit-scrollbar-track {
-            background: #2c3034;
+            background: rgba(255,255,255,0.1);
         }
 
         .sidebar::-webkit-scrollbar-thumb {
-            background: #495057;
+            background: rgba(255,255,255,0.3);
             border-radius: 2px;
         }
 
-        .sidebar::-webkit-scrollbar-thumb:hover {
-            background: #6c757d;
+        /* Badges */
+        .badge-notification {
+            background-color: #dc3545;
+            color: white;
+            border-radius: 10px;
+            padding: 0.2rem 0.5rem;
+            font-size: 0.7rem;
+            margin-left: auto;
+        }
+
+        /* Cards */
+        .card {
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: #1e4080;
+            border-color: #1e4080;
         }
     </style>
-
-    {% block extra_head %}{% endblock %}
 </head>
-<body class="sidebar-collapsed">
-    {% if current_user.is_authenticated %}
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
-        <div class="container-fluid">
-            <button class="sidebar-toggle d-lg-none" onclick="toggleSidebar()">
+<body>
+    <!-- Mobile overlay -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+    
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h4><i class="bi bi-shield-check me-2"></i>Alpha Gestão</h4>
+            <button class="sidebar-toggle" id="sidebarToggle">
                 <i class="bi bi-list"></i>
             </button>
-            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('dashboard.index') }}">
-                <i class="bi bi-shield-check me-2" style="font-size: 1.5rem;"></i>
-                <strong>Alpha Gestão</strong>
+        </div>
+        
+        <div class="sidebar-menu">
+            <!-- Dashboard -->
+            <a href="{{ url_for('dashboard.index') }}" class="menu-item {{ 'active' if request.endpoint == 'dashboard.index' }}">
+                <i class="bi bi-speedometer2"></i>
+                <span class="menu-text">Dashboard</span>
+            </a>
+            
+            <!-- Documentos -->
+            <div class="menu-group">
+                <button class="menu-item" onclick="toggleSubmenu('documents-menu')">
+                    <i class="bi bi-file-earmark-text"></i>
+                    <span class="menu-text">Documentos</span>
+                    <i class="bi bi-chevron-down ms-auto"></i>
+                </button>
+                <div class="submenu" id="documents-menu">
+                    <a href="{{ url_for('documents.index') }}" class="menu-item {{ 'active' if request.endpoint == 'documents.index' }}">
+                        <i class="bi bi-list"></i>
+                        <span class="menu-text">Listar Documentos</span>
+                    </a>
+                    <a href="{{ url_for('documents.create') }}" class="menu-item {{ 'active' if request.endpoint == 'documents.create' }}">
+                        <i class="bi bi-plus-circle"></i>
+                        <span class="menu-text">Novo Documento</span>
+                    </a>
+                    <a href="{{ url_for('documents.drafts') }}" class="menu-item {{ 'active' if request.endpoint == 'documents.drafts' }}">
+                        <i class="bi bi-file-earmark-check"></i>
+                        <span class="menu-text">Rascunhos</span>
+                    </a>
+                    <a href="{{ url_for('document_types.index') }}" class="menu-item {{ 'active' if request.endpoint.startswith('document_types') }}">
+                        <i class="bi bi-tags"></i>
+                        <span class="menu-text">Tipos de Documento</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Aprovações -->
+            <a href="{{ url_for('approvals.index') }}" class="menu-item {{ 'active' if request.endpoint.startswith('approvals') }}">
+                <i class="bi bi-check-circle"></i>
+                <span class="menu-text">Aprovações</span>
+                {% if pending_approvals and pending_approvals > 0 %}
+                <span class="badge-notification">{{ pending_approvals }}</span>
+                {% endif %}
+            </a>
+            
+            <!-- Equipamentos -->
+            {% if current_user.perfil in ['administrador', 'gestor'] %}
+            <div class="menu-group">
+                <button class="menu-item" onclick="toggleSubmenu('equipments-menu')">
+                    <i class="bi bi-gear"></i>
+                    <span class="menu-text">Equipamentos</span>
+                    <i class="bi bi-chevron-down ms-auto"></i>
+                </button>
+                <div class="submenu" id="equipments-menu">
+                    <a href="{{ url_for('equipments.index') }}" class="menu-item {{ 'active' if request.endpoint == 'equipments.index' }}">
+                        <i class="bi bi-list"></i>
+                        <span class="menu-text">Listar Equipamentos</span>
+                    </a>
+                    <a href="{{ url_for('equipments.create') }}" class="menu-item {{ 'active' if request.endpoint == 'equipments.create' }}">
+                        <i class="bi bi-plus-circle"></i>
+                        <span class="menu-text">Novo Equipamento</span>
+                    </a>
+                    <a href="{{ url_for('equipment_types.index') }}" class="menu-item {{ 'active' if request.endpoint.startswith('equipment_types') }}">
+                        <i class="bi bi-tags"></i>
+                        <span class="menu-text">Tipos de Equipamento</span>
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Não Conformidades -->
+            <div class="menu-group">
+                <button class="menu-item" onclick="toggleSubmenu('nonconformities-menu')">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <span class="menu-text">Não Conformidades</span>
+                    <i class="bi bi-chevron-down ms-auto"></i>
+                </button>
+                <div class="submenu" id="nonconformities-menu">
+                    <a href="{{ url_for('nonconformities.index') }}" class="menu-item {{ 'active' if request.endpoint == 'nonconformities.index' }}">
+                        <i class="bi bi-list"></i>
+                        <span class="menu-text">Listar NCs</span>
+                    </a>
+                    <a href="{{ url_for('nonconformities.create') }}" class="menu-item {{ 'active' if request.endpoint == 'nonconformities.create' }}">
+                        <i class="bi bi-plus-circle"></i>
+                        <span class="menu-text">Nova NC</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Auditorias -->
+            {% if current_user.perfil in ['administrador', 'gestor'] %}
+            <div class="menu-group">
+                <button class="menu-item" onclick="toggleSubmenu('audits-menu')">
+                    <i class="bi bi-search"></i>
+                    <span class="menu-text">Auditorias</span>
+                    <i class="bi bi-chevron-down ms-auto"></i>
+                </button>
+                <div class="submenu" id="audits-menu">
+                    <a href="{{ url_for('audits.index') }}" class="menu-item {{ 'active' if request.endpoint == 'audits.index' }}">
+                        <i class="bi bi-list"></i>
+                        <span class="menu-text">Listar Auditorias</span>
+                    </a>
+                    <a href="{{ url_for('audits.create') }}" class="menu-item {{ 'active' if request.endpoint == 'audits.create' }}">
+                        <i class="bi bi-plus-circle"></i>
+                        <span class="menu-text">Nova Auditoria</span>
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Relatórios -->
+            <a href="{{ url_for('reports.index') }}" class="menu-item {{ 'active' if request.endpoint.startswith('reports') }}">
+                <i class="bi bi-graph-up"></i>
+                <span class="menu-text">Relatórios</span>
+            </a>
+            
+            <!-- Administração -->
+            {% if current_user.perfil == 'administrador' %}
+            <div class="menu-group">
+                <button class="menu-item" onclick="toggleSubmenu('admin-menu')">
+                    <i class="bi bi-gear-fill"></i>
+                    <span class="menu-text">Administração</span>
+                    <i class="bi bi-chevron-down ms-auto"></i>
+                </button>
+                <div class="submenu" id="admin-menu">
+                    <a href="{{ url_for('users.index') }}" class="menu-item {{ 'active' if request.endpoint.startswith('users') }}">
+                        <i class="bi bi-people"></i>
+                        <span class="menu-text">Usuários</span>
+                    </a>
+                    <a href="{{ url_for('groups.index') }}" class="menu-item {{ 'active' if request.endpoint.startswith('groups') }}">
+                        <i class="bi bi-diagram-3"></i>
+                        <span class="menu-text">Grupos/Setores</span>
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- User Menu -->
+        <div class="user-menu">
+            <div class="user-info">
+                <div class="user-name">{{ current_user.nome_completo or current_user.username }}</div>
+                <div class="user-role">{{ current_user.perfil|title }}</div>
+            </div>
+            <a href="{{ url_for('auth.profile') }}" class="menu-item">
+                <i class="bi bi-person"></i>
+                <span class="menu-text">Perfil</span>
+            </a>
+            <a href="{{ url_for('auth.logout') }}" class="menu-item">
+                <i class="bi bi-box-arrow-right"></i>
+                <span class="menu-text">Sair</span>
             </a>
         </div>
     </nav>
-
-    <!-- Sidebar overlay para mobile -->
-    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
-
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <h6><i class="bi bi-shield-check me-2"></i>Sistema Alpha</h6>
-        </div>
-
-        <div class="sidebar-nav">
-            <!-- Dashboard -->
-            <div class="sidebar-section">
-                <a class="nav-link {{ 'active' if request.endpoint == 'dashboard.index' }}" href="{{ url_for('dashboard.index') }}">
-                    <i class="bi bi-speedometer2"></i>
-                    <span>Dashboard</span>
-                </a>
-            </div>
-
-            <!-- Gestão Documental -->
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">Gestão Documental</div>
-
-                <a class="nav-link {{ 'active' if request.blueprint == 'documents' }}" href="{{ url_for('documents.index') }}">
-                    <i class="bi bi-file-text"></i>
-                    <span>Documentos</span>
-                    {% if notification_counts.documentos_vencendo > 0 %}
-                    <span class="badge bg-warning">{{ notification_counts.documentos_vencendo }}</span>
-                    {% endif %}
-                </a>
-
-                {% if current_user.can_create_documents() %}
-                <a class="nav-link {{ 'active' if request.endpoint == 'documents.create' }}" href="{{ url_for('documents.create') }}">
-                    <i class="bi bi-plus-circle"></i>
-                    <span>Criar Documento</span>
-                </a>
-                {% endif %}
-
-                {% if current_user.can_admin() %}
-                <a class="nav-link {{ 'active' if request.blueprint == 'document_types' }}" href="{{ url_for('document_types.index') }}">
-                    <i class="bi bi-tags"></i>
-                    <span>Tipos de Documento</span>
-                </a>
-                {% endif %}
-
-                {% if current_user.can_approve_documents() %}
-                <a class="nav-link {{ 'active' if request.blueprint == 'approvals' }}" href="{{ url_for('approvals.index') }}">
-                    <i class="bi bi-check-circle"></i>
-                    <span>Aprovações</span>
-                    {% if notification_counts.aprovacoes_pendentes > 0 %}
-                    <span class="badge bg-danger">{{ notification_counts.aprovacoes_pendentes }}</span>
-                    {% endif %}
-                </a>
-                {% endif %}
-            </div>
-
-            <!-- Administração -->
-            {% if current_user.can_admin() %}
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">Administração</div>
-
-                <a class="nav-link {{ 'active' if request.blueprint == 'users' }}" href="{{ url_for('users.index') }}">
-                    <i class="bi bi-people"></i>
-                    <span>Usuários</span>
-                </a>
-
-                <a class="nav-link {{ 'active' if request.blueprint == 'groups' }}" href="{{ url_for('groups.index') }}">
-                    <i class="bi bi-diagram-3"></i>
-                    <span>Grupos/Setores</span>
-                </a>
-            </div>
-            {% endif %}
-
-            <!-- Qualidade -->
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">Gestão da Qualidade</div>
-
-                <a class="nav-link {{ 'active' if request.blueprint == 'audits' }}" href="{{ url_for('audits.index') }}">
-                    <i class="bi bi-search"></i>
-                    <span>Auditorias</span>
-                </a>
-
-                <a class="nav-link {{ 'active' if request.blueprint == 'nonconformities' }}" href="{{ url_for('nonconformities.index') }}">
-                    <i class="bi bi-exclamation-triangle"></i>
-                    <span>Não Conformidades</span>
-                    {% if notification_counts.ncs_abertas > 0 %}
-                    <span class="badge bg-warning">{{ notification_counts.ncs_abertas }}</span>
-                    {% endif %}
-                </a>
-
-                <a class="nav-link {{ 'active' if request.blueprint == 'equipments' }}" href="{{ url_for('equipments.index') }}">
-                    <i class="bi bi-gear"></i>
-                    <span>Equipamentos</span>
-                    {% if notification_counts.calibracoes_vencendo > 0 %}
-                    <span class="badge bg-warning">{{ notification_counts.calibracoes_vencendo }}</span>
-                    {% endif %}
-                </a>
-
-                {% if current_user.can_admin() %}
-                <a class="nav-link {{ 'active' if request.blueprint == 'equipment_types' }}" href="{{ url_for('equipment_types.index') }}">
-                    <i class="bi bi-tools"></i>
-                    <span>Tipos de Equipamento</span>
-                </a>
-                {% endif %}
-            </div>
-
-            <!-- Relatórios -->
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">Relatórios</div>
-
-                <a class="nav-link {{ 'active' if request.blueprint == 'reports' }}" href="{{ url_for('reports.index') }}">
-                    <i class="bi bi-graph-up"></i>
-                    <span>Dashboard Relatórios</span>
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        <div class="position-fixed top-0 end-0 p-3" style="z-index: 1050;">
-            {% for category, message in messages %}
-            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-    {% endwith %}
-
+    
     <!-- Main Content -->
-    <main class="main-content">
-        {% block content %}{% endblock %}
+    <main class="main-content" id="mainContent">
+        <header class="main-header">
+            <div class="d-flex justify-content-between align-items-center w-100">
+                <div>
+                    <button class="btn btn-link d-md-none" id="mobileSidebarToggle">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <h5 class="mb-0">{% block page_title %}Dashboard{% endblock %}</h5>
+                </div>
+                <div class="d-flex align-items-center">
+                    <span class="text-muted me-3">{{ current_user.nome_completo or current_user.username }}</span>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}"><i class="bi bi-person me-2"></i>Perfil</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-right me-2"></i>Sair</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <div class="main-body">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else 'success' if category == 'success' else 'info' }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            {% block content %}{% endblock %}
+        </div>
     </main>
-
-    <!-- Bootstrap 5 JS -->
+    
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
+    
     <script>
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.querySelector('.sidebar-overlay');
-            const body = document.body;
-
-            sidebar.classList.toggle('show');
-            overlay.classList.toggle('show');
-
-            // Prevenir scroll do body quando sidebar estiver aberto no mobile
-            if (window.innerWidth < 992) {
-                if (sidebar.classList.contains('show')) {
-                    body.style.overflow = 'hidden';
-                } else {
-                    body.style.overflow = '';
-                }
+        // Sidebar functionality
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const mobileSidebarToggle = document.getElementById('mobileSidebarToggle');
+        const mobileOverlay = document.getElementById('mobileOverlay');
+        
+        // Desktop sidebar toggle
+        sidebarToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+            
+            // Store state in localStorage
+            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+        });
+        
+        // Mobile sidebar toggle
+        mobileSidebarToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('mobile-open');
+            mobileOverlay.classList.toggle('show');
+        });
+        
+        // Close mobile sidebar when clicking overlay
+        mobileOverlay.addEventListener('click', function() {
+            sidebar.classList.remove('mobile-open');
+            mobileOverlay.classList.remove('show');
+        });
+        
+        // Restore sidebar state
+        if (localStorage.getItem('sidebarCollapsed') === 'true') {
+            sidebar.classList.add('collapsed');
+            mainContent.classList.add('expanded');
+        }
+        
+        // Submenu toggle
+        function toggleSubmenu(menuId) {
+            const submenu = document.getElementById(menuId);
+            const isOpen = submenu.classList.contains('show');
+            
+            // Close all submenus
+            document.querySelectorAll('.submenu').forEach(menu => {
+                menu.classList.remove('show');
+            });
+            
+            // Toggle current submenu
+            if (!isOpen) {
+                submenu.classList.add('show');
             }
         }
-
-        // Fechar sidebar ao clicar em um link no mobile
+        
+        // Auto-open active submenu
         document.addEventListener('DOMContentLoaded', function() {
-            const sidebarLinks = document.querySelectorAll('.sidebar .nav-link');
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.querySelector('.sidebar-overlay');
-
-            sidebarLinks.forEach(link => {
-                link.addEventListener('click', function() {
-                    if (window.innerWidth < 992 && sidebar.classList.contains('show')) {
-                        toggleSidebar();
-                    }
-                });
-            });
-
-            // Fechar sidebar no redimensionamento da tela
-            window.addEventListener('resize', function() {
-                if (window.innerWidth >= 992) {
-                    sidebar.classList.remove('show');
-                    overlay.classList.remove('show');
-                    document.body.style.overflow = '';
+            const activeMenuItem = document.querySelector('.submenu .menu-item.active');
+            if (activeMenuItem) {
+                const parentSubmenu = activeMenuItem.closest('.submenu');
+                if (parentSubmenu) {
+                    parentSubmenu.classList.add('show');
                 }
-            });
-
-            // Suporte a tecla ESC para fechar sidebar
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && sidebar.classList.contains('show')) {
-                    toggleSidebar();
-                }
-            });
-        });
-
-        // Melhorar a experiência de navegação
-        document.addEventListener('DOMContentLoaded', function() {
-            // Adicionar indicador de carregamento nos links
-            const navLinks = document.querySelectorAll('.sidebar .nav-link');
-            navLinks.forEach(link => {
-                link.addEventListener('click', function() {
-                    // Adicionar indicador visual de loading
-                    const icon = this.querySelector('i');
-                    const originalClass = icon.className;
-                    icon.className = 'bi bi-arrow-clockwise';
-                    icon.style.animation = 'spin 1s linear infinite';
-
-                    // Restaurar após um tempo (caso a navegação falhe)
-                    setTimeout(() => {
-                        icon.className = originalClass;
-                        icon.style.animation = '';
-                    }, 3000);
-                });
-            });
-        });
-
-        // Animação de spin para loading
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
             }
-        `;
-        document.head.appendChild(style);
+        });
+        
+        // Close mobile sidebar on window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                sidebar.classList.remove('mobile-open');
+                mobileOverlay.classList.remove('show');
+            }
+        });
     </script>
-
-    {% block extra_scripts %}{% endblock %}
+    
+    {% block scripts %}{% endblock %}
 </body>
 </html>
