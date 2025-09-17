@@ -88,51 +88,44 @@ body {
 }
 
 /* Quill Editor Styles */
-#quill-toolbar {
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
+#toolbar {
+    border: 1px solid #ccc;
     border-bottom: none;
-    border-radius: 8px 8px 0 0;
+    background: #f8f9fa;
     padding: 8px;
 }
 
-#quill-editor {
-    border: 1px solid #dee2e6;
-    border-top: none;
-    border-radius: 0 0 8px 8px;
-    background: white;
-}
-
-.ql-editor {
-    min-height: 400px;
-    font-size: 14px;
-    line-height: 1.6;
-    padding: 15px;
+#editor {
+    border: 1px solid #ccc !important;
+    border-top: none !important;
 }
 
 .ql-toolbar {
     border: none !important;
-    padding: 8px 12px;
+    padding: 8px !important;
 }
 
-.ql-toolbar .ql-picker-label {
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 4px 8px;
+.ql-container {
+    border: none !important;
+    font-size: 14px;
 }
 
-.ql-toolbar .ql-picker-options {
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    background: white;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+.ql-editor {
+    min-height: 300px !important;
+    line-height: 1.6;
+    padding: 15px;
+}
+
+.ql-toolbar .ql-formats {
+    margin-right: 15px;
 }
 
 .ql-toolbar button {
-    border: 1px solid transparent;
-    border-radius: 4px;
+    width: 28px;
+    height: 28px;
     margin: 2px;
-    padding: 6px 8px;
+    border: 1px solid transparent;
+    border-radius: 3px;
 }
 
 .ql-toolbar button:hover {
@@ -143,7 +136,17 @@ body {
 .ql-toolbar button.ql-active {
     background: #007bff;
     color: white;
-    border-color: #007bff;
+}
+
+.ql-toolbar .ql-picker {
+    color: #444;
+}
+
+.ql-toolbar .ql-picker-options {
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
 /* Estilo para o placeholder */
@@ -152,21 +155,17 @@ body {
     font-style: normal;
 }
 
-/* Responsividade do editor */
+/* Responsividade */
 @media (max-width: 768px) {
-    .ql-editor {
-        min-height: 300px;
-        padding: 10px;
-    }
-    
-    .ql-toolbar {
-        padding: 6px;
+    .ql-toolbar .ql-formats {
+        margin-right: 8px;
     }
     
     .ql-toolbar button {
-        padding: 4px 6px;
-        margin: 1px;
+        width: 24px;
+        height: 24px;
     }
+}
 }
 
 /* Formulários */
