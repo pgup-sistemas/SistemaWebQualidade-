@@ -131,7 +131,9 @@
                             <label class="form-label">Conteúdo *</label>
 
                             <!-- Container do Editor -->
-                            <div id="quill-editor" style="height: 400px; border: 1px solid #ced4da; border-radius: 0.375rem;"></div>
+                            <div class="editor-wrapper">
+                                <div id="editor-container"></div>
+                            </div>
 
                             <!-- Campo oculto para submissão -->
                             <textarea id="conteudo" name="conteudo" required style="display: none;"></textarea>
@@ -182,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     try {
         // Inicializar Quill Editor
-        quill = new Quill('#quill-editor', {
+        quill = new Quill('#editor-container', {
             theme: 'snow',
             placeholder: 'Digite o conteúdo do documento aqui...',
             modules: {

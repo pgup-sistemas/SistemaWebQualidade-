@@ -1,6 +1,13 @@
 // Alpha Gestão Documental - Custom JavaScript
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Debug: Verificar se Quill está disponível
+    if (typeof Quill !== 'undefined') {
+        console.log('✅ Quill.js carregado com sucesso');
+    } else {
+        console.error('❌ Quill.js não foi carregado');
+    }
+
     // Set current date if moment is available
     if (typeof moment !== 'undefined') {
         const dateElement = document.getElementById('currentDate');
