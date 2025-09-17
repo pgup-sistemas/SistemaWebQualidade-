@@ -6,6 +6,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_wtf.csrf import CSRFProtect
+from werkzeug.middleware.proxy_fix import ProxyFix
+from werkzeug.exceptions import HTTPException
 from config import Config
 import os
 
@@ -23,13 +25,17 @@ def create_app():
     # Initialize logging
     Config.init_logging(app)
 
+    # Configure proxy fix for Replit environment
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+    app.config['PREFERRED_URL_SCHEME'] = 'https'
+
     # Inicializar extensões com a aplicação
     db.init_app(app)
     login_manager.init_app(app)
     mail.init_app(app)
     csrf.init_app(app)
 
-    # Add security headers for production
+    # Add security headers for production and cache control for development
     @app.after_request
     def add_security_headers(response):
         """Add security headers to all responses"""
@@ -48,6 +54,11 @@ def create_app():
             # Remove server header
             if 'Server' in response.headers:
                 response.headers.pop('Server')
+        else:
+            # Development settings for Replit iframe compatibility
+            response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+            response.headers['Pragma'] = 'no-cache'
+            response.headers['Expires'] = '0'
 
         return response
 
@@ -83,14 +94,24 @@ def create_app():
     app.register_blueprint(equipment_types.bp, url_prefix='/equipment_types')
     app.register_blueprint(docs.bp, url_prefix='/docs')
 
-    # Tratamento de erro de banco de dados
+    # Add favicon route
+    @app.route('/favicon.ico')
+    def favicon():
+        from flask import send_from_directory
+        return send_from_directory(app.static_folder or 'static', 'favicon.ico')
+
+    # Tratamento de erros de banco de dados apenas (não captura HTTP errors)
     @app.errorhandler(Exception)
     def handle_db_error(error):
-        """Trata erros de conexão com banco de dados"""
+        """Trata apenas erros de aplicação, não HTTP errors"""
+        # Don't interfere with HTTP exceptions (like 404, 405, etc.)
+        if isinstance(error, HTTPException):
+            return error
+
         # Log the full error for debugging
         app.logger.error(f"Application error: {error}", exc_info=True)
 
-        # Handle database connection errors
+        # Handle database connection errors specifically
         if any(err_text in str(error) for err_text in [
                 'SSL connection has been closed', 'psycopg2.OperationalError',
                 'connection closed', 'server closed the connection'
