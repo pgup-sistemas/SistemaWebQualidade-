@@ -114,8 +114,38 @@
                     <div class="card-body">
                         <div class="mb-3">
                             <label class="form-label">Conteúdo *</label>
-                            <div id="editor" style="height: 400px;"></div>
+
+                            <!-- Container para o editor -->
+                            <div id="quill-toolbar" class="ql-toolbar">
+                                <select class="ql-header">
+                                    <option value="1">Título 1</option>
+                                    <option value="2">Título 2</option>
+                                    <option value="3">Título 3</option>
+                                    <option selected>Normal</option>
+                                </select>
+                                <button type="button" class="ql-bold" title="Negrito"></button>
+                                <button type="button" class="ql-italic" title="Itálico"></button>
+                                <button type="button" class="ql-underline" title="Sublinhado"></button>
+                                <button type="button" class="ql-strike" title="Riscado"></button>
+                                <button type="button" class="ql-list" value="ordered" title="Lista Numerada"></button>
+                                <button type="button" class="ql-list" value="bullet" title="Lista com Marcadores"></button>
+                                <button type="button" class="ql-align" value="" title="Alinhar à Esquerda"></button>
+                                <button type="button" class="ql-align" value="center" title="Centralizar"></button>
+                                <button type="button" class="ql-align" value="right" title="Alinhar à Direita"></button>
+                                <button type="button" class="ql-align" value="justify" title="Justificar"></button>
+                                <button type="button" class="ql-link" title="Link"></button>
+                                <button type="button" class="ql-image" title="Imagem"></button>
+                                <button type="button" class="ql-clean" title="Limpar Formatação"></button>
+                            </div>
+
+                            <!-- Container do editor -->
+                            <div id="quill-editor" class="border" style="min-height: 400px; background: white;">
+                                <p>Digite o conteúdo do documento aqui...</p>
+                            </div>
+
+                            <!-- Campo oculto para submissão -->
                             <textarea id="conteudo" name="conteudo" required style="display: none;"></textarea>
+
                             <div class="invalid-feedback">
                                 O conteúdo é obrigatório.
                             </div>
@@ -129,10 +159,10 @@
                                 </small>
                             </div>
                             <div>
-                                <button type="submit" name="action" value="submit" class="btn btn-primary me-2">
+                                <button type="submit" name="action" value="submit" class="btn btn-primary me-2" id="btn-criar">
                                     <i class="bi bi-check-circle"></i> Criar Documento
                                 </button>
-                                <button type="submit" name="action" value="draft" class="btn btn-outline-warning">
+                                <button type="submit" name="action" value="draft" class="btn btn-outline-warning" id="btn-rascunho">
                                     <i class="bi bi-file-earmark"></i> Salvar Rascunho
                                 </button>
                             </div>
@@ -182,329 +212,245 @@
 
 {% block extra_scripts %}
 <script>
-// Inicializar Quill.js Editor - Completamente GRATUITO
-var quill = new Quill('#editor', {
-    theme: 'snow',
-    placeholder: 'Digite o conteúdo do documento aqui...',
-    modules: {
-        toolbar: [
-            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-            [{ 'font': [] }],
-            [{ 'size': ['small', false, 'large', 'huge'] }],
-            ['bold', 'italic', 'underline', 'strike'],
-            [{ 'color': [] }, { 'background': [] }],
-            [{ 'script': 'sub'}, { 'script': 'super' }],
-            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-            [{ 'indent': '-1'}, { 'indent': '+1' }],
-            [{ 'direction': 'rtl' }],
-            [{ 'align': [] }],
-            ['link', 'image', 'video'],
-            ['blockquote', 'code-block'],
-            ['clean']
-        ],
-        history: {
-            delay: 1000,
-            maxStack: 50,
-            userOnly: true
-        }
+// Aguardar o carregamento completo da página
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Inicializando Quill Editor...');
+
+    // Verificar se Quill está disponível
+    if (typeof Quill === 'undefined') {
+        console.error('Quill.js não foi carregado!');
+        return;
     }
-});
 
-// Campo oculto para envio do formulário
-const hiddenInput = document.getElementById('conteudo');
+    // Configuração do Quill
+    const quillOptions = {
+        theme: 'snow',
+        placeholder: 'Digite o conteúdo do documento aqui...',
+        modules: {
+            toolbar: '#quill-toolbar',
+            history: {
+                delay: 1000,
+                maxStack: 50,
+                userOnly: true
+            }
+        }
+    };
 
-// Templates para documentos de qualidade
-const templates = {
-    pop: `<h1 style="text-align: center;">PROCEDIMENTO OPERACIONAL PADRÃO</h1>
+    // Inicializar o editor
+    let quill;
+    try {
+        quill = new Quill('#quill-editor', quillOptions);
+        console.log('Quill inicializado com sucesso!');
+    } catch (error) {
+        console.error('Erro ao inicializar Quill:', error);
+        return;
+    }
 
+    // Campo oculto para envio
+    const hiddenInput = document.getElementById('conteudo');
+
+    // Templates para documentos
+    const templates = {
+        pop: `<h1>PROCEDIMENTO OPERACIONAL PADRÃO</h1>
 <table style="width: 100%; border-collapse: collapse; border: 1px solid #000;">
     <tr><td style="padding: 8px; border: 1px solid #000;"><strong>Código:</strong></td><td style="padding: 8px; border: 1px solid #000;">[CÓDIGO]</td><td style="padding: 8px; border: 1px solid #000;"><strong>Versão:</strong></td><td style="padding: 8px; border: 1px solid #000;">1.0</td></tr>
     <tr><td style="padding: 8px; border: 1px solid #000;"><strong>Título:</strong></td><td colspan="3" style="padding: 8px; border: 1px solid #000;">[TÍTULO DO PROCEDIMENTO]</td></tr>
-    <tr><td style="padding: 8px; border: 1px solid #000;"><strong>Área/Setor:</strong></td><td style="padding: 8px; border: 1px solid #000;">[ÁREA]</td><td style="padding: 8px; border: 1px solid #000;"><strong>Data Vigência:</strong></td><td style="padding: 8px; border: 1px solid #000;">[DATA]</td></tr>
 </table>
-
-<h2>ÍNDICE</h2>
-<ol>
-    <li>OBJETIVO</li>
-    <li>ESCOPO E ABRANGÊNCIA</li>
-    <li>DEFINIÇÕES E SIGLAS</li>
-    <li>RESPONSABILIDADES</li>
-    <li>REFERÊNCIAS NORMATIVAS</li>
-    <li>PROCEDIMENTO</li>
-    <li>INDICADORES E MONITORAMENTO</li>
-    <li>REGISTROS E CONTROLE DOCUMENTAL</li>
-</ol>
-
 <h2>1. OBJETIVO</h2>
 <p>[Descrever claramente o objetivo do procedimento]</p>
+<h2>2. ESCOPO</h2>
+<p>[Definir setores, unidades, processos específicos]</p>`,
 
-<h2>2. ESCOPO E ABRANGÊNCIA</h2>
-<p><strong>Aplica-se a:</strong> [Definir setores, unidades, processos específicos]</p>
-
-<h2>3. DEFINIÇÕES E SIGLAS</h2>
-<ul>
-    <li><strong>ONA:</strong> Organização Nacional de Acreditação</li>
-    <li><strong>ANVISA:</strong> Agência Nacional de Vigilância Sanitária</li>
-</ul>
-
-<h2>4. RESPONSABILIDADES</h2>
-<table style="width: 100%; border-collapse: collapse; border: 1px solid #000;">
-    <tr style="background-color: #f5f5f5;"><th style="padding: 8px; border: 1px solid #000;">Função/Cargo</th><th style="padding: 8px; border: 1px solid #000;">Responsabilidades</th></tr>
-    <tr><td style="padding: 8px; border: 1px solid #000;">[CARGO 1]</td><td style="padding: 8px; border: 1px solid #000;">[Descrição das responsabilidades]</td></tr>
-</table>
-
-<h2>5. REFERÊNCIAS NORMATIVAS</h2>
-<ul>
-    <li>ISO 9001:2015 - Sistemas de gestão da qualidade</li>
-    <li>Manual ONA - Organização Nacional de Acreditação</li>
-</ul>
-
-<h2>6. PROCEDIMENTO</h2>
-<h3>6.1 Preparação</h3>
-<ol>
-    <li>[Passo preparatório 1]</li>
-    <li>[Passo preparatório 2]</li>
-</ol>
-
-<h3>6.2 Execução</h3>
-<ol>
-    <li><strong>Ação:</strong> [Descrição detalhada]<br><strong>Responsável:</strong> [Quem executa]</li>
-    <li><strong>Ação:</strong> [Descrição detalhada]<br><strong>Responsável:</strong> [Quem executa]</li>
-</ol>`,
-
-    instrucao: `<h1>INSTRUÇÃO DE TRABALHO</h1>
-<table style="width: 100%; border-collapse: collapse; border: 1px solid #000;">
-    <tr><td style="padding: 8px; border: 1px solid #000;"><strong>Código:</strong></td><td style="padding: 8px; border: 1px solid #000;">[CÓDIGO]</td><td style="padding: 8px; border: 1px solid #000;"><strong>Versão:</strong></td><td style="padding: 8px; border: 1px solid #000;">1.0</td></tr>
-    <tr><td style="padding: 8px; border: 1px solid #000;"><strong>Processo:</strong></td><td colspan="3" style="padding: 8px; border: 1px solid #000;">[NOME DO PROCESSO]</td></tr>
-</table>
-
+        instrucao: `<h1>INSTRUÇÃO DE TRABALHO</h1>
 <h2>OBJETIVO</h2>
 <p>[Objetivo da instrução]</p>
-
 <h2>MATERIAIS NECESSÁRIOS</h2>
 <ul>
     <li>[Material 1]</li>
     <li>[Material 2]</li>
 </ul>
-
 <h2>PASSO A PASSO</h2>
 <ol>
     <li><strong>Preparação:</strong> [Descrever preparação]</li>
     <li><strong>Execução:</strong> [Descrever execução]</li>
-    <li><strong>Verificação:</strong> [Descrever verificação]</li>
 </ol>`,
 
-    politica: `<h1>POLÍTICA DE QUALIDADE</h1>
-<table style="width: 100%; border-collapse: collapse; border: 1px solid #000;">
-    <tr><td style="padding: 8px; border: 1px solid #000;"><strong>Documento:</strong></td><td style="padding: 8px; border: 1px solid #000;">[TÍTULO DA POLÍTICA]</td></tr>
-    <tr><td style="padding: 8px; border: 1px solid #000;"><strong>Código:</strong></td><td style="padding: 8px; border: 1px solid #000;">[CÓDIGO]</td><td style="padding: 8px; border: 1px solid #000;"><strong>Versão:</strong></td><td style="padding: 8px; border: 1px solid #000;">1.0</td></tr>
-</table>
-
+        politica: `<h1>POLÍTICA DE QUALIDADE</h1>
 <h2>1. FINALIDADE</h2>
 <p>[Descrever a finalidade da política]</p>
-
 <h2>2. PRINCÍPIOS</h2>
 <ul>
     <li>[Princípio 1]</li>
     <li>[Princípio 2]</li>
-    <li>[Princípio 3]</li>
-</ul>
+</ul>`
+    };
 
-<h2>3. DIRETRIZES</h2>
-<p>[Estabelecer as diretrizes principais]</p>`
-};
+    // Adicionar seletor de templates na toolbar
+    function addTemplateSelector() {
+        const toolbar = document.getElementById('quill-toolbar');
+        if (toolbar) {
+            const templateContainer = document.createElement('span');
+            templateContainer.className = 'ql-formats';
 
-// Adicionar botão de templates na toolbar
-function addTemplateButton() {
-    const toolbar = document.querySelector('.ql-toolbar');
-    if (toolbar) {
-        const templateGroup = document.createElement('span');
-        templateGroup.className = 'ql-formats';
-        
-        const select = document.createElement('select');
-        select.className = 'ql-template';
-        select.innerHTML = `
-            <option value="">Selecionar Template</option>
-            <option value="pop">POP - Procedimento Operacional</option>
-            <option value="instrucao">Instrução de Trabalho</option>
-            <option value="politica">Política de Qualidade</option>
-        `;
-        
-        select.addEventListener('change', function() {
-            if (this.value && templates[this.value]) {
-                quill.clipboard.dangerouslyPasteHTML(templates[this.value]);
-                this.value = '';
-            }
-        });
-        
-        templateGroup.appendChild(select);
-        toolbar.appendChild(templateGroup);
+            const select = document.createElement('select');
+            select.className = 'ql-template';
+            select.innerHTML = `
+                <option value="">Usar Template...</option>
+                <option value="pop">POP - Procedimento</option>
+                <option value="instrucao">Instrução de Trabalho</option>
+                <option value="politica">Política</option>
+            `;
+
+            select.addEventListener('change', function() {
+                if (this.value && templates[this.value]) {
+                    quill.clipboard.dangerouslyPasteHTML(templates[this.value]);
+                    this.value = '';
+                }
+            });
+
+            templateContainer.appendChild(select);
+            toolbar.appendChild(templateContainer);
+        }
     }
-}
 
-// Adicionar botões após inicialização
-setTimeout(addTemplateButton, 100);
+    // Adicionar templates após pequeno delay
+    setTimeout(addTemplateSelector, 500);
 
-// Sincronizar com campo oculto
-quill.on('text-change', function() {
-    hiddenInput.value = quill.root.innerHTML;
-    
-    // Auto-save com debounce
-    clearTimeout(window.autoSaveTimeout);
-    window.autoSaveTimeout = setTimeout(function() {
-        // Função de auto-save será implementada posteriormente
-        console.log('Auto-save executado');
-    }, 2000);
-});
+    // Sincronizar conteúdo com campo oculto
+    quill.on('text-change', function() {
+        const content = quill.root.innerHTML;
+        hiddenInput.value = content;
 
-// Variável para armazenar o ID do documento (rascunho)
-let currentDocumentId = null;
+        // Verificar se há conteúdo para habilitar botões
+        const hasContent = quill.getText().trim().length > 10;
+        const hasTitle = document.getElementById('titulo').value.trim().length > 0;
 
-// Função para salvar rascunho automaticamente
-function salvarRascunhoAutomatico() {
-    const titulo = document.getElementById('titulo').value;
-    const conteudo = quill.root.innerHTML; // Usar Quill ao invés de TinyMCE
-    const tipo = document.getElementById('tipo').value;
-    const departamento = document.getElementById('departamento').value;
+        document.getElementById('btn-criar').disabled = !hasContent || !hasTitle;
+        document.getElementById('btn-rascunho').disabled = !hasContent && !hasTitle;
 
-    if (titulo.trim() && conteudo && conteudo !== '<p></p>' && conteudo !== '') {
-        // Criar FormData para envio
+        // Auto-save
+        clearTimeout(window.autoSaveTimeout);
+        window.autoSaveTimeout = setTimeout(autoSave, 5000);
+    });
+
+    // Verificar título
+    document.getElementById('titulo').addEventListener('input', function() {
+        const hasContent = quill.getText().trim().length > 10;
+        const hasTitle = this.value.trim().length > 0;
+
+        document.getElementById('btn-criar').disabled = !hasContent || !hasTitle;
+        document.getElementById('btn-rascunho').disabled = !hasContent && !hasTitle;
+    });
+
+    // Estado inicial dos botões
+    document.getElementById('btn-criar').disabled = true;
+    document.getElementById('btn-rascunho').disabled = true;
+
+    // Auto-save
+    let currentDocumentId = null;
+
+    function autoSave() {
+        const titulo = document.getElementById('titulo').value.trim();
+        const conteudo = quill.root.innerHTML;
+        const tipo = document.getElementById('tipo').value;
+
+        if (!titulo || !conteudo || conteudo === '<p><br></p>') return;
+
         const formData = new FormData();
         formData.append('titulo', titulo);
         formData.append('conteudo', conteudo);
         formData.append('tipo', tipo || 'outros');
-        formData.append('departamento', departamento || '');
+        formData.append('departamento', document.getElementById('departamento').value || '');
         formData.append('csrf_token', document.querySelector('input[name="csrf_token"]').value);
 
         if (currentDocumentId) {
             formData.append('document_id', currentDocumentId);
         }
 
-        // Implementar salvamento automático via AJAX
         fetch('/documents/api/save-draft', {
             method: 'POST',
             body: formData
         })
         .then(response => response.json())
         .then(data => {
-            if (data.success) {
-                // Armazenar o ID do documento para próximos saves
-                if (data.document_id) {
-                    currentDocumentId = data.document_id;
-                }
-                showAutoSaveIndicator(true, data.message);
-            } else {
-                console.error('Erro ao salvar rascunho:', data.error);
-                showAutoSaveIndicator(false, data.error);
+            if (data.success && data.document_id) {
+                currentDocumentId = data.document_id;
+                showNotification('Rascunho salvo automaticamente', 'success');
             }
         })
-        .catch(error => {
-            console.error('Erro na requisição:', error);
-            showAutoSaveIndicator(false, 'Erro de conexão');
-        });
+        .catch(error => console.log('Auto-save error:', error));
     }
-}
 
-// Mostrar indicador de salvamento automático
-function showAutoSaveIndicator(success = true, customMessage = null) {
-    const indicator = document.createElement('div');
-    const alertClass = success ? 'alert-success' : 'alert-danger';
-    const icon = success ? 'bi-check-circle' : 'bi-exclamation-triangle';
-    const message = customMessage || (success ? 'Rascunho salvo automaticamente' : 'Erro ao salvar rascunho');
+    // Validação do formulário
+    document.querySelector('form').addEventListener('submit', function(e) {
+        // Sincronizar conteúdo
+        hiddenInput.value = quill.root.innerHTML;
 
-    indicator.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
-    indicator.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-    indicator.innerHTML = `
-        <i class="bi ${icon}"></i>
+        // Verificar conteúdo
+        const content = quill.getText().trim();
+        if (!content || content.length < 10) {
+            e.preventDefault();
+            alert('O conteúdo deve ter pelo menos 10 caracteres');
+            quill.focus();
+            return false;
+        }
+
+        // Verificar título
+        const titulo = document.getElementById('titulo').value.trim();
+        if (!titulo) {
+            e.preventDefault();
+            alert('O título é obrigatório');
+            document.getElementById('titulo').focus();
+            return false;
+        }
+    });
+});
+
+// Funções auxiliares
+function showNotification(message, type = 'info') {
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    alert.innerHTML = `
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
 
-    document.body.appendChild(indicator);
-
-    // Remover após 3 segundos
-    setTimeout(() => {
-        if (indicator.parentNode) {
-            indicator.remove();
-        }
-    }, 3000);
+    document.body.appendChild(alert);
+    setTimeout(() => alert.remove(), 3000);
 }
 
-// Validação do formulário antes do envio
-document.querySelector('form').addEventListener('submit', function(e) {
-    // Atualizar campo oculto com conteúdo atual
-    hiddenInput.value = quill.root.innerHTML;
-
-    // Verificar se há conteúdo
-    const content = quill.getText().trim();
-    if (!content || content.length < 10) {
-        e.preventDefault();
-        alert('O conteúdo do documento deve ter pelo menos 10 caracteres');
-        quill.focus();
-        return false;
-    }
-
-    // Verificar título
-    const titulo = document.getElementById('titulo').value;
-    if (!titulo.trim()) {
-        e.preventDefault();
-        alert('O título do documento é obrigatório');
-        document.getElementById('titulo').focus();
-        return false;
-    }
-});
-
-// Habilitar botões baseados no conteúdo
-quill.on('text-change', function() {
-    const hasContent = quill.getText().trim().length > 0;
-    const titulo = document.getElementById('titulo').value.trim();
-
-    // Habilitar/desabilitar botões baseado no conteúdo
-    const submitBtn = document.querySelector('button[value="submit"]');
-    const draftBtn = document.querySelector('button[value="draft"]');
-
-    if (submitBtn) {
-        submitBtn.disabled = !hasContent || !titulo;
-    }
-    if (draftBtn) {
-        draftBtn.disabled = !hasContent && !titulo;
-    }
-});
-
-// Gerenciar seleção de tipo dinâmico
+// Gerenciar tipos de documento
 document.getElementById('tipo').addEventListener('change', function() {
     const selectedOption = this.options[this.selectedIndex];
     const tipoDocumentoId = selectedOption.getAttribute('data-id');
     document.getElementById('tipo_documento_id').value = tipoDocumentoId || '';
 });
 
-// Função para mostrar modal de novo tipo
 function showNewTypeModal() {
-    new bootstrap.Modal(document.getElementById('newTypeModal')).show();
+    const modal = new bootstrap.Modal(document.getElementById('newTypeModal'));
+    modal.show();
 }
 
-// Função para criar novo tipo via AJAX
 function createNewType() {
     const codigo = document.getElementById('newTipoCodigo').value.trim().toUpperCase();
     const nome = document.getElementById('newTipoNome').value.trim();
-    
+
     if (!codigo || !nome) {
         alert('Código e nome são obrigatórios!');
         return;
     }
-    
+
     if (!/^[A-Z0-9-]+$/.test(codigo)) {
         alert('Código deve conter apenas letras maiúsculas, números e hífens!');
         return;
     }
-    
-    // Criar FormData
+
     const formData = new FormData();
     formData.append('codigo', codigo);
     formData.append('nome', nome);
     formData.append('csrf_token', document.querySelector('input[name="csrf_token"]').value);
-    
-    // Enviar requisição
+
     fetch('/document-types/api/create', {
         method: 'POST',
         body: formData
@@ -512,22 +458,18 @@ function createNewType() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Adicionar nova opção ao select
             const tipoSelect = document.getElementById('tipo');
             const newOption = new Option(data.nome, data.codigo);
             newOption.setAttribute('data-id', data.id);
             tipoSelect.add(newOption);
-            
-            // Selecionar o novo tipo
+
             tipoSelect.value = data.codigo;
             document.getElementById('tipo_documento_id').value = data.id;
-            
-            // Fechar modal e limpar campos
+
             bootstrap.Modal.getInstance(document.getElementById('newTypeModal')).hide();
             document.getElementById('newTypeForm').reset();
-            
-            // Mostrar mensagem de sucesso
-            showAutoSaveIndicator(true, `Tipo "${data.nome}" criado com sucesso!`);
+
+            showNotification(`Tipo "${data.nome}" criado com sucesso!`, 'success');
         } else {
             alert('Erro ao criar tipo: ' + data.error);
         }
@@ -538,25 +480,9 @@ function createNewType() {
     });
 }
 
-// Converter código para maiúsculas no modal
+// Converter código para maiúsculas
 document.getElementById('newTipoCodigo').addEventListener('input', function() {
     this.value = this.value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
-});
-
-// Verificar título para habilitar botões
-document.getElementById('titulo').addEventListener('input', function() {
-    const hasContent = quill.getText().trim().length > 0;
-    const titulo = this.value.trim();
-
-    const submitBtn = document.querySelector('button[value="submit"]');
-    const draftBtn = document.querySelector('button[value="draft"]');
-
-    if (submitBtn) {
-        submitBtn.disabled = !hasContent || !titulo;
-    }
-    if (draftBtn) {
-        draftBtn.disabled = !hasContent && !titulo;
-    }
 });
 </script>
 {% endblock %}

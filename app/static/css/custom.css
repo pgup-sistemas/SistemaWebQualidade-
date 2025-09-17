@@ -87,6 +87,88 @@ body {
     border-radius: 0 0 8px 8px;
 }
 
+/* Quill Editor Styles */
+#quill-toolbar {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    padding: 8px;
+}
+
+#quill-editor {
+    border: 1px solid #dee2e6;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    background: white;
+}
+
+.ql-editor {
+    min-height: 400px;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 15px;
+}
+
+.ql-toolbar {
+    border: none !important;
+    padding: 8px 12px;
+}
+
+.ql-toolbar .ql-picker-label {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 4px 8px;
+}
+
+.ql-toolbar .ql-picker-options {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.ql-toolbar button {
+    border: 1px solid transparent;
+    border-radius: 4px;
+    margin: 2px;
+    padding: 6px 8px;
+}
+
+.ql-toolbar button:hover {
+    border-color: #007bff;
+    background: rgba(0,123,255,0.1);
+}
+
+.ql-toolbar button.ql-active {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+/* Estilo para o placeholder */
+.ql-editor.ql-blank::before {
+    color: #6c757d;
+    font-style: normal;
+}
+
+/* Responsividade do editor */
+@media (max-width: 768px) {
+    .ql-editor {
+        min-height: 300px;
+        padding: 10px;
+    }
+    
+    .ql-toolbar {
+        padding: 6px;
+    }
+    
+    .ql-toolbar button {
+        padding: 4px 6px;
+        margin: 1px;
+    }
+}
+
 /* Formulários */
 .form-control, .form-select {
     border-radius: 8px;
