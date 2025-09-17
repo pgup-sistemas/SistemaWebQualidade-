@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -12,64 +13,7 @@
     <!-- Custom CSS -->
     <link href="{{ url_for('static', filename='css/custom.css') }}" rel="stylesheet">
 
-    <!-- Quill.js - Fallback local disponível -->
-    <script>
-        // Função para carregar Quill como fallback global
-        window.loadQuillGlobal = function() {
-            return new Promise((resolve, reject) => {
-                if (typeof Quill !== 'undefined') {
-                    resolve();
-                    return;
-                }
-
-                // Tentar CDN principal
-                const script1 = document.createElement('script');
-                script1.src = 'https://cdn.quilljs.com/1.3.7/quill.min.js';
-                script1.onload = () => {
-                    if (typeof Quill !== 'undefined') {
-                        console.log('✅ Quill carregado via CDN principal');
-                        resolve();
-                    } else {
-                        loadFromBackup();
-                    }
-                };
-                script1.onerror = loadFromBackup;
-                document.head.appendChild(script1);
-
-                function loadFromBackup() {
-                    // Tentar CDN backup
-                    const script2 = document.createElement('script');
-                    script2.src = 'https://unpkg.com/quill@1.3.7/dist/quill.min.js';
-                    script2.onload = () => {
-                        if (typeof Quill !== 'undefined') {
-                            console.log('✅ Quill carregado via CDN backup');
-                            resolve();
-                        } else {
-                            loadFromLocal();
-                        }
-                    };
-                    script2.onerror = loadFromLocal;
-                    document.head.appendChild(script2);
-                }
-
-                function loadFromLocal() {
-                    // Tentar arquivo local
-                    const script3 = document.createElement('script');
-                    script3.src = '{{ url_for("static", filename="vendor/quill.min.js") }}';
-                    script3.onload = () => {
-                        if (typeof Quill !== 'undefined') {
-                            console.log('✅ Quill carregado via arquivo local');
-                            resolve();
-                        } else {
-                            reject(new Error('Falha ao carregar Quill de todas as fontes'));
-                        }
-                    };
-                    script3.onerror = () => reject(new Error('Falha ao carregar Quill de todas as fontes'));
-                    document.head.appendChild(script3);
-                }
-            });
-        };
-    </script>
+    {% block extra_head %}{% endblock %}
 
     <style>
         /* Sidebar Styles */
@@ -107,9 +51,9 @@
         .sidebar-sticky {
             position: relative;
             top: 0;
-            height: calc(100vh - 200px); /* CORRIGIDO: aumentado para 200px para dar espaço ao user-info */
+            height: calc(100vh - 200px);
             padding-top: 0;
-            padding-bottom: 5rem; /* Mais padding bottom */
+            padding-bottom: 5rem;
             overflow-x: hidden;
             overflow-y: auto;
         }
@@ -201,7 +145,7 @@
             }
 
             .sidebar-sticky {
-                height: calc(100vh - 110px); /* Aumentado ainda mais para mobile */
+                height: calc(100vh - 110px);
                 padding-bottom: 5rem;
             }
 
@@ -255,13 +199,13 @@
             left: 0;
             right: 0;
             width: 280px;
-            padding: 0.3rem 1.5rem; /* Reduzido padding */
+            padding: 0.3rem 1.5rem;
             border-top: 1px solid rgba(255,255,255,0.1);
             background: rgba(0,0,0,0.2);
             backdrop-filter: blur(10px);
             z-index: 110;
             transition: all 0.3s ease;
-            height: 120px; /* AUMENTADO para 120px para compensar */
+            height: 120px;
         }
 
         .user-info .user-avatar {
@@ -629,6 +573,6 @@
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/custom.js') }}"></script>
 
-    {% block scripts %}{% endblock %}
+    {% block extra_scripts %}{% endblock %}
 </body>
 </html>

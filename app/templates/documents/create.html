@@ -1,19 +1,21 @@
+
 {% extends "base.html" %}
 
 {% block title %}Criar Documento - Alpha Gestão Documental{% endblock %}
 
 {% block extra_head %}
-<!-- Quill.js Editor - Carregamento com fallback -->
-<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet" 
-      onerror="this.onerror=null;this.href='https://unpkg.com/quill@1.3.7/dist/quill.snow.css';">
-<script src="https://cdn.quilljs.com/1.3.7/quill.min.js" 
-        onerror="document.write('<script src=&quot;https://unpkg.com/quill@1.3.7/dist/quill.min.js&quot;><\/script>')"></script>
+<!-- Quill.js CSS - Múltiplos fallbacks -->
+<link id="quill-css-1" href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+<link id="quill-css-2" href="https://unpkg.com/quill@1.3.7/dist/quill.snow.css" rel="stylesheet" style="display: none;">
+<link id="quill-css-3" href="{{ url_for('static', filename='vendor/quill.snow.css') }}" rel="stylesheet" style="display: none;">
+
 <style>
     #editor-container {
         background: white;
         border: 1px solid #ced4da;
         border-radius: 0.375rem;
         overflow: hidden;
+        min-height: 450px;
     }
     #editor-container .ql-toolbar {
         border: none;
@@ -46,6 +48,18 @@
         color: #6c757d;
         border: 1px solid #ced4da;
         border-radius: 0.375rem;
+        flex-direction: column;
+    }
+    .simple-editor {
+        min-height: 400px;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+        padding: 15px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        background: white;
+        overflow-y: auto;
+        resize: vertical;
     }
 </style>
 {% endblock %}
@@ -154,8 +168,14 @@
                             <label class="form-label">Conteúdo *</label>
 
                             <!-- Container do Editor -->
-                            <div class="editor-wrapper">
-                                <div id="editor-container"></div>
+                            <div id="editor-container">
+                                <div class="editor-loading">
+                                    <div class="spinner-border text-primary mb-2" role="status">
+                                        <span class="visually-hidden">Carregando editor...</span>
+                                    </div>
+                                    <p>Carregando editor de texto...</p>
+                                    <small class="text-muted">Aguarde enquanto o editor é inicializado</small>
+                                </div>
                             </div>
 
                             <!-- Campo oculto para submissão -->
@@ -170,7 +190,7 @@
                             <div>
                                 <small class="text-muted">
                                     <i class="bi bi-info-circle"></i>
-                                    Use o editor acima para formatar o documento.
+                                    <span id="editor-status">Inicializando editor...</span>
                                 </small>
                             </div>
                             <div>
@@ -191,244 +211,282 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<!-- Quill.js Scripts - Múltiplos fallbacks -->
 <script>
-// Variável global para o editor Quill
-let quill;
-
-// Função para carregar Quill como fallback
-function loadQuillFallback() {
-    return new Promise((resolve, reject) => {
-        if (typeof Quill !== 'undefined') {
-            resolve();
-            return;
+// Sistema robusto de carregamento do Quill Editor
+(function() {
+    'use strict';
+    
+    let quill;
+    let editorReady = false;
+    let fallbackEditor = null;
+    const maxRetries = 3;
+    let currentRetry = 0;
+    
+    // URLs dos CDNs para fallback
+    const quillSources = [
+        'https://cdn.quilljs.com/1.3.7/quill.min.js',
+        'https://unpkg.com/quill@1.3.7/dist/quill.min.js',
+        '{{ url_for("static", filename="vendor/quill.min.js") }}'
+    ];
+    
+    function updateStatus(message, isError = false) {
+        const statusEl = document.getElementById('editor-status');
+        if (statusEl) {
+            statusEl.textContent = message;
+            statusEl.className = isError ? 'text-danger' : 'text-muted';
         }
-
-        // Carregar CSS
-        const css = document.createElement('link');
-        css.rel = 'stylesheet';
-        css.href = 'https://unpkg.com/quill@1.3.7/dist/quill.snow.css';
-        document.head.appendChild(css);
-
-        // Carregar JS
-        const script = document.createElement('script');
-        script.src = 'https://unpkg.com/quill@1.3.7/dist/quill.min.js';
-        script.onload = () => {
-            if (typeof Quill !== 'undefined') {
-                console.log('✅ Quill carregado via fallback');
-                resolve();
-            } else {
-                reject(new Error('Falha ao carregar Quill'));
-            }
-        };
-        script.onerror = () => reject(new Error('Erro ao carregar script do Quill'));
-        document.head.appendChild(script);
-    });
-}
-
-// Função para inicializar o editor
-async function initializeQuillEditor() {
-    console.log('🔄 Inicializando Quill Editor...');
-
-    // Verificar se Quill está disponível ou tentar carregar
-    if (typeof Quill === 'undefined') {
-        console.warn('⚠️ Quill não encontrado, tentando carregar...');
-        try {
-            await loadQuillFallback();
-        } catch (error) {
-            console.error('❌ Erro ao carregar Quill:', error);
-            showEditorError('Falha ao carregar o editor de texto. Verifique sua conexão.');
-            return;
-        }
+        console.log((isError ? '❌' : '✅') + ' ' + message);
     }
-
-    try {
-        // Configuração avançada do Quill
-        const toolbarOptions = [
-            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-            [{ 'font': [] }],
-            [{ 'size': ['small', false, 'large', 'huge'] }],
-            ['bold', 'italic', 'underline', 'strike'],
-            [{ 'color': [] }, { 'background': [] }],
-            [{ 'script': 'sub'}, { 'script': 'super' }],
-            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-            [{ 'indent': '-1'}, { 'indent': '+1' }],
-            [{ 'direction': 'rtl' }],
-            [{ 'align': [] }],
-            ['link', 'image', 'video', 'blockquote', 'code-block'],
-            ['clean']
-        ];
-
-        // Inicializar o editor
-        quill = new Quill('#editor-container', {
-            modules: {
-                toolbar: {
-                    container: toolbarOptions,
-                    handlers: {
-                        // Custom handlers podem ser adicionados aqui
-                    }
-                },
-                history: {
-                    delay: 2000,
-                    maxStack: 500,
-                    userOnly: true
-                }
-            },
-            placeholder: 'Digite o conteúdo do documento aqui...\n\nUse a barra de ferramentas acima para formatar o texto.',
-            theme: 'snow',
-            readOnly: false
-        });
-
-        console.log('✅ Quill inicializado com sucesso!');
-
-        // Campo oculto para submissão
+    
+    // Criar editor simples como fallback final
+    function createFallbackEditor() {
+        console.log('🔄 Criando editor de fallback simples...');
+        updateStatus('Usando editor de texto simples');
+        
+        const container = document.getElementById('editor-container');
         const hiddenInput = document.getElementById('conteudo');
-
-        // Sincronizar conteúdo com campo oculto
-        quill.on('text-change', function(delta, oldDelta, source) {
-            if (source === 'user') {
+        
+        if (!container || !hiddenInput) return false;
+        
+        // Criar editor de texto simples
+        const simpleEditor = document.createElement('div');
+        simpleEditor.className = 'simple-editor';
+        simpleEditor.contentEditable = true;
+        simpleEditor.innerHTML = '<p>Digite o conteúdo do documento aqui...</p><p><br></p>';
+        simpleEditor.setAttribute('data-placeholder', 'Digite o conteúdo do documento aqui...');
+        
+        // Substituir conteúdo
+        container.innerHTML = '';
+        container.appendChild(simpleEditor);
+        
+        // Sincronização com campo oculto
+        function syncContent() {
+            hiddenInput.value = simpleEditor.innerHTML;
+        }
+        
+        simpleEditor.addEventListener('input', syncContent);
+        simpleEditor.addEventListener('paste', function(e) {
+            setTimeout(syncContent, 100);
+        });
+        
+        // Focar no editor
+        setTimeout(() => {
+            simpleEditor.focus();
+        }, 100);
+        
+        fallbackEditor = simpleEditor;
+        editorReady = true;
+        updateStatus('Editor de texto simples pronto para uso');
+        return true;
+    }
+    
+    // Tentar carregar Quill de uma fonte específica
+    function tryLoadQuill(sourceIndex = 0) {
+        if (sourceIndex >= quillSources.length) {
+            console.warn('⚠️ Todas as fontes do Quill falharam, usando editor simples');
+            return createFallbackEditor();
+        }
+        
+        const source = quillSources[sourceIndex];
+        console.log(`🔄 Tentando carregar Quill de: ${source}`);
+        updateStatus(`Carregando editor... (${sourceIndex + 1}/${quillSources.length})`);
+        
+        return new Promise((resolve, reject) => {
+            // Verificar se Quill já está disponível
+            if (typeof Quill !== 'undefined') {
+                console.log('✅ Quill já estava disponível');
+                resolve();
+                return;
+            }
+            
+            const script = document.createElement('script');
+            script.src = source;
+            script.async = true;
+            
+            script.onload = function() {
+                if (typeof Quill !== 'undefined') {
+                    console.log(`✅ Quill carregado com sucesso de: ${source}`);
+                    resolve();
+                } else {
+                    console.warn(`⚠️ Quill não foi encontrado após carregar: ${source}`);
+                    reject(new Error('Quill não encontrado após carregamento'));
+                }
+            };
+            
+            script.onerror = function() {
+                console.warn(`❌ Falha ao carregar Quill de: ${source}`);
+                reject(new Error(`Falha ao carregar de ${source}`));
+            };
+            
+            document.head.appendChild(script);
+        }).then(() => {
+            return initializeQuillEditor();
+        }).catch(() => {
+            return tryLoadQuill(sourceIndex + 1);
+        });
+    }
+    
+    // Inicializar o editor Quill
+    function initializeQuillEditor() {
+        console.log('🔄 Inicializando Quill Editor...');
+        updateStatus('Inicializando editor avançado...');
+        
+        return new Promise((resolve, reject) => {
+            try {
+                const container = document.getElementById('editor-container');
+                const hiddenInput = document.getElementById('conteudo');
+                
+                if (!container || !hiddenInput) {
+                    throw new Error('Elementos necessários não encontrados');
+                }
+                
+                // Limpar container
+                container.innerHTML = '';
+                
+                // Configuração do Quill
+                const toolbarOptions = [
+                    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                    [{ 'font': [] }],
+                    [{ 'size': ['small', false, 'large', 'huge'] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'color': [] }, { 'background': [] }],
+                    [{ 'script': 'sub'}, { 'script': 'super' }],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    [{ 'indent': '-1'}, { 'indent': '+1' }],
+                    [{ 'align': [] }],
+                    ['link', 'blockquote', 'code-block'],
+                    ['clean']
+                ];
+                
+                // Criar instância do Quill
+                quill = new Quill(container, {
+                    modules: {
+                        toolbar: toolbarOptions,
+                        history: {
+                            delay: 2000,
+                            maxStack: 500,
+                            userOnly: true
+                        }
+                    },
+                    placeholder: 'Digite o conteúdo do documento aqui...',
+                    theme: 'snow',
+                    readOnly: false
+                });
+                
+                // Sincronização com campo oculto
+                quill.on('text-change', function(delta, oldDelta, source) {
+                    if (source === 'user') {
+                        const content = quill.root.innerHTML;
+                        hiddenInput.value = content;
+                    }
+                });
+                
+                // Focar no editor
+                setTimeout(() => {
+                    quill.focus();
+                }, 100);
+                
+                editorReady = true;
+                updateStatus('Editor avançado pronto para uso');
+                console.log('✅ Quill inicializado com sucesso!');
+                resolve();
+                
+            } catch (error) {
+                console.error('❌ Erro ao inicializar Quill:', error);
+                updateStatus('Erro ao inicializar editor avançado', true);
+                reject(error);
+            }
+        });
+    }
+    
+    // Configurar validação do formulário
+    function setupFormValidation() {
+        const form = document.getElementById('documentForm');
+        if (!form) return;
+        
+        form.addEventListener('submit', function(e) {
+            console.log('📤 Submetendo formulário...');
+            
+            // Sincronizar conteúdo
+            const hiddenInput = document.getElementById('conteudo');
+            if (!hiddenInput) return;
+            
+            if (quill && editorReady) {
                 const content = quill.root.innerHTML;
                 hiddenInput.value = content;
-                console.log('📝 Conteúdo atualizado:', content.length, 'caracteres');
+                
+                const textContent = quill.getText().trim();
+                if (!textContent || textContent.length < 10) {
+                    e.preventDefault();
+                    alert('⚠️ O conteúdo do documento deve ter pelo menos 10 caracteres');
+                    quill.focus();
+                    return false;
+                }
+            } else if (fallbackEditor) {
+                hiddenInput.value = fallbackEditor.innerHTML;
+                
+                const textContent = fallbackEditor.textContent.trim();
+                if (!textContent || textContent.length < 10) {
+                    e.preventDefault();
+                    alert('⚠️ O conteúdo do documento deve ter pelo menos 10 caracteres');
+                    fallbackEditor.focus();
+                    return false;
+                }
             }
-        });
-
-        // Foco inicial no editor
-        setTimeout(() => {
-            quill.focus();
-        }, 100);
-
-        // Remover indicador de carregamento se existir
-        const loadingEl = document.querySelector('.editor-loading');
-        if (loadingEl) {
-            loadingEl.remove();
-        }
-
-        setupFormValidation();
-
-    } catch (error) {
-        console.error('❌ Erro ao inicializar Quill:', error);
-        showEditorError('Erro ao inicializar o editor. Tente recarregar a página.');
-    }
-}
-
-// Função para mostrar erro do editor
-function showEditorError(message) {
-    const container = document.getElementById('editor-container');
-    if (container) {
-        container.innerHTML = `
-            <div class="editor-loading">
-                <div class="text-center">
-                    <i class="bi bi-exclamation-triangle text-warning" style="font-size: 2rem;"></i>
-                    <p class="mt-2 mb-0">${message}</p>
-                    <button class="btn btn-sm btn-primary mt-2" onclick="location.reload()">
-                        <i class="bi bi-arrow-clockwise"></i> Recarregar
-                    </button>
-                </div>
-            </div>
-        `;
-    }
-}
-
-// Configurar validação do formulário
-function setupFormValidation() {
-    const form = document.getElementById('documentForm');
-    if (!form) return;
-
-    form.addEventListener('submit', function(e) {
-        console.log('📤 Submetendo formulário...');
-
-        // Sincronizar conteúdo antes do envio
-        if (quill) {
-            const content = quill.root.innerHTML;
-            const hiddenInput = document.getElementById('conteudo');
-            if (hiddenInput) {
-                hiddenInput.value = content;
-            }
-
-            // Verificar se há conteúdo significativo
-            const textContent = quill.getText().trim();
-            if (!textContent || textContent.length < 10) {
+            
+            // Verificar título
+            const titulo = document.getElementById('titulo');
+            if (titulo && !titulo.value.trim()) {
                 e.preventDefault();
-                alert('⚠️ O conteúdo do documento deve ter pelo menos 10 caracteres');
-                quill.focus();
+                alert('⚠️ O título do documento é obrigatório');
+                titulo.focus();
                 return false;
             }
-        }
-
-        // Verificar título
-        const titulo = document.getElementById('titulo');
-        if (titulo && !titulo.value.trim()) {
-            e.preventDefault();
-            alert('⚠️ O título do documento é obrigatório');
-            titulo.focus();
-            return false;
-        }
-
-        // Verificar tipo
-        const tipo = document.getElementById('tipo');
-        if (tipo && !tipo.value) {
-            e.preventDefault();
-            alert('⚠️ Selecione o tipo do documento');
-            tipo.focus();
-            return false;
-        }
-
-        console.log('✅ Formulário válido, enviando...');
-    });
-
-    // Validação Bootstrap
-    const forms = document.querySelectorAll('.needs-validation');
-    forms.forEach(function(form) {
-        form.addEventListener('submit', function(event) {
-            if (!form.checkValidity()) {
-                event.preventDefault();
-                event.stopPropagation();
+            
+            // Verificar tipo
+            const tipo = document.getElementById('tipo');
+            if (tipo && !tipo.value) {
+                e.preventDefault();
+                alert('⚠️ Selecione o tipo do documento');
+                tipo.focus();
+                return false;
             }
-            form.classList.add('was-validated');
+            
+            console.log('✅ Formulário válido, enviando...');
+        });
+    }
+    
+    // Configurar seleção de tipo de documento
+    function setupDocumentTypeHandler() {
+        const tipoSelect = document.getElementById('tipo');
+        const tipoDocumentoIdInput = document.getElementById('tipo_documento_id');
+        
+        if (tipoSelect && tipoDocumentoIdInput) {
+            tipoSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                const tipoDocumentoId = selectedOption.getAttribute('data-id');
+                tipoDocumentoIdInput.value = tipoDocumentoId || '';
+            });
+        }
+    }
+    
+    // Inicialização principal
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🚀 Inicializando página de criação de documentos...');
+        
+        // Configurar componentes
+        setupDocumentTypeHandler();
+        setupFormValidation();
+        
+        // Tentar carregar editor
+        tryLoadQuill().catch(() => {
+            console.error('❌ Falha total no carregamento do editor');
+            updateStatus('Erro ao carregar editor', true);
+            createFallbackEditor();
         });
     });
-}
-
-// Configurar seleção de tipo de documento
-function setupDocumentTypeHandler() {
-    const tipoSelect = document.getElementById('tipo');
-    const tipoDocumentoIdInput = document.getElementById('tipo_documento_id');
     
-    if (tipoSelect && tipoDocumentoIdInput) {
-        tipoSelect.addEventListener('change', function() {
-            const selectedOption = this.options[this.selectedIndex];
-            const tipoDocumentoId = selectedOption.getAttribute('data-id');
-            tipoDocumentoIdInput.value = tipoDocumentoId || '';
-            console.log('📋 Tipo de documento selecionado:', this.value, 'ID:', tipoDocumentoId);
-        });
-    }
-}
-
-// Inicialização quando o DOM estiver pronto
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Página carregada, inicializando componentes...');
-    
-    // Mostrar indicador de carregamento
-    const editorContainer = document.getElementById('editor-container');
-    if (editorContainer && !editorContainer.innerHTML.trim()) {
-        editorContainer.innerHTML = `
-            <div class="editor-loading">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Carregando...</span>
-                </div>
-                <p class="mt-2 mb-0">Carregando editor...</p>
-            </div>
-        `;
-    }
-
-    // Inicializar editor e outros componentes
-    initializeQuillEditor();
-    setupDocumentTypeHandler();
-});
-
-// Detectar se Quill já está carregado
-if (typeof Quill !== 'undefined') {
-    console.log('✅ Quill já estava disponível');
-}
+})();
 </script>
 {% endblock %}
