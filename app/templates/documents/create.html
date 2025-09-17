@@ -115,29 +115,6 @@
                         <div class="mb-3">
                             <label class="form-label">Conteúdo *</label>
 
-                            <!-- Container para o editor -->
-                            <div id="quill-toolbar" class="ql-toolbar">
-                                <select class="ql-header">
-                                    <option value="1">Título 1</option>
-                                    <option value="2">Título 2</option>
-                                    <option value="3">Título 3</option>
-                                    <option selected>Normal</option>
-                                </select>
-                                <button type="button" class="ql-bold" title="Negrito"></button>
-                                <button type="button" class="ql-italic" title="Itálico"></button>
-                                <button type="button" class="ql-underline" title="Sublinhado"></button>
-                                <button type="button" class="ql-strike" title="Riscado"></button>
-                                <button type="button" class="ql-list" value="ordered" title="Lista Numerada"></button>
-                                <button type="button" class="ql-list" value="bullet" title="Lista com Marcadores"></button>
-                                <button type="button" class="ql-align" value="" title="Alinhar à Esquerda"></button>
-                                <button type="button" class="ql-align" value="center" title="Centralizar"></button>
-                                <button type="button" class="ql-align" value="right" title="Alinhar à Direita"></button>
-                                <button type="button" class="ql-align" value="justify" title="Justificar"></button>
-                                <button type="button" class="ql-link" title="Link"></button>
-                                <button type="button" class="ql-image" title="Imagem"></button>
-                                <button type="button" class="ql-clean" title="Limpar Formatação"></button>
-                            </div>
-
                             <!-- Container do editor -->
                             <div id="quill-editor" class="border" style="min-height: 400px; background: white;">
                                 <p>Digite o conteúdo do documento aqui...</p>
@@ -227,7 +204,20 @@ document.addEventListener('DOMContentLoaded', function() {
         theme: 'snow',
         placeholder: 'Digite o conteúdo do documento aqui...',
         modules: {
-            toolbar: '#quill-toolbar',
+            toolbar: [
+                [{ 'header': [1, 2, 3, false] }],
+                [{ 'font': [] }],
+                [{ 'size': ['small', false, 'large', 'huge'] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'color': [] }, { 'background': [] }],
+                [{ 'script': 'sub'}, { 'script': 'super' }],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'indent': '-1'}, { 'indent': '+1' }],
+                [{ 'align': [] }],
+                ['link', 'image', 'video'],
+                ['blockquote', 'code-block'],
+                ['clean']
+            ],
             history: {
                 delay: 1000,
                 maxStack: 50,
@@ -287,7 +277,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Adicionar seletor de templates na toolbar
     function addTemplateSelector() {
-        const toolbar = document.getElementById('quill-toolbar');
+        const toolbar = document.querySelector('.ql-toolbar');
         if (toolbar) {
             const templateContainer = document.createElement('span');
             templateContainer.className = 'ql-formats';
@@ -295,7 +285,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const select = document.createElement('select');
             select.className = 'ql-template';
             select.innerHTML = `
-                <option value="">Usar Template...</option>
+                <option value="">Templates...</option>
                 <option value="pop">POP - Procedimento</option>
                 <option value="instrucao">Instrução de Trabalho</option>
                 <option value="politica">Política</option>
@@ -313,8 +303,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Adicionar templates após pequeno delay
-    setTimeout(addTemplateSelector, 500);
+    // Adicionar templates após inicialização
+    setTimeout(addTemplateSelector, 1000);
 
     // Sincronizar conteúdo com campo oculto
     quill.on('text-change', function() {
