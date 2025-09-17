@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block title %}Editar - {{ document.titulo }}{% endblock %}
@@ -74,7 +73,7 @@
                     <div class="card-body">
                         <div class="mb-3">
                             <label for="titulo" class="form-label">Título *</label>
-                            <input type="text" class="form-control" id="titulo" name="titulo" 
+                            <input type="text" class="form-control" id="titulo" name="titulo"
                                    value="{{ document.titulo }}" required>
                             <div class="invalid-feedback">
                                 O título é obrigatório.
@@ -86,7 +85,7 @@
                             <select class="form-select" id="tipo" name="tipo" required>
                                 <option value="">Selecione o tipo</option>
                                 {% for doc_type in document_types %}
-                                <option value="{{ doc_type.codigo }}" 
+                                <option value="{{ doc_type.codigo }}"
                                         {% if doc_type.codigo == document.tipo %}selected{% endif %}>
                                     {{ doc_type.nome }}
                                 </option>
@@ -238,7 +237,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         function autoSave() {
             hiddenInput.value = quill.root.innerHTML;
-            
+
             const formData = new FormData(document.getElementById('editForm'));
             formData.append('auto_save', 'true');
 
@@ -269,13 +268,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // Monitorar mudanças para auto-save
         quill.on('text-change', function() {
             hasChanges = true;
-            
+
             clearTimeout(autoSaveTimer);
             autoSaveTimer = setTimeout(function() {
                 if (hasChanges) {
                     autoSave();
                 }
-            }, 3000);
+            }, 30000); // 30 segundos
         });
 
         // Monitorar outros campos

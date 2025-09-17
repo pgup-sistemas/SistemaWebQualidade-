@@ -177,7 +177,12 @@ def edit(id):
             try:
                 # Verificar se é uma requisição AJAX para auto-save
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                    # Auto-save logic
+                    # Auto-save logic - salvar apenas o conteúdo
+                    conteudo = request.form.get('conteudo', '').strip()
+                    if current_version and conteudo:
+                        current_version.conteudo = conteudo
+                        current_version.data_modificacao = datetime.utcnow()
+                        db.session.commit()
                     return jsonify({'success': True, 'message': 'Salvo automaticamente'})
                 
                 # Atualizar documento
@@ -199,11 +204,9 @@ def edit(id):
                 
                 # Atualizar conteúdo da versão atual
                 conteudo = request.form.get('conteudo', '').strip()
-                changelog = request.form.get('changelog', 'Edição da versão atual').strip()
                 
                 if current_version:
                     current_version.conteudo = conteudo
-                    current_version.changelog = changelog
                     current_version.data_modificacao = datetime.utcnow()
                 
                 document.data_ultima_revisao = datetime.utcnow()
@@ -218,9 +221,13 @@ def edit(id):
                 flash(f'Erro ao salvar documento: {str(e)}', 'error')
                 return redirect(url_for('documents.edit', id=id))
         
+        # Carregar tipos de documentos para o dropdown
+        document_types = DocumentType.query.filter_by(ativo=True).order_by(DocumentType.nome).all()
+        
         return render_template('documents/edit.html', 
                              document=document, 
-                             current_version=current_version)
+                             current_version=current_version,
+                             document_types=document_types)
                              
     except Exception as e:
         flash(f'Erro ao carregar documento: {str(e)}', 'error')
