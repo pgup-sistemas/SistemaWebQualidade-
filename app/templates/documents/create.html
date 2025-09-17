@@ -1,11 +1,31 @@
+
 {% extends "base.html" %}
 
 {% block title %}Criar Documento - Alpha Gestão Documental{% endblock %}
 
 {% block extra_head %}
-<!-- Quill.js Editor - Completamente gratuito -->
+<!-- Quill.js Editor -->
 <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
 <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+<style>
+    #editor-container .ql-editor {
+        min-height: 400px;
+        max-height: 600px;
+    }
+    .editor-wrapper {
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+    }
+    .editor-wrapper .ql-toolbar {
+        border-top: none;
+        border-left: none;
+        border-right: none;
+        border-bottom: 1px solid #ced4da;
+    }
+    .editor-wrapper .ql-container {
+        border: none;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -24,7 +44,7 @@
         </div>
     </div>
 
-    <form method="POST" class="needs-validation" novalidate>
+    <form method="POST" class="needs-validation" novalidate id="documentForm">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <div class="row">
             <!-- Informações do Documento -->
@@ -114,55 +134,11 @@
                     <div class="card-body">
                         <div class="mb-3">
                             <label class="form-label">Conteúdo *</label>
-
-                            <!-- Toolbar personalizada -->
-                            <div id="toolbar">
-                                <span class="ql-formats">
-                                    <select class="ql-header">
-                                        <option value="1">Título 1</option>
-                                        <option value="2">Título 2</option>
-                                        <option value="3">Título 3</option>
-                                        <option selected>Normal</option>
-                                    </select>
-                                    <select class="ql-font"></select>
-                                    <select class="ql-size"></select>
-                                </span>
-                                <span class="ql-formats">
-                                    <button class="ql-bold"></button>
-                                    <button class="ql-italic"></button>
-                                    <button class="ql-underline"></button>
-                                    <button class="ql-strike"></button>
-                                </span>
-                                <span class="ql-formats">
-                                    <select class="ql-color"></select>
-                                    <select class="ql-background"></select>
-                                </span>
-                                <span class="ql-formats">
-                                    <button class="ql-script" value="sub"></button>
-                                    <button class="ql-script" value="super"></button>
-                                </span>
-                                <span class="ql-formats">
-                                    <button class="ql-list" value="ordered"></button>
-                                    <button class="ql-list" value="bullet"></button>
-                                    <button class="ql-indent" value="-1"></button>
-                                    <button class="ql-indent" value="+1"></button>
-                                </span>
-                                <span class="ql-formats">
-                                    <select class="ql-align"></select>
-                                </span>
-                                <span class="ql-formats">
-                                    <button class="ql-link"></button>
-                                    <button class="ql-image"></button>
-                                    <button class="ql-blockquote"></button>
-                                    <button class="ql-code-block"></button>
-                                </span>
-                                <span class="ql-formats">
-                                    <button class="ql-clean"></button>
-                                </span>
+                            
+                            <!-- Editor Container -->
+                            <div class="editor-wrapper">
+                                <div id="editor-container"></div>
                             </div>
-
-                            <!-- Container do editor -->
-                            <div id="editor" style="height: 300px; border: 1px solid #ccc;"></div>
 
                             <!-- Campo oculto para submissão -->
                             <textarea id="conteudo" name="conteudo" required style="display: none;"></textarea>
@@ -176,7 +152,7 @@
                             <div>
                                 <small class="text-muted">
                                     <i class="bi bi-info-circle"></i>
-                                    Use o editor para formatar o documento. Salvamento automático a cada 30 segundos.
+                                    Use o editor para formatar o documento.
                                 </small>
                             </div>
                             <div>
@@ -233,93 +209,117 @@
 
 {% block extra_scripts %}
 <script>
-// Aguardar o carregamento completo da página
+let quill;
+
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Inicializando Quill Editor...');
+    console.log('Inicializando editor Quill...');
 
     // Verificar se Quill está disponível
     if (typeof Quill === 'undefined') {
         console.error('Quill.js não foi carregado!');
+        alert('Erro: Editor de texto não foi carregado. Recarregue a página.');
         return;
     }
 
-    // Inicializar o editor com toolbar personalizada
-    var quill = new Quill('#editor', {
-        modules: {
-            toolbar: '#toolbar'
-        },
-        placeholder: 'Digite o conteúdo do documento aqui...',
-        theme: 'snow'
-    });
+    try {
+        // Configurar toolbar
+        const toolbarOptions = [
+            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+            [{ 'font': [] }],
+            [{ 'size': ['small', false, 'large', 'huge'] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'color': [] }, { 'background': [] }],
+            [{ 'script': 'sub'}, { 'script': 'super' }],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'indent': '-1'}, { 'indent': '+1' }],
+            [{ 'align': [] }],
+            ['link', 'image', 'blockquote', 'code-block'],
+            ['clean']
+        ];
 
-    console.log('Quill inicializado com sucesso!');
+        // Inicializar Quill
+        quill = new Quill('#editor-container', {
+            modules: {
+                toolbar: toolbarOptions
+            },
+            placeholder: 'Digite o conteúdo do documento aqui...',
+            theme: 'snow'
+        });
 
-    // Campo oculto para envio
-    var hiddenInput = document.getElementById('conteudo');
+        console.log('Quill inicializado com sucesso!');
 
-    // Sincronizar conteúdo com campo oculto
-    quill.on('text-change', function() {
-        hiddenInput.value = quill.root.innerHTML;
-        
-        // Verificar se há conteúdo para habilitar botões
-        var hasContent = quill.getText().trim().length > 10;
-        var hasTitle = document.getElementById('titulo').value.trim().length > 0;
+        // Campo oculto para envio
+        const hiddenInput = document.getElementById('conteudo');
 
-        document.getElementById('btn-criar').disabled = !hasContent || !hasTitle;
-        document.getElementById('btn-rascunho').disabled = !hasContent && !hasTitle;
-    });
+        // Sincronizar conteúdo com campo oculto
+        quill.on('text-change', function() {
+            const content = quill.root.innerHTML;
+            hiddenInput.value = content;
+            
+            // Verificar se há conteúdo para habilitar botões
+            const hasContent = quill.getText().trim().length > 10;
+            const hasTitle = document.getElementById('titulo').value.trim().length > 0;
 
-    // Verificar título
-    document.getElementById('titulo').addEventListener('input', function() {
-        var hasContent = quill.getText().trim().length > 10;
-        var hasTitle = this.value.trim().length > 0;
-
-        document.getElementById('btn-criar').disabled = !hasContent || !hasTitle;
-        document.getElementById('btn-rascunho').disabled = !hasContent && !hasTitle;
-    });
-
-    // Estado inicial dos botões
-    document.getElementById('btn-criar').disabled = true;
-    document.getElementById('btn-rascunho').disabled = true;
-
-    // Templates para documentos
-    var templates = {
-        pop: '<h1>PROCEDIMENTO OPERACIONAL PADRÃO</h1><h2>1. OBJETIVO</h2><p>[Descrever claramente o objetivo do procedimento]</p><h2>2. ESCOPO</h2><p>[Definir setores, unidades, processos específicos]</p>',
-        instrucao: '<h1>INSTRUÇÃO DE TRABALHO</h1><h2>OBJETIVO</h2><p>[Objetivo da instrução]</p><h2>MATERIAIS NECESSÁRIOS</h2><ul><li>[Material 1]</li><li>[Material 2]</li></ul>',
-        politica: '<h1>POLÍTICA DE QUALIDADE</h1><h2>1. FINALIDADE</h2><p>[Descrever a finalidade da política]</p>'
-    };
-
-    // Função para inserir template
-    window.insertTemplate = function(templateType) {
-        if (templates[templateType]) {
-            quill.clipboard.dangerouslyPasteHTML(templates[templateType]);
-        }
-    };
-
-    // Validação do formulário
-    document.querySelector('form').addEventListener('submit', function(e) {
-        // Sincronizar conteúdo
-        hiddenInput.value = quill.root.innerHTML;
-
-        // Verificar conteúdo
-        var content = quill.getText().trim();
-        if (!content || content.length < 10) {
-            e.preventDefault();
-            alert('O conteúdo deve ter pelo menos 10 caracteres');
-            quill.focus();
-            return false;
-        }
+            updateButtonStates(hasContent, hasTitle);
+        });
 
         // Verificar título
-        var titulo = document.getElementById('titulo').value.trim();
-        if (!titulo) {
-            e.preventDefault();
-            alert('O título é obrigatório');
-            document.getElementById('titulo').focus();
-            return false;
-        }
-    });
+        document.getElementById('titulo').addEventListener('input', function() {
+            const hasContent = quill.getText().trim().length > 10;
+            const hasTitle = this.value.trim().length > 0;
+
+            updateButtonStates(hasContent, hasTitle);
+        });
+
+        // Estado inicial dos botões
+        updateButtonStates(false, false);
+
+        // Validação do formulário
+        document.getElementById('documentForm').addEventListener('submit', function(e) {
+            // Sincronizar conteúdo
+            hiddenInput.value = quill.root.innerHTML;
+
+            // Verificar conteúdo
+            const content = quill.getText().trim();
+            if (!content || content.length < 10) {
+                e.preventDefault();
+                alert('O conteúdo deve ter pelo menos 10 caracteres');
+                quill.focus();
+                return false;
+            }
+
+            // Verificar título
+            const titulo = document.getElementById('titulo').value.trim();
+            if (!titulo) {
+                e.preventDefault();
+                alert('O título é obrigatório');
+                document.getElementById('titulo').focus();
+                return false;
+            }
+
+            // Verificar tipo
+            const tipo = document.getElementById('tipo').value;
+            if (!tipo) {
+                e.preventDefault();
+                alert('Selecione o tipo do documento');
+                document.getElementById('tipo').focus();
+                return false;
+            }
+        });
+
+    } catch (error) {
+        console.error('Erro ao inicializar Quill:', error);
+        alert('Erro ao inicializar o editor. Recarregue a página.');
+    }
 });
+
+function updateButtonStates(hasContent, hasTitle) {
+    const btnCriar = document.getElementById('btn-criar');
+    const btnRascunho = document.getElementById('btn-rascunho');
+    
+    btnCriar.disabled = !hasContent || !hasTitle;
+    btnRascunho.disabled = !hasContent && !hasTitle;
+}
 
 // Funções auxiliares
 function showNotification(message, type = 'info') {
