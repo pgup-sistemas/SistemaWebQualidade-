@@ -3,9 +3,10 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Debug: Verificar se Quill está disponível
     if (typeof Quill !== 'undefined') {
-        console.log('✅ Quill.js carregado com sucesso');
+        console.log('✅ Quill.js carregado com sucesso na página');
+        console.log('📋 Versão do Quill:', Quill.version || 'Desconhecida');
     } else {
-        console.error('❌ Quill.js não foi carregado');
+        console.warn('⚠️ Quill.js não foi carregado ainda - tentará carregar via fallback quando necessário');
     }
 
     // Set current date if moment is available

@@ -12,6 +12,65 @@
     <!-- Custom CSS -->
     <link href="{{ url_for('static', filename='css/custom.css') }}" rel="stylesheet">
 
+    <!-- Quill.js - Fallback local disponível -->
+    <script>
+        // Função para carregar Quill como fallback global
+        window.loadQuillGlobal = function() {
+            return new Promise((resolve, reject) => {
+                if (typeof Quill !== 'undefined') {
+                    resolve();
+                    return;
+                }
+
+                // Tentar CDN principal
+                const script1 = document.createElement('script');
+                script1.src = 'https://cdn.quilljs.com/1.3.7/quill.min.js';
+                script1.onload = () => {
+                    if (typeof Quill !== 'undefined') {
+                        console.log('✅ Quill carregado via CDN principal');
+                        resolve();
+                    } else {
+                        loadFromBackup();
+                    }
+                };
+                script1.onerror = loadFromBackup;
+                document.head.appendChild(script1);
+
+                function loadFromBackup() {
+                    // Tentar CDN backup
+                    const script2 = document.createElement('script');
+                    script2.src = 'https://unpkg.com/quill@1.3.7/dist/quill.min.js';
+                    script2.onload = () => {
+                        if (typeof Quill !== 'undefined') {
+                            console.log('✅ Quill carregado via CDN backup');
+                            resolve();
+                        } else {
+                            loadFromLocal();
+                        }
+                    };
+                    script2.onerror = loadFromLocal;
+                    document.head.appendChild(script2);
+                }
+
+                function loadFromLocal() {
+                    // Tentar arquivo local
+                    const script3 = document.createElement('script');
+                    script3.src = '{{ url_for("static", filename="vendor/quill.min.js") }}';
+                    script3.onload = () => {
+                        if (typeof Quill !== 'undefined') {
+                            console.log('✅ Quill carregado via arquivo local');
+                            resolve();
+                        } else {
+                            reject(new Error('Falha ao carregar Quill de todas as fontes'));
+                        }
+                    };
+                    script3.onerror = () => reject(new Error('Falha ao carregar Quill de todas as fontes'));
+                    document.head.appendChild(script3);
+                }
+            });
+        };
+    </script>
+
     <style>
         /* Sidebar Styles */
         .sidebar {
@@ -516,7 +575,7 @@
             // Set moment locale if available
             if (typeof moment !== 'undefined') {
                 moment.locale('pt-br');
-                
+
                 // Update current date display
                 const dateElement = document.getElementById('currentDate');
                 if (dateElement) {
