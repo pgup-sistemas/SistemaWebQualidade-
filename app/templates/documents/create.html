@@ -246,12 +246,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Inicializar o editor com toolbar personalizada
     var quill = new Quill('#editor', {
         modules: {
-            toolbar: '#toolbar',
-            history: {
-                delay: 1000,
-                maxStack: 50,
-                userOnly: true
-            }
+            toolbar: '#toolbar'
         },
         placeholder: 'Digite o conteúdo do documento aqui...',
         theme: 'snow'

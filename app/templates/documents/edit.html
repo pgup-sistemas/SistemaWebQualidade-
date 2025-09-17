@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 {% block title %}Editar - {{ document.titulo }}{% endblock %}
@@ -29,197 +30,168 @@
                     <p class="text-muted mb-0">{{ document.codigo }} - Versão {{ document.versao_atual }}</p>
                 </div>
                 <div>
-                    <a href="{{ url_for('documents.view', id=document.id) }}" class="btn btn-outline-secondary">
-                        <i class="bi bi-arrow-left"></i> Cancelar
+                    <a href="{{ url_for('documents.view', id=document.id) }}" class="btn btn-outline-secondary me-2">
+                        <i class="bi bi-eye"></i> Visualizar
+                    </a>
+                    <a href="{{ url_for('documents.index') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Voltar
                     </a>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Alertas de Status -->
-    {% if document.status == 'aprovado' %}
-    <div class="alert alert-warning d-flex align-items-center" role="alert">
-        <i class="bi bi-exclamation-triangle me-2"></i>
-        <div>
-            <strong>Atenção:</strong> Este documento está aprovado. As alterações criarão uma nova versão em rascunho que precisará passar pelo processo de aprovação novamente.
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- Formulário de Edição -->
     <form method="POST" id="editForm" class="needs-validation" novalidate>
-        {{ csrf_token() }}
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <div class="row">
-            <!-- Informações Básicas -->
-            <div class="col-md-8">
-                <div class="card mb-4">
+            <!-- Informações do Documento -->
+            <div class="col-md-4">
+                <div class="card">
                     <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i class="bi bi-info-circle"></i> Informações Básicas
-                        </h5>
+                        <h6 class="card-title mb-0">
+                            <i class="bi bi-info-circle"></i> Informações do Documento
+                        </h6>
                     </div>
                     <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-8 mb-3">
-                                <label for="titulo" class="form-label">Título *</label>
-                                <input type="text" class="form-control" id="titulo" name="titulo" 
-                                       value="{{ document.titulo }}" required maxlength="200">
-                                <div class="invalid-feedback">
-                                    Por favor, informe o título do documento.
-                                </div>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="tipo" class="form-label">Tipo *</label>
-                                <select class="form-select" id="tipo" name="tipo" required>
-                                    <option value="">Selecione o tipo</option>
-                                    <option value="procedimento" {{ 'selected' if document.tipo == 'procedimento' else '' }}>Procedimento</option>
-                                    <option value="instrucao" {{ 'selected' if document.tipo == 'instrucao' else '' }}>Instrução de Trabalho</option>
-                                    <option value="politica" {{ 'selected' if document.tipo == 'politica' else '' }}>Política</option>
-                                    <option value="manual" {{ 'selected' if document.tipo == 'manual' else '' }}>Manual</option>
-                                    <option value="formulario" {{ 'selected' if document.tipo == 'formulario' else '' }}>Formulário</option>
-                                    <option value="outros" {{ 'selected' if document.tipo == 'outros' else '' }}>Outros</option>
-                                </select>
-                                <div class="invalid-feedback">
-                                    Por favor, selecione o tipo do documento.
-                                </div>
+                        <div class="mb-3">
+                            <label for="titulo" class="form-label">Título *</label>
+                            <input type="text" class="form-control" id="titulo" name="titulo" 
+                                   value="{{ document.titulo }}" required>
+                            <div class="invalid-feedback">
+                                O título é obrigatório.
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="departamento" class="form-label">Departamento</label>
-                                <input type="text" class="form-control" id="departamento" name="departamento" 
-                                       value="{{ document.departamento or '' }}" maxlength="100">
+                        <div class="mb-3">
+                            <label for="tipo" class="form-label">Tipo *</label>
+                            <select class="form-select" id="tipo" name="tipo" required>
+                                <option value="">Selecione o tipo</option>
+                                {% for doc_type in document_types %}
+                                <option value="{{ doc_type.codigo }}" 
+                                        {% if doc_type.codigo == document.tipo %}selected{% endif %}>
+                                    {{ doc_type.nome }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">
+                                Selecione o tipo do documento.
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="data_validade" class="form-label">Data de Validade</label>
-                                <input type="date" class="form-control" id="data_validade" name="data_validade" 
-                                       value="{{ document.data_validade.strftime('%Y-%m-%d') if document.data_validade else '' }}">
-                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="departamento" class="form-label">Departamento</label>
+                            <input type="text" class="form-control" id="departamento" name="departamento"
+                                   value="{{ document.departamento or '' }}"
+                                   placeholder="Ex: Qualidade, RH, Produção">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="data_validade" class="form-label">Data de Validade</label>
+                            <input type="date" class="form-control" id="data_validade" name="data_validade"
+                                   value="{{ document.data_validade.strftime('%Y-%m-%d') if document.data_validade else '' }}">
+                            <div class="form-text">Deixe em branco se não há validade definida</div>
                         </div>
 
                         <div class="mb-3">
                             <label for="palavras_chave" class="form-label">Palavras-chave</label>
-                            <input type="text" class="form-control" id="palavras_chave" name="palavras_chave" 
-                                   value="{{ document.palavras_chave or '' }}" 
-                                   placeholder="Separe as palavras-chave por vírgula">
-                            <div class="form-text">Utilize palavras-chave para facilitar a busca do documento.</div>
+                            <input type="text" class="form-control" id="palavras_chave" name="palavras_chave"
+                                   value="{{ document.palavras_chave or '' }}"
+                                   placeholder="Ex: qualidade, auditoria, ISO">
+                            <div class="form-text">Separadas por vírgula para facilitar a busca</div>
                         </div>
 
                         <div class="mb-3">
                             <label for="resumo" class="form-label">Resumo</label>
-                            <textarea class="form-control" id="resumo" name="resumo" rows="3" 
-                                      maxlength="500">{{ document.resumo or '' }}</textarea>
-                            <div class="form-text">Breve descrição do conteúdo e objetivo do documento.</div>
+                            <textarea class="form-control" id="resumo" name="resumo" rows="3"
+                                      placeholder="Breve descrição do documento">{{ document.resumo or '' }}</textarea>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Conteúdo -->
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
+            <!-- Editor de Conteúdo -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="card-title mb-0">
                             <i class="bi bi-file-text"></i> Conteúdo do Documento
-                        </h5>
+                        </h6>
+                        <small id="autoSaveStatus" class="text-muted">Pronto para edição</small>
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
                             <label class="form-label">Conteúdo *</label>
-                            <div id="editor" style="height: 400px;"></div>
-                            <textarea id="conteudo" name="conteudo" required style="display: none;">{{ current_version.conteudo if current_version else '' }}</textarea>
-                            <div class="invalid-feedback">
-                                Por favor, informe o conteúdo do documento.
-                            </div>
-                        </div>
 
-                        <div class="mb-3">
-                            <label for="changelog" class="form-label">Changelog (Registro de Alterações)</label>
-                            <textarea class="form-control" id="changelog" name="changelog" rows="3" 
-                                      placeholder="Descreva as principais alterações feitas nesta versão...">{{ current_version.changelog if current_version else '' }}</textarea>
-                            <div class="form-text">Informe as alterações realizadas para controle de versão.</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Painel Lateral -->
-            <div class="col-md-4">
-                <!-- Status e Ações -->
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h6 class="card-title mb-0">
-                            <i class="bi bi-gear"></i> Status e Ações
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label class="form-label">Status Atual</label>
-                            <div>
-                                <span class="badge bg-{% if document.status == 'aprovado' %}success{% elif document.status == 'rascunho' %}warning text-dark{% elif document.status == 'em_revisao' %}info{% else %}secondary{% endif %} fs-6">
-                                    {{ document.status.replace('_', ' ').title() }}
+                            <!-- Toolbar personalizada -->
+                            <div id="toolbar">
+                                <span class="ql-formats">
+                                    <select class="ql-header">
+                                        <option value="1">Título 1</option>
+                                        <option value="2">Título 2</option>
+                                        <option value="3">Título 3</option>
+                                        <option selected>Normal</option>
+                                    </select>
+                                    <select class="ql-font"></select>
+                                    <select class="ql-size"></select>
+                                </span>
+                                <span class="ql-formats">
+                                    <button class="ql-bold"></button>
+                                    <button class="ql-italic"></button>
+                                    <button class="ql-underline"></button>
+                                    <button class="ql-strike"></button>
+                                </span>
+                                <span class="ql-formats">
+                                    <select class="ql-color"></select>
+                                    <select class="ql-background"></select>
+                                </span>
+                                <span class="ql-formats">
+                                    <button class="ql-script" value="sub"></button>
+                                    <button class="ql-script" value="super"></button>
+                                </span>
+                                <span class="ql-formats">
+                                    <button class="ql-list" value="ordered"></button>
+                                    <button class="ql-list" value="bullet"></button>
+                                    <button class="ql-indent" value="-1"></button>
+                                    <button class="ql-indent" value="+1"></button>
+                                </span>
+                                <span class="ql-formats">
+                                    <select class="ql-align"></select>
+                                </span>
+                                <span class="ql-formats">
+                                    <button class="ql-link"></button>
+                                    <button class="ql-image"></button>
+                                    <button class="ql-blockquote"></button>
+                                    <button class="ql-code-block"></button>
+                                </span>
+                                <span class="ql-formats">
+                                    <button class="ql-clean"></button>
                                 </span>
                             </div>
+
+                            <!-- Container do editor -->
+                            <div id="editor" style="height: 400px; border: 1px solid #ccc;"></div>
+
+                            <!-- Campo oculto para submissão -->
+                            <textarea id="conteudo" name="conteudo" required style="display: none;">{{ document.conteudo or '' }}</textarea>
+
+                            <div class="invalid-feedback">
+                                O conteúdo é obrigatório.
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Código</label>
-                            <div class="text-muted">{{ document.codigo }}</div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Versão Atual</label>
-                            <div class="text-muted">{{ document.versao_atual }}</div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Autor</label>
-                            <div class="text-muted">{{ document.autor.nome_completo }}</div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Data de Criação</label>
-                            <div class="text-muted">{{ document.data_criacao.strftime('%d/%m/%Y') }}</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Histórico -->
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h6 class="card-title mb-0">
-                            <i class="bi bi-clock-history"></i> Histórico
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="small">
-                            <a href="{{ url_for('documents.versions', id=document.id) }}" class="text-decoration-none">
-                                <i class="bi bi-eye"></i> Ver todas as versões
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Botões de Ação -->
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body">
                         <div class="d-flex justify-content-between">
                             <div>
-                                <button type="button" class="btn btn-outline-info me-2" onclick="autoSave()">
-                                    <i class="bi bi-floppy"></i> Salvar Rascunho
-                                </button>
-                                <span id="autoSaveStatus" class="text-muted small"></span>
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle"></i>
+                                    Use o editor para formatar o documento. Salvamento automático a cada 30 segundos.
+                                </small>
                             </div>
                             <div>
-                                <a href="{{ url_for('documents.view', id=document.id) }}" class="btn btn-outline-secondary me-2">
-                                    <i class="bi bi-x-circle"></i> Cancelar
-                                </a>
-                                <button type="submit" class="btn btn-primary" name="action" value="save">
+                                <button type="submit" name="action" value="submit" class="btn btn-primary me-2">
                                     <i class="bi bi-check-circle"></i> Salvar Alterações
+                                </button>
+                                <button type="submit" name="action" value="draft" class="btn btn-outline-warning">
+                                    <i class="bi bi-file-earmark"></i> Salvar Rascunho
                                 </button>
                             </div>
                         </div>
@@ -229,154 +201,131 @@
         </div>
     </form>
 </div>
+{% endblock %}
 
 {% block extra_scripts %}
 <script>
-// Inicializar Quill.js Editor - Completamente GRATUITO
-var quill = new Quill('#editor', {
-    theme: 'snow',
-    placeholder: 'Digite o conteúdo do documento aqui...',
-    modules: {
-        toolbar: [
-            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-            [{ 'font': [] }],
-            [{ 'size': ['small', false, 'large', 'huge'] }],
-            ['bold', 'italic', 'underline', 'strike'],
-            [{ 'color': [] }, { 'background': [] }],
-            [{ 'script': 'sub'}, { 'script': 'super' }],
-            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-            [{ 'indent': '-1'}, { 'indent': '+1' }],
-            [{ 'direction': 'rtl' }],
-            [{ 'align': [] }],
-            ['link', 'image', 'video'],
-            ['blockquote', 'code-block'],
-            ['clean']
-        ],
-        history: {
-            delay: 1000,
-            maxStack: 50,
-            userOnly: true
-        }
-    }
-});
-
-// Campo oculto para envio do formulário
-const hiddenInput = document.getElementById('conteudo');
-
-// Carregar conteúdo existente no editor
 document.addEventListener('DOMContentLoaded', function() {
-    const existingContent = hiddenInput.value;
-    if (existingContent) {
-        quill.clipboard.dangerouslyPasteHTML(existingContent);
+    console.log('Inicializando Quill Editor para edição...');
+
+    // Verificar se Quill está disponível
+    if (typeof Quill === 'undefined') {
+        console.error('Quill.js não foi carregado!');
+        return;
     }
-});
 
-// Sincronizar com campo oculto
-quill.on('text-change', function() {
-    hiddenInput.value = quill.root.innerHTML;
-});
-
-// Auto-save functionality
-let autoSaveTimer;
-let hasChanges = false;
-
-function autoSave() {
-    // Sincronizar conteúdo do Quill para o campo oculto
-    hiddenInput.value = quill.root.innerHTML;
-    
-    const formData = new FormData(document.getElementById('editForm'));
-    formData.append('auto_save', 'true');
-
-    document.getElementById('autoSaveStatus').textContent = 'Salvando...';
-
-    fetch('{{ url_for("documents.edit", id=document.id) }}', {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            document.getElementById('autoSaveStatus').textContent = 'Salvo automaticamente às ' + new Date().toLocaleTimeString();
-            hasChanges = false;
-        } else {
-            document.getElementById('autoSaveStatus').textContent = 'Erro ao salvar: ' + data.error;
-        }
-    })
-    .catch(error => {
-        console.error('Erro no auto-save:', error);
-        document.getElementById('autoSaveStatus').textContent = 'Erro na conexão';
+    // Inicializar o editor
+    var quill = new Quill('#editor', {
+        modules: {
+            toolbar: '#toolbar'
+        },
+        placeholder: 'Digite o conteúdo do documento aqui...',
+        theme: 'snow'
     });
-}
 
-// Monitorar mudanças para auto-save
-quill.on('text-change', function() {
-    hasChanges = true;
-    
-    // Auto-save com debounce
-    clearTimeout(autoSaveTimer);
-    autoSaveTimer = setTimeout(function() {
-        if (hasChanges) {
-            autoSave();
-        }
-    }, 3000); // 3 segundos após parar de digitar
-});
+    console.log('Quill inicializado com sucesso!');
 
-// Monitorar outros campos
-document.addEventListener('DOMContentLoaded', function() {
+    // Campo oculto para envio
+    var hiddenInput = document.getElementById('conteudo');
+
+    // Carregar conteúdo existente
+    if (hiddenInput.value) {
+        quill.clipboard.dangerouslyPasteHTML(hiddenInput.value);
+    }
+
+    // Sincronizar conteúdo com campo oculto
+    quill.on('text-change', function() {
+        hiddenInput.value = quill.root.innerHTML;
+    });
+
+    // Auto-save functionality
+    let autoSaveTimer;
+    let hasChanges = false;
+
+    function autoSave() {
+        hiddenInput.value = quill.root.innerHTML;
+        
+        const formData = new FormData(document.getElementById('editForm'));
+        formData.append('auto_save', 'true');
+
+        document.getElementById('autoSaveStatus').textContent = 'Salvando...';
+
+        fetch('{{ url_for("documents.edit", id=document.id) }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('autoSaveStatus').textContent = 'Salvo automaticamente às ' + new Date().toLocaleTimeString();
+                hasChanges = false;
+            } else {
+                document.getElementById('autoSaveStatus').textContent = 'Erro ao salvar';
+            }
+        })
+        .catch(error => {
+            console.error('Erro no auto-save:', error);
+            document.getElementById('autoSaveStatus').textContent = 'Erro na conexão';
+        });
+    }
+
+    // Monitorar mudanças para auto-save
+    quill.on('text-change', function() {
+        hasChanges = true;
+        
+        clearTimeout(autoSaveTimer);
+        autoSaveTimer = setTimeout(function() {
+            if (hasChanges) {
+                autoSave();
+            }
+        }, 3000);
+    });
+
+    // Monitorar outros campos
     const inputs = document.querySelectorAll('input, textarea, select');
-    
     inputs.forEach(input => {
-        if (input.id !== 'conteudo') { // Não monitorar o campo oculto
+        if (input.id !== 'conteudo') {
             input.addEventListener('input', function() {
                 hasChanges = true;
             });
         }
     });
-});
 
-// Validação do formulário antes do envio
-document.getElementById('editForm').addEventListener('submit', function(e) {
-    // Atualizar campo oculto com conteúdo atual
-    hiddenInput.value = quill.root.innerHTML;
+    // Validação do formulário
+    document.getElementById('editForm').addEventListener('submit', function(e) {
+        hiddenInput.value = quill.root.innerHTML;
 
-    // Verificar se há conteúdo
-    const content = quill.getText().trim();
-    if (!content || content.length < 10) {
-        e.preventDefault();
-        alert('O conteúdo do documento deve ter pelo menos 10 caracteres');
-        quill.focus();
-        return false;
-    }
+        const content = quill.getText().trim();
+        if (!content || content.length < 10) {
+            e.preventDefault();
+            alert('O conteúdo do documento deve ter pelo menos 10 caracteres');
+            quill.focus();
+            return false;
+        }
 
-    // Verificar título
-    const titulo = document.getElementById('titulo').value;
-    if (!titulo.trim()) {
-        e.preventDefault();
-        alert('O título do documento é obrigatório');
-        document.getElementById('titulo').focus();
-        return false;
-    }
-});
+        const titulo = document.getElementById('titulo').value;
+        if (!titulo.trim()) {
+            e.preventDefault();
+            alert('O título do documento é obrigatório');
+            document.getElementById('titulo').focus();
+            return false;
+        }
+    });
 
-// Form validation
-(function() {
-    'use strict';
-    window.addEventListener('load', function() {
-        var forms = document.getElementsByClassName('needs-validation');
-        var validation = Array.prototype.filter.call(forms, function(form) {
-            form.addEventListener('submit', function(event) {
-                if (form.checkValidity() === false) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                }
-                form.classList.add('was-validated');
-            }, false);
+    // Form validation
+    const forms = document.querySelectorAll('.needs-validation');
+    forms.forEach(function(form) {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
         });
-    }, false);
-})();
+    });
+});
 </script>
-{% endblock %}
 {% endblock %}

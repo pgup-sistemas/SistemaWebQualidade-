@@ -173,10 +173,7 @@ function enableAutoSave(formId, interval = 30000) {
     setInterval(() => {
         const formData = new FormData(form);
         
-        // Verificar se TinyMCE está disponível e sincronizar conteúdo
-        if (typeof tinymce !== 'undefined') {
-            tinymce.triggerSave();
-        }
+        // Sincronizar conteúdo do editor se disponível
         
         fetch('/api/save-draft', {
             method: 'POST',
@@ -198,13 +195,8 @@ function enableAutoSave(formId, interval = 30000) {
     }, interval);
 }
 
-// Função para salvar rascunho manualmente (compatível com TinyMCE)
+// Função para salvar rascunho manualmente
 function salvarRascunhoAutomatico() {
-    // Verificar se TinyMCE está disponível
-    if (typeof tinymce !== 'undefined') {
-        tinymce.triggerSave();
-    }
-    
     const form = document.querySelector('form');
     if (!form) return;
     
